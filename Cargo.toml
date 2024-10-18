@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = [
+    "server",
+    "domain",
+    "presentation",
+    "infrastructure"
+]
+
+[workspace.dependencies]
+axum = "0.7.7"
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
