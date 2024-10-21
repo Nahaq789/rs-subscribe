@@ -1,25 +1,24 @@
-use std::net::{Ipv6Addr, SocketAddrV6};
-use axum::Router;
 use axum::routing::get;
+use axum::Router;
+use std::net::{Ipv4Addr, SocketAddrV4};
 use tracing::{event, Level};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-  tracing_subscriber::fmt()
-    .with_max_level(Level::DEBUG)
-    .with_ansi(false)
-    .init();
+    tracing_subscriber::fmt()
+        .with_max_level(Level::DEBUG)
+        .with_ansi(false)
+        .init();
 
-  let app = create_router().await;
-  let socket_addr_v6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 8080, 0, 0);
-  let listener = tokio::net::TcpListener::bind(socket_addr_v6).await?;
-  event!(Level::INFO, "Application Started");
-  axum::serve(listener, app).await?;
+    let app = create_router().await;
+    let socket_addr_v6 = SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 8080);
+    let listener = tokio::net::TcpListener::bind(socket_addr_v6).await?;
+    event!(Level::INFO, "Application Started");
+    axum::serve(listener, app).await?;
 
-  Ok(())
+    Ok(())
 }
 
 async fn create_router() -> Router {
-  Router::new()
-    .route("/", get({ "hoge" }))
+    Router::new().route("/", get("hoge"))
 }
