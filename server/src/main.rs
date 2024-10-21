@@ -11,8 +11,8 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     let app = create_router().await;
-    let socket_addr_v6 = SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 8080);
-    let listener = tokio::net::TcpListener::bind(socket_addr_v6).await?;
+    let socket_addr_v4 = SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 8080);
+    let listener = tokio::net::TcpListener::bind(socket_addr_v4).await?;
     event!(Level::INFO, "Application Started");
     axum::serve(listener, app).await?;
 
