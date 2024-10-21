@@ -1,3 +1,4 @@
+use std::net::{Ipv6Addr, SocketAddrV6};
 use axum::Router;
 use axum::routing::get;
 use tracing::{event, Level};
@@ -10,8 +11,8 @@ async fn main() -> anyhow::Result<()> {
     .init();
 
   let app = create_router().await;
-  let addr = "0.0.0.0:8080";
-  let listener = tokio::net::TcpListener::bind(addr).await?;
+  let socket_addr_v6 = SocketAddrV6::new(Ipv6Addr::LOCALHOST, 8080, 0, 0);
+  let listener = tokio::net::TcpListener::bind(socket_addr_v6).await?;
   event!(Level::INFO, "Application Started");
   axum::serve(listener, app).await?;
 
@@ -20,5 +21,5 @@ async fn main() -> anyhow::Result<()> {
 
 async fn create_router() -> Router {
   Router::new()
-    .route("/", get({ "aaa" }))
+    .route("/", get({ "hoge" }))
 }
