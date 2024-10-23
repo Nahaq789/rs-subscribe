@@ -1,10 +1,10 @@
 [workspace]
 resolver = "2"
 members = [
-    "server",
-    "domain",
-    "presentation",
-    "infrastructure"
+    "src/server",
+    "src/domain",
+    "src/presentation",
+    "src/infrastructure"
 ]
 
 [workspace.dependencies]
