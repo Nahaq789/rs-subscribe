@@ -1,4 +1,2 @@
 #[derive(Debug)]
-pub struct SubscribeId {
-
-}
+pub struct SubscribeId {}
