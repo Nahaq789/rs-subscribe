@@ -10,7 +10,7 @@ pub mod subscribe;
 /// - value: 値を返します
 /// - generate_id: Uuidを生成します
 pub trait AggregateId {
-  fn type_name(&self) -> String;
-  fn value(&self) -> String;
-  fn generate_id() -> Uuid;
+    fn type_name(&self) -> String;
+    fn value(&self) -> String;
+    fn generate_id() -> Uuid;
 }
