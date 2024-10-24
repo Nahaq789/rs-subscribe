@@ -1,6 +1,7 @@
 use uuid::Uuid;
 
 pub mod subscribe;
+pub mod user;
 
 /// 集約ID用のトレイトです
 ///
