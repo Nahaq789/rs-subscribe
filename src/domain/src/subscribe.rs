@@ -1,6 +1,6 @@
 use crate::subscribe::subscribe_id::SubscribeId;
 
-mod subscribe_id;
+pub mod subscribe_id;
 
 #[derive(Debug)]
 pub struct Subscribe {
