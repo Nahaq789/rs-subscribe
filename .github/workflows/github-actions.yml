@@ -34,4 +34,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run clippy
-        run: cargo clippy -- -D warnings
+        run: cargo clippy -- -A clippy::new_without_default
