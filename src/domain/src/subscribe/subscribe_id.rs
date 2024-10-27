@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use uuid::Uuid;
 
 /// サブスクの一意識別子を表す構造体
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SubscribeId {
     /// UUIDの値
     value: Uuid,
