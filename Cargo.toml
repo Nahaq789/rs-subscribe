@@ -1,10 +1,10 @@
 [workspace]
 resolver = "2"
 members = [
-    "server",
-    "domain",
-    "presentation",
-    "infrastructure"
+    "src/server",
+    "src/domain",
+    "src/presentation",
+    "src/infrastructure"
 ]
 
 [workspace.dependencies]
@@ -13,3 +13,11 @@ tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 tokio = { version = "1.40.0", features = ["full"]}
 anyhow = "1.0.90"
+uuid = { version = "1.11.0", features = ["v4", "serde"] }
+serde = "1.0.213"
+serde_json = "1.0.132"
+thiserror = "1.0.65"
+rust_decimal = "1.36.0"
+
+# test
+rstest = "0.23.0"
