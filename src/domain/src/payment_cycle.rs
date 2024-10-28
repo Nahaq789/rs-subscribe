@@ -1,7 +1,7 @@
 #[derive(Debug)]
 pub enum PaymentCycle {
     Monthly,
-    Yearly
+    Yearly,
 }
 
 impl PaymentCycle {
@@ -16,7 +16,7 @@ impl PaymentCycle {
         match s.to_lowercase().as_str() {
             "monthly" => Some(Self::Monthly),
             "yearly" => Some(Self::Yearly),
-            _ => None
+            _ => None,
         }
     }
 
@@ -27,7 +27,7 @@ impl PaymentCycle {
     pub fn as_str(&self) -> &str {
         match self {
             PaymentCycle::Monthly => "monthly",
-            PaymentCycle::Yearly => "yearly"
+            PaymentCycle::Yearly => "yearly",
         }
     }
 }

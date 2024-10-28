@@ -14,7 +14,7 @@ pub enum SubscribeNameError {
     Empty,
     /// 名前が長すぎる場合のエラー
     #[error("the subscribe name is too long")]
-    TooLong
+    TooLong,
 }
 
 impl SubscribeName {

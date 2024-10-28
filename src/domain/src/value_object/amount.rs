@@ -1,12 +1,12 @@
-use std::fmt::{Display, Formatter};
 use rust_decimal::Decimal;
+use std::fmt::{Display, Formatter};
 use thiserror::Error;
 
 /// 金額を表す値オブジェクト
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Amount {
     /// Decimal型で保持する金額値
-    value: Decimal
+    value: Decimal,
 }
 
 /// 金額に関するエラー
@@ -76,7 +76,9 @@ impl Amount {
     ///
     /// # 戻り値
     /// - [&Decimal] 金額値への参照
-    pub fn value(&self) -> &Decimal { &self.value }
+    pub fn value(&self) -> &Decimal {
+        &self.value
+    }
 }
 
 #[cfg(test)]

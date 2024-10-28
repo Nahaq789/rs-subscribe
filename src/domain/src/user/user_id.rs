@@ -1,12 +1,12 @@
+use crate::AggregateId;
 use std::fmt::{Display, Formatter};
 use uuid::Uuid;
-use crate::AggregateId;
 
 /// ユーザーの一意識別子を表す構造体
 #[derive(Debug, Clone)]
 pub struct UserId {
     /// UUIDの値
-    value: Uuid
+    value: Uuid,
 }
 
 const USER_PREFIX: &str = "USER";

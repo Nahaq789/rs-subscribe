@@ -1,14 +1,14 @@
-use rust_decimal::Decimal;
-use uuid::Uuid;
 use crate::payment_cycle::PaymentCycle;
 use crate::subscribe::subscribe_id::SubscribeId;
 use crate::subscribe::subscribe_name::SubscribeName;
 use crate::user::user_id::UserId;
 use crate::value_object::amount::Amount;
+use rust_decimal::Decimal;
+use uuid::Uuid;
 
+mod subscribe_error;
 pub mod subscribe_id;
 mod subscribe_name;
-mod subscribe_error;
 
 /// サブスク情報を管理する構造体
 #[derive(Debug)]
@@ -26,7 +26,7 @@ pub struct Subscribe {
     amount: Amount,
 
     /// 支払周期
-    payment_cycle: PaymentCycle
+    payment_cycle: PaymentCycle,
 }
 
 impl Subscribe {
@@ -40,7 +40,12 @@ impl Subscribe {
     ///
     /// # 戻り値
     /// - [Subscribe] 作成されたサブスク情報
-    pub fn new(user_id: UserId, name: SubscribeName, amount: Amount, payment_cycle: PaymentCycle) -> Self {
+    pub fn new(
+        user_id: UserId,
+        name: SubscribeName,
+        amount: Amount,
+        payment_cycle: PaymentCycle,
+    ) -> Self {
         let id = SubscribeId::new();
         let amount = Self::yearly_amount_per_monthly(amount, &payment_cycle);
         Self {
@@ -48,7 +53,7 @@ impl Subscribe {
             user_id,
             name,
             amount,
-            payment_cycle
+            payment_cycle,
         }
     }
 
@@ -63,14 +68,20 @@ impl Subscribe {
     ///
     /// # 戻り値
     /// - [Subscribe] 作成されたサブスク情報
-    pub fn from(subscribe_id: Uuid, user_id: UserId, name: SubscribeName, amount: Amount, payment_cycle: PaymentCycle) -> Self {
+    pub fn from(
+        subscribe_id: Uuid,
+        user_id: UserId,
+        name: SubscribeName,
+        amount: Amount,
+        payment_cycle: PaymentCycle,
+    ) -> Self {
         let amount = Self::yearly_amount_per_monthly(amount, &payment_cycle);
         Self {
             subscribe_id: SubscribeId::from(subscribe_id),
             user_id,
             name,
             amount,
-            payment_cycle
+            payment_cycle,
         }
     }
 
@@ -80,7 +91,7 @@ impl Subscribe {
                 let value = amount.value() / Decimal::from(12);
                 Amount::try_from(value).unwrap()
             }
-            _ => amount
+            _ => amount,
         }
     }
 
@@ -96,31 +107,39 @@ impl Subscribe {
     ///
     /// # 戻り値
     /// - [UserId] ユーザーIDへの参照
-    pub fn user_id(&self) -> &UserId { &self.user_id }
+    pub fn user_id(&self) -> &UserId {
+        &self.user_id
+    }
 
     /// サブスク名を取得する
     ///
     /// # 戻り値
     /// - [SubscribeName] サブスク名への参照
-    pub fn name(&self) -> &SubscribeName { &self.name  }
+    pub fn name(&self) -> &SubscribeName {
+        &self.name
+    }
 
     /// 金額を取得する
     ///
     /// # 戻り値
     /// - [Amount] 金額への参照
-    pub fn amount(&self) -> &Amount { &self.amount }
+    pub fn amount(&self) -> &Amount {
+        &self.amount
+    }
 
     /// 支払周期を取得する
     ///
     /// # 戻り値
     /// - [PaymentCycle] 支払周期への参照
-    pub fn payment_cycle(&self) -> &PaymentCycle { &self.payment_cycle }
+    pub fn payment_cycle(&self) -> &PaymentCycle {
+        &self.payment_cycle
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use rust_decimal::Decimal;
     use super::*;
+    use rust_decimal::Decimal;
 
     #[test]
     fn test_subscribe_new_success() {
@@ -139,6 +158,9 @@ mod tests {
         let amount = Amount::try_from(Decimal::ONE_HUNDRED).unwrap();
         let result = Subscribe::from(id, user_id, name, amount, PaymentCycle::Yearly);
         assert!(!result.subscribe_id.to_string().is_empty());
-        assert_eq!(format!("SUBSCRIBE-{}", id.to_string()), result.subscribe_id.to_string())
+        assert_eq!(
+            format!("SUBSCRIBE-{}", id.to_string()),
+            result.subscribe_id.to_string()
+        )
     }
 }
