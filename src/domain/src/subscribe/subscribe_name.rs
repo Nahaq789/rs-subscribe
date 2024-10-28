@@ -3,7 +3,7 @@ use std::str::FromStr;
 use thiserror::Error;
 
 /// サブスクリプションの名前を表す値オブジェクト
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SubscribeName(String);
 
 /// サブスクリプション名に関するエラー
