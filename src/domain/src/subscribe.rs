@@ -261,7 +261,7 @@ impl Subscribe {
     /// ステータスを取得する
     ///
     /// # 戻り値
-    /// - [u8] ステータス
+    /// - [SubscribeStatus] ステータス
     pub fn status(&self) -> &SubscribeStatus {
         &self.status
     }
