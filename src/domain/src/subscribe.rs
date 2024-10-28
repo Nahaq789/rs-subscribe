@@ -344,6 +344,7 @@ mod tests {
         let user_id = UserId::new();
         let name = SubscribeName::new("hoge").unwrap();
         let amount = Amount::try_from(Decimal::ONE_HUNDRED).unwrap();
+        let payment_cycle = PaymentCycle::Monthly;
         let now = Utc::now();
         let category_id = 1;
         let icon_path = String::from("/path/to/icon");
@@ -357,7 +358,7 @@ mod tests {
             user_id.clone(),
             name.clone(),
             amount.clone(),
-            PaymentCycle::Monthly,
+            payment_cycle.clone(),
             category_id,
             icon_path.clone(),
             notification,
@@ -375,6 +376,7 @@ mod tests {
         assert_eq!(subscribe.user_id(), &user_id);
         assert_eq!(subscribe.name(), &name);
         assert_eq!(subscribe.amount(), &amount);
+        assert_eq!(subscribe.payment_cycle(), &payment_cycle);
         assert_eq!(subscribe.category_id(), category_id);
         assert_eq!(subscribe.icon_local_path(), &icon_path);
         assert_eq!(subscribe.notification(), notification);

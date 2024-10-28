@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum PaymentCycle {
     Monthly,
     Yearly,
