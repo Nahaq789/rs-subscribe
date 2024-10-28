@@ -1,5 +1,5 @@
-use chrono::{DateTime, Utc};
 use crate::user::user_id::UserId;
+use chrono::{DateTime, Utc};
 
 pub mod user_id;
 
@@ -16,7 +16,7 @@ pub struct User {
     created_at: DateTime<Utc>,
 
     /// ユーザー情報の最終更新日時（UTC）
-    updated_at: DateTime<Utc>
+    updated_at: DateTime<Utc>,
 }
 
 impl User {
@@ -51,7 +51,7 @@ impl User {
         user_id: UserId,
         country_id: i32,
         created_at: DateTime<Utc>,
-        updated_at: DateTime<Utc>
+        updated_at: DateTime<Utc>,
     ) -> Self {
         Self {
             user_id,
@@ -116,12 +116,7 @@ mod tests {
         let created_at = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
         let updated_at = Utc.with_ymd_and_hms(2024, 1, 2, 0, 0, 0).unwrap();
 
-        let result = User::from(
-            user_id.clone(),
-            country_id,
-            created_at,
-            updated_at
-        );
+        let result = User::from(user_id.clone(), country_id, created_at, updated_at);
 
         assert_eq!(&user_id, result.user_id());
         assert_eq!(country_id, result.country_id());
@@ -136,12 +131,7 @@ mod tests {
         let created_at = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
         let updated_at = Utc.with_ymd_and_hms(2024, 1, 2, 0, 0, 0).unwrap();
 
-        let user = User::from(
-            user_id.clone(),
-            country_id,
-            created_at,
-            updated_at
-        );
+        let user = User::from(user_id.clone(), country_id, created_at, updated_at);
 
         assert_eq!(&user_id, user.user_id());
         assert_eq!(country_id, user.country_id());
