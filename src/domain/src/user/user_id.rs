@@ -2,33 +2,33 @@ use crate::AggregateId;
 use std::fmt::{Display, Formatter};
 use uuid::Uuid;
 
-/// サブスクの一意識別子を表す構造体
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct SubscribeId {
+/// ユーザーの一意識別子を表す構造体
+#[derive(Debug, Clone)]
+pub struct UserId {
     /// UUIDの値
     value: Uuid,
 }
 
-const SUBSCRIBE_PREFIX: &str = "SUBSCRIBE";
+const USER_PREFIX: &str = "USER";
 
-impl SubscribeId {
-    /// 新しいサブスクIDを生成する
+impl UserId {
+    /// 新しいユーザーIDを生成する
     ///
     /// # 戻り値
-    /// - [SubscribeId] 生成されたサブスクID
+    /// - [UserId] 生成されたユーザーID
     pub fn new() -> Self {
         let value = Self::generate_id();
         Self { value }
     }
 }
 
-impl AggregateId for SubscribeId {
+impl AggregateId for UserId {
     /// プレフィックスを取得する
     ///
     /// # 戻り値
-    /// - [String] "SUBSCRIBE"という文字列
+    /// - [String] "USER"という文字列
     fn type_name(&self) -> String {
-        SUBSCRIBE_PREFIX.to_string()
+        USER_PREFIX.to_string()
     }
 
     /// IDの値を取得する
@@ -48,20 +48,20 @@ impl AggregateId for SubscribeId {
     }
 }
 
-impl From<Uuid> for SubscribeId {
-    /// UUIDからサブスクIDを生成する
+impl From<Uuid> for UserId {
+    /// UUIDからユーザーIDを生成する
     ///
     /// # 引数
     /// * `value` - [Uuid] 変換元のUUID
     ///
     /// # 戻り値
-    /// - [SubscribeId] 生成されたサブスクID
+    /// - [UserId] 生成されたユーザーID
     fn from(value: Uuid) -> Self {
         Self { value }
     }
 }
 
-impl Display for SubscribeId {
+impl Display for UserId {
     /// 文字列表現を取得する
     ///
     /// # 引数
