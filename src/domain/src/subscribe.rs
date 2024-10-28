@@ -1,11 +1,11 @@
-use chrono::{DateTime, Utc};
 use crate::payment_cycle::PaymentCycle;
 use crate::subscribe::subscribe_id::SubscribeId;
 use crate::subscribe::subscribe_name::SubscribeName;
 use crate::user::user_id::UserId;
 use crate::value_object::amount::Amount;
-use rust_decimal::Decimal;
+use chrono::{DateTime, Utc};
 use rust_decimal::prelude::Zero;
+use rust_decimal::Decimal;
 use uuid::Uuid;
 
 mod subscribe_error;
@@ -52,7 +52,7 @@ pub struct Subscribe {
     status: u8,
 
     /// メモ欄
-    memo: String
+    memo: String,
 }
 
 impl Subscribe {
@@ -215,57 +215,73 @@ impl Subscribe {
     ///
     /// # 戻り値
     /// - [i32] カテゴリIDへの参照
-    pub fn category_id(&self) -> &i32 { &self.category_id }
+    pub fn category_id(&self) -> &i32 {
+        &self.category_id
+    }
 
     /// アイコンのローカルパスを取得する
     ///
     /// # 戻り値
     /// - [String] アイコンのローカルパスへの参照
-    pub fn icon_local_path(&self) -> &String { &self.icon_local_path }
+    pub fn icon_local_path(&self) -> &String {
+        &self.icon_local_path
+    }
 
     /// 通知設定を取得する
     ///
     /// # 戻り値
     /// - [bool] 通知設定
-    pub fn notification(&self) -> bool { self.notification }
+    pub fn notification(&self) -> bool {
+        self.notification
+    }
 
     /// 初回支払日を取得する
     ///
     /// # 戻り値
     /// - [DateTime<Utc>] 初回支払日への参照
-    pub fn first_payment_date(&self) -> &DateTime<Utc> { &self.first_payment_date }
+    pub fn first_payment_date(&self) -> &DateTime<Utc> {
+        &self.first_payment_date
+    }
 
     /// 次回支払予定日を取得する
     ///
     /// # 戻り値
     /// - [DateTime<Utc>] 次回支払予定日への参照
-    pub fn next_payment_date(&self) -> &DateTime<Utc> { &self.next_payment_date }
+    pub fn next_payment_date(&self) -> &DateTime<Utc> {
+        &self.next_payment_date
+    }
 
     /// 自動更新フラグを取得する
     ///
     /// # 戻り値
     /// - [bool] 自動更新フラグ
-    pub fn auto_renewal(&self) -> bool { self.auto_renewal }
+    pub fn auto_renewal(&self) -> bool {
+        self.auto_renewal
+    }
 
     /// ステータスを取得する
     ///
     /// # 戻り値
     /// - [u8] ステータス
-    pub fn status(&self) -> u8 { self.status }
+    pub fn status(&self) -> u8 {
+        self.status
+    }
 
     /// メモを取得する
     ///
     /// # 戻り値
     /// - [String] メモへの参照
-    pub fn memo(&self) -> &String { &self.memo }
+    pub fn memo(&self) -> &String {
+        &self.memo
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rust_decimal::Decimal;
-    use chrono::Utc;
     use crate::AggregateId;
+    use chrono::Utc;
+    use rust_decimal::Decimal;
 
     #[test]
     fn test_subscribe_new_success() {
@@ -353,7 +369,10 @@ mod tests {
             memo.clone(),
         );
 
-        assert_eq!(subscribe.subscribe_id().value().as_str(), &subscribe_id.to_string());
+        assert_eq!(
+            subscribe.subscribe_id().value().as_str(),
+            &subscribe_id.to_string()
+        );
         assert_eq!(subscribe.user_id(), &user_id);
         assert_eq!(subscribe.name(), &name);
         assert_eq!(subscribe.amount(), &amount);
