@@ -1,16 +1,17 @@
 use crate::payment_cycle::PaymentCycle;
 use crate::subscribe::subscribe_id::SubscribeId;
 use crate::subscribe::subscribe_name::SubscribeName;
+use crate::subscribe::subscribe_status::SubscribeStatus;
 use crate::user::user_id::UserId;
 use crate::value_object::amount::Amount;
 use chrono::{DateTime, Utc};
-use rust_decimal::prelude::Zero;
 use rust_decimal::Decimal;
 use uuid::Uuid;
 
 mod subscribe_error;
 pub mod subscribe_id;
 mod subscribe_name;
+mod subscribe_status;
 
 /// サブスク情報を管理する構造体
 #[derive(Debug)]
@@ -49,7 +50,7 @@ pub struct Subscribe {
     auto_renewal: bool,
 
     /// ステータス
-    status: u8,
+    status: SubscribeStatus,
 
     /// メモ欄
     memo: String,
@@ -69,7 +70,7 @@ impl Subscribe {
     /// * `first_payment_date` - 初回支払日
     /// * `next_payment_date` - 次回支払予定日
     /// * `auto_renewal` - 自動更新フラグ
-    /// * `status` - ステータス
+    /// * `status` - [SubscribeStatus] ステータス
     /// * `memo` - メモ欄
     ///
     /// # 戻り値
@@ -85,12 +86,11 @@ impl Subscribe {
         first_payment_date: DateTime<Utc>,
         next_payment_date: DateTime<Utc>,
         auto_renewal: bool,
-        status: u8,
+        status: SubscribeStatus,
         memo: String,
     ) -> Self {
         let id = SubscribeId::new();
         let amount = Self::yearly_amount_per_monthly(amount, &payment_cycle);
-        let status = if status.is_zero() { 1 } else { status };
         Self {
             subscribe_id: id,
             user_id,
@@ -122,7 +122,7 @@ impl Subscribe {
     /// * `first_payment_date` - 初回支払日
     /// * `next_payment_date` - 次回支払予定日
     /// * `auto_renewal` - 自動更新フラグ
-    /// * `status` - ステータス
+    /// * `status` - [SubscribeStatus] ステータス
     /// * `memo` - メモ欄
     ///
     /// # 戻り値
@@ -139,11 +139,10 @@ impl Subscribe {
         first_payment_date: DateTime<Utc>,
         next_payment_date: DateTime<Utc>,
         auto_renewal: bool,
-        status: u8,
+        status: SubscribeStatus,
         memo: String,
     ) -> Self {
         let amount = Self::yearly_amount_per_monthly(amount, &payment_cycle);
-        let status = if status.is_zero() { 1 } else { status };
         Self {
             subscribe_id: SubscribeId::from(subscribe_id),
             user_id,
@@ -215,8 +214,8 @@ impl Subscribe {
     ///
     /// # 戻り値
     /// - [i32] カテゴリIDへの参照
-    pub fn category_id(&self) -> &i32 {
-        &self.category_id
+    pub fn category_id(&self) -> i32 {
+        self.category_id
     }
 
     /// アイコンのローカルパスを取得する
@@ -263,8 +262,8 @@ impl Subscribe {
     ///
     /// # 戻り値
     /// - [u8] ステータス
-    pub fn status(&self) -> u8 {
-        self.status
+    pub fn status(&self) -> &SubscribeStatus {
+        &self.status
     }
 
     /// メモを取得する
@@ -301,7 +300,7 @@ mod tests {
             now,
             now,
             true,
-            1,
+            SubscribeStatus::ACTIVE,
             String::from("テストメモ"),
         );
 
@@ -328,7 +327,7 @@ mod tests {
             now,
             now,
             true,
-            1,
+            SubscribeStatus::ACTIVE,
             String::from("テストメモ"),
         );
 
@@ -350,7 +349,7 @@ mod tests {
         let icon_path = String::from("/path/to/icon");
         let notification = true;
         let auto_renewal = true;
-        let status = 1;
+        let status = SubscribeStatus::ACTIVE;
         let memo = String::from("テストメモ");
 
         let subscribe = Subscribe::from(
@@ -365,7 +364,7 @@ mod tests {
             now,
             now,
             auto_renewal,
-            status,
+            status.clone(),
             memo.clone(),
         );
 
@@ -376,13 +375,13 @@ mod tests {
         assert_eq!(subscribe.user_id(), &user_id);
         assert_eq!(subscribe.name(), &name);
         assert_eq!(subscribe.amount(), &amount);
-        assert_eq!(subscribe.category_id(), &category_id);
+        assert_eq!(subscribe.category_id(), category_id);
         assert_eq!(subscribe.icon_local_path(), &icon_path);
         assert_eq!(subscribe.notification(), notification);
         assert_eq!(subscribe.first_payment_date(), &now);
         assert_eq!(subscribe.next_payment_date(), &now);
         assert_eq!(subscribe.auto_renewal(), auto_renewal);
-        assert_eq!(subscribe.status(), status);
+        assert_eq!(subscribe.status(), &status);
         assert_eq!(subscribe.memo(), &memo);
     }
 }
