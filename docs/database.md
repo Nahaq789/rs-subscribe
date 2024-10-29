@@ -55,7 +55,6 @@
 ```json
 {
   "paymentMethodId": "pay123", // Partition Key
-  "paymentDetailId": "detail123", // 支払方法詳細ID
   "name": "クレジットカード"    // 支払方法名
 }
 ```
@@ -64,6 +63,7 @@
 ```json
 {
   "paymentDetailId": "detail123", // Partition Key
+  "paymentMethodId": "pay123", // 支払方法ID
   "name": "Visa",               // カード会社名等
   "additionalName": "楽天カード" // 追加名称（Null許容）
 }
