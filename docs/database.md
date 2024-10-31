@@ -61,7 +61,7 @@
   "paymentMethodId": "pay_987f6543-e89b-12d3-a456-426614174000", // Partition Key
   "methodName": "CREDIT_CARD",
   "detailName": "Visa",
-  "additionalName": "楽天カード"
+  "additionalName": "楽天カード",
   "createdAt": "2024-10-24T10:00:00Z",
   "updatedAt": "2024-10-24T10:00:00Z"
 }
