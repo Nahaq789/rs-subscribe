@@ -3,10 +3,10 @@
 ## ユーザーテーブル
 ```json
 {
-  "userId": "user123",    // Partition Key（CognitoのユーザーID）
+  "userId": "usr_550e8400-e29b-41d4-a716-446655440000",  // Partition Key
   "countryId": 1,        // Integer
-  "createdAt": "2024-10-24",
-  "updatedAt": "2024-10-24"
+  "createdAt": "2024-10-24T10:00:00Z",  // ISO 8601
+  "updatedAt": "2024-10-24T10:00:00Z"   // ISO 8601
 }
 ```
 
@@ -14,7 +14,7 @@
 ```json
 {
   "countryId": 1,         // Partition Key (Integer)
-  "countryCode": "JP",    // 国コード（ISO 3166-1 alpha-2）
+  "countryCode": "JP",    // ISO 3166-1 alpha-2
   "countryName": "日本",
   "currencyCode": "JPY",  // ISO 4217
   "currencySymbol": "¥",
@@ -25,46 +25,44 @@
 ## サブスクテーブル
 ```json
 {
-  "subscriptionId": "sub123", // Partition Key
-  "userId": "user123",      // ユーザーID
-  "name": "Netflix",        // サブスク名
-  "paymentMethodId": "pay123", // 支払方法ID
-  "amount": 1980,          // 金額
-  "paymentCycle": "MONTHLY", // 支払周期
-  "categoryId": "cat123",   // カテゴリID
-  "iconLocalPath": "subscription_sub123", // アイコンのローカルパス
-  "notification": true,     // 通知設定
-  "firstPaymentDate": "2024-01-01", // 初回支払日
-  "nextPaymentDate": "2024-11-01", // 次回支払予定日
-  "autoRenewal": true,     // 自動更新フラグ
-  "status": 1,      // ステータス（1: ACTIVE/2: PAUSED/3: CANCELLED）
-  "memo": "家族プラン"      // メモ欄
+  "userId": "usr_550e8400-e29b-41d4-a716-446655440000",      // Partition Key
+  "subscriptionId": "sub_123e4567-e89b-12d3-a456-426614174000", // Sort Key
+  "name": "Netflix",
+  "paymentMethodId": "pay_987f6543-e89b-12d3-a456-426614174000",
+  "amount": 1980,          // Integer
+  "paymentCycle": "MONTHLY", // MONTHLY, YEARLY, etc
+  "categoryId": "cat_abc12345-e89b-12d3-a456-426614174000",
+  "iconLocalPath": "subscription_sub123",
+  "notification": true,     // Boolean
+  "firstPaymentDate": "2024-01-01T00:00:00Z",
+  "nextPaymentDate": "2024-11-01T00:00:00Z",
+  "autoRenewal": true,     // Boolean
+  "status": 1,             // 1: 利用中, 2: 一時停止, 3: 解約
+  "memo": "家族プラン",
+  "createdAt": "2024-10-24T10:00:00Z",
+  "updatedAt": "2024-10-24T10:00:00Z"
 }
 ```
 
 ## カテゴリテーブル
 ```json
 {
-  "categoryId": "cat123", // Partition Key
-  "sortOrder": 1,        // ソート番号
-  "name": "動画配信"      // カテゴリ名
+  "categoryId": "cat_abc12345-e89b-12d3-a456-426614174000", // Partition Key
+  "sortOrder": 1,        // Integer
+  "name": "動画配信",
+  "createdAt": "2024-10-24T10:00:00Z",
+  "updatedAt": "2024-10-24T10:00:00Z"
 }
 ```
 
 ## 支払方法テーブル
 ```json
 {
-  "paymentMethodId": "pay123", // Partition Key
-  "paymentDetailId": "detail123", // 支払方法詳細ID
-  "name": "クレジットカード"    // 支払方法名
-}
-```
-
-## 支払方法詳細テーブル
-```json
-{
-  "paymentDetailId": "detail123", // Partition Key
-  "name": "Visa",               // カード会社名等
-  "additionalName": "楽天カード" // 追加名称（Null許容）
+  "paymentMethodId": "pay_987f6543-e89b-12d3-a456-426614174000", // Partition Key
+  "methodName": "CREDIT_CARD",
+  "detailName": "Visa",
+  "additionalName": "楽天カード",
+  "createdAt": "2024-10-24T10:00:00Z",
+  "updatedAt": "2024-10-24T10:00:00Z"
 }
 ```
