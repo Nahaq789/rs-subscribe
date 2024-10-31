@@ -1,6 +1,10 @@
+use std::str;
+
+use thiserror::Error;
 use uuid::Uuid;
 
-mod payment_cycle;
+mod payment;
+pub mod payment_cycle;
 pub mod subscribe;
 pub mod user;
 mod value_object;
@@ -14,6 +18,27 @@ mod value_object;
 /// - generate_id: Uuidを生成します
 pub trait AggregateId {
     fn type_name(&self) -> String;
-    fn value(&self) -> String;
-    fn generate_id() -> Uuid;
+    fn value(&self) -> &String;
+}
+
+#[derive(Debug, Error)]
+pub enum AggregateIdError {
+    #[error("It is not in the prefix + UUID format.")]
+    InvalidFormat,
+
+    #[error("Invalid UUID format")]
+    InvalidUuid,
+}
+
+pub fn generate_id(p: &str, u: Option<Uuid>) -> String {
+    match u {
+        Some(u) => {
+            let value = Uuid::from(u);
+            format!("{}_{}", p, value)
+        }
+        None => {
+            let value = Uuid::new_v4();
+            format!("{}_{}", p, value)
+        }
+    }
 }

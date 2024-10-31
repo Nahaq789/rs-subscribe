@@ -333,7 +333,7 @@ mod tests {
 
         assert!(!result.subscribe_id.to_string().is_empty());
         assert_eq!(
-            format!("SUBSCRIBE-{}", id.to_string()),
+            format!("sub_{}", id.to_string()),
             result.subscribe_id.to_string()
         )
     }
@@ -371,7 +371,7 @@ mod tests {
 
         assert_eq!(
             subscribe.subscribe_id().value().as_str(),
-            &subscribe_id.to_string()
+            format!("sub_{}", &subscribe_id.to_string())
         );
         assert_eq!(subscribe.user_id(), &user_id);
         assert_eq!(subscribe.name(), &name);
