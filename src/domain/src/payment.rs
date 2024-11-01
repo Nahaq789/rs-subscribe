@@ -1,4 +1,4 @@
-mod payment_method_id;
+pub mod payment_method_id;
 
 use chrono::{DateTime, Utc};
 use payment_method_id::PaymentMethodId;
