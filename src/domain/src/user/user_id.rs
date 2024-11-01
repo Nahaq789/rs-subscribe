@@ -11,7 +11,7 @@ use uuid::Uuid;
 /// 例: "usr_550e8400-e29b-41d4-a716-446655440000"
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct UserId {
-    /// UUIDの値
+    /// UUIDの文字列
     value: String,
 }
 
@@ -34,7 +34,7 @@ impl AggregateId for UserId {
     /// プレフィックスを取得する
     ///
     /// # 戻り値
-    /// - [String] "USER"という文字列
+    /// - [String] "pay"という文字列
     fn type_name(&self) -> String {
         USER_PREFIX.to_string()
     }
