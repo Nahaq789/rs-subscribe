@@ -1,9 +1,9 @@
-use crate::payment_cycle::PaymentCycle;
 use crate::subscribe::subscribe_id::SubscribeId;
 use crate::subscribe::subscribe_name::SubscribeName;
 use crate::subscribe::subscribe_status::SubscribeStatus;
 use crate::user::user_id::UserId;
 use crate::value_object::amount::Amount;
+use crate::{payment::payment_method_id::PaymentMethodId, payment_cycle::PaymentCycle};
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use uuid::Uuid;
@@ -24,6 +24,9 @@ pub struct Subscribe {
 
     /// サブスク名
     name: SubscribeName,
+
+    /// 支払方法ID
+    payment_method_id: PaymentMethodId,
 
     /// 金額
     amount: Amount,
@@ -62,6 +65,7 @@ impl Subscribe {
     /// # 引数
     /// * `user_id` - [UserId] サブスクを作成するユーザーのID
     /// * `name` - [SubscribeName] サブスク名
+    /// * `payment_method_id` - [PaymentMethodId] 支払方法ID
     /// * `amount` - [Amount] 金額
     /// * `payment_cycle` - [PaymentCycle] 支払周期
     /// * `category_id` - カテゴリID
@@ -78,6 +82,7 @@ impl Subscribe {
     pub fn new(
         user_id: UserId,
         name: SubscribeName,
+        payment_method_id: PaymentMethodId,
         amount: Amount,
         payment_cycle: PaymentCycle,
         category_id: i32,
@@ -95,6 +100,7 @@ impl Subscribe {
             subscribe_id: id,
             user_id,
             name,
+            payment_method_id,
             amount,
             payment_cycle,
             category_id,
@@ -113,6 +119,7 @@ impl Subscribe {
     /// # 引数
     /// * `subscribe_id` - [SubscribeId] 既存のサブスクID
     /// * `user_id` - [UserId] サブスクに紐づくユーザーID
+    /// * `payment_method_id` - [PaymentMethodId] 支払方法ID
     /// * `name` - [SubscribeName] サブスク名
     /// * `amount` - [Amount] 金額
     /// * `payment_cycle` - [PaymentCycle] 支払周期
@@ -131,6 +138,7 @@ impl Subscribe {
         subscribe_id: Uuid,
         user_id: UserId,
         name: SubscribeName,
+        payment_method_id: PaymentMethodId,
         amount: Amount,
         payment_cycle: PaymentCycle,
         category_id: i32,
@@ -147,6 +155,7 @@ impl Subscribe {
             subscribe_id: SubscribeId::from(subscribe_id),
             user_id,
             name,
+            payment_method_id,
             amount,
             payment_cycle,
             category_id,
@@ -192,6 +201,14 @@ impl Subscribe {
     /// - [SubscribeName] サブスク名への参照
     pub fn name(&self) -> &SubscribeName {
         &self.name
+    }
+
+    /// 支払方法IDを取得する
+    ///
+    /// # 戻り値
+    /// - [PaymentMethodId] 支払方法IDへの参照
+    pub fn payment_method_id(&self) -> &PaymentMethodId {
+        &self.payment_method_id
     }
 
     /// 金額を取得する
@@ -280,18 +297,21 @@ mod tests {
     use super::*;
     use crate::AggregateId;
     use chrono::Utc;
+    use rstest::rstest;
     use rust_decimal::Decimal;
 
     #[test]
     fn test_subscribe_new_success() {
         let user_id = UserId::new();
         let name = SubscribeName::new("hoge").unwrap();
+        let payment_method_id = PaymentMethodId::new();
         let amount = Amount::try_from(Decimal::ONE_HUNDRED).unwrap();
         let now = Utc::now();
 
         let result = Subscribe::new(
             user_id,
             name,
+            payment_method_id,
             amount,
             PaymentCycle::Monthly,
             1,
@@ -312,6 +332,7 @@ mod tests {
         let id = Uuid::new_v4();
         let user_id = UserId::new();
         let name = SubscribeName::new("hoge").unwrap();
+        let payment_method_id = PaymentMethodId::new();
         let amount = Amount::try_from(Decimal::ONE_HUNDRED).unwrap();
         let now = Utc::now();
 
@@ -319,6 +340,7 @@ mod tests {
             id,
             user_id,
             name,
+            payment_method_id,
             amount,
             PaymentCycle::Yearly,
             1,
@@ -343,6 +365,7 @@ mod tests {
         let subscribe_id = Uuid::new_v4();
         let user_id = UserId::new();
         let name = SubscribeName::new("hoge").unwrap();
+        let payment_method_id = PaymentMethodId::new();
         let amount = Amount::try_from(Decimal::ONE_HUNDRED).unwrap();
         let payment_cycle = PaymentCycle::Monthly;
         let now = Utc::now();
@@ -357,6 +380,7 @@ mod tests {
             subscribe_id.clone(),
             user_id.clone(),
             name.clone(),
+            payment_method_id.clone(),
             amount.clone(),
             payment_cycle.clone(),
             category_id,
@@ -376,6 +400,7 @@ mod tests {
         assert_eq!(subscribe.user_id(), &user_id);
         assert_eq!(subscribe.name(), &name);
         assert_eq!(subscribe.amount(), &amount);
+        assert_eq!(subscribe.payment_method_id(), &payment_method_id);
         assert_eq!(subscribe.payment_cycle(), &payment_cycle);
         assert_eq!(subscribe.category_id(), category_id);
         assert_eq!(subscribe.icon_local_path(), &icon_path);
@@ -385,5 +410,24 @@ mod tests {
         assert_eq!(subscribe.auto_renewal(), auto_renewal);
         assert_eq!(subscribe.status(), &status);
         assert_eq!(subscribe.memo(), &memo);
+    }
+
+    #[rstest]
+    #[case(1000, PaymentCycle::Yearly)]
+    #[case(1000, PaymentCycle::Monthly)]
+    fn test_yearly_amount_per_monthly(#[case] a: i32, #[case] b: PaymentCycle) {
+        let dec = Decimal::from(a);
+        let amount = Amount::try_from(dec).unwrap();
+        let result = Subscribe::yearly_amount_per_monthly(amount, &b);
+
+        match b {
+            PaymentCycle::Monthly => {
+                assert_eq!(result.value(), &dec)
+            }
+            PaymentCycle::Yearly => {
+                let u = dec / Decimal::from(12);
+                assert_eq!(result.value(), &u)
+            }
+        }
     }
 }
