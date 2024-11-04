@@ -1,204 +1,321 @@
 use std::fmt;
 use thiserror::Error;
 
-#[derive(Debug)]
-pub struct PaymentMethodName {
-    method: PaymentMethodAggregate,
+pub trait PaymentMethodAggregate {
+  fn get_name(&self) -> Result<String, PaymentMethodNameError>;
+  fn try_from(m: &str) -> Result<MethodNameAggregate, PaymentMethodNameError>;
 }
+
+pub trait DetailMethod {}
 
 #[derive(Debug, Error)]
-enum PaymentMethodError {}
-
-impl PaymentMethodName {
-    pub fn new(k: PaymentMethodAggregate) -> Self {
-        Self { method: k }
-    }
-    pub fn get_method_detail_name(&self) -> (String, String) {
-        match &self.method {
-            PaymentMethodAggregate::CreditCard(card) => {
-                (String::from("Credit Card"), card.to_string())
-            }
-            PaymentMethodAggregate::DigitalMoney(money) => {
-                (String::from("Digital Money"), money.to_string())
-            }
-            PaymentMethodAggregate::DebitCard(card) => {
-                (String::from("Debit Card"), card.to_string())
-            }
-            PaymentMethodAggregate::BankTransfer(transfer) => {
-                (String::from("Bank Transfer"), transfer.to_string())
-            }
-            PaymentMethodAggregate::MobilePayment(payment) => {
-                (String::from("Mobile Payment"), payment.to_string())
-            }
-            PaymentMethodAggregate::DigitalWallet(wallet) => {
-                (String::from("Digital Wallet"), wallet.to_string())
-            }
-            PaymentMethodAggregate::BNPL(bnpl) => (String::from("BNPL"), bnpl.to_string()),
-            PaymentMethodAggregate::CarrierBilling(billing) => {
-                (String::from("Carrier Billing"), billing.to_string())
-            }
-        }
-    }
+enum PaymentMethodNameError {
+  #[error("Method name not found: {0}")]
+  MethodNameNotFound(String)
 }
 
-// impl TryFrom<String> for PaymentMethodName {
-//     type Error = PaymentMethodError;
-//
-//     fn try_from(value: String) -> Result<Self, Self::Error> {
-//         match value.as_str() {
-//             "aaa" => PaymentMethodName::new()
-//         }
-//     }
-// }
+#[derive(Debug)]
+pub struct PaymentMethodName {
+  method: Box<dyn PaymentMethodAggregate>,
+
+}
 
 #[derive(Debug)]
-pub enum PaymentMethodAggregate {
-    CreditCard(CreditCard),
-    DigitalMoney(DigitalMoney),
-    DebitCard(DebitCard),
-    BankTransfer(BankTransfer),
-    MobilePayment(MobilePayment),
-    DigitalWallet(DigitalWallet),
-    BNPL(BNPL),
-    CarrierBilling(CarrierBilling),
+pub struct DetailMethodName {
+  detail: Box<dyn DetailMethod>,
+}
+
+impl PaymentMethodName {
+  pub fn new(m: Box<dyn PaymentMethodAggregate>) -> Self {
+    Self { method: m }
+  }
+}
+
+impl DetailMethodName {
+  pub fn new(d: Box<dyn DetailMethod>) -> Self {
+    Self { detail: d }
+  }
+}
+
+#[derive(Debug)]
+pub enum MethodNameAggregate {
+  CreditCard,
+  DigitalMoney,
+  DebitCard,
+  BankTransfer,
+  MobilePayment,
+  DigitalWallet,
+  BNPL,
+  CarrierBilling,
+}
+
+impl PaymentMethodAggregate for MethodNameAggregate {
+  fn get_name(&self) -> Result<String, PaymentMethodNameError> {
+    match self {
+      MethodNameAggregate::CreditCard => Ok(String::from("Credit Card")),
+      MethodNameAggregate::DigitalMoney => Ok(String::from("Digital Money")),
+      MethodNameAggregate::DebitCard => Ok(String::from("Debit Card")),
+      MethodNameAggregate::BankTransfer => Ok(String::from("Bank Transfer")),
+      MethodNameAggregate::MobilePayment => Ok(String::from("Mobile Payment")),
+      MethodNameAggregate::DigitalWallet => Ok(String::from("Digital Wallet")),
+      MethodNameAggregate::BNPL => Ok(String::from("Buy Now Pay Later")),
+      MethodNameAggregate::CarrierBilling => Ok(String::from("Carrier Billing")),
+    }
+  }
+
+  fn try_from(m: &str) -> Result<MethodNameAggregate, PaymentMethodNameError> {
+    match m {
+      "Credit Card" => Ok(MethodNameAggregate::CreditCard),
+      "Digital Money" => Ok(MethodNameAggregate::DigitalMoney),
+      "Debit Card" => Ok(MethodNameAggregate::DebitCard),
+      "Bank Transfer" => Ok(MethodNameAggregate::BankTransfer),
+      "Mobile Payment" => Ok(MethodNameAggregate::MobilePayment),
+      "Digital Wallet" => Ok(MethodNameAggregate::DigitalWallet),
+      "Buy Now Pay Later" => Ok(MethodNameAggregate::BNPL),
+      "Carrier Billing" => Ok(MethodNameAggregate::CarrierBilling),
+      _ => Err(PaymentMethodNameError::MethodNameNotFound(m.to_string())),
+    }
+  }
 }
 
 #[derive(Debug)]
 pub enum CreditCard {
-    Visa,
-    MasterCard,
-    AmericanExpress,
-    JCB,
-    Discover,
-    DinersClub,
+  Visa,
+  MasterCard,
+  AmericanExpress,
+  JCB,
+  Discover,
+  DinersClub,
+}
+
+impl DetailMethod for CreditCard {}
+
+impl TryFrom<&str> for CreditCard {
+  type Error = PaymentMethodNameError;
+
+  fn try_from(value: &str) -> Result<Self, Self::Error> {
+    match value {
+      "Visa" => Ok(CreditCard::Visa),
+      "MasterCard" => Ok(CreditCard::MasterCard),
+      "American Express" => Ok(CreditCard::AmericanExpress),
+      "JCB" => Ok(CreditCard::JCB),
+      "Discover" => Ok(CreditCard::Discover),
+      "Diners Club" => Ok(CreditCard::DinersClub),
+      _ => Err(PaymentMethodNameError::MethodNameNotFound(value.to_string()))
+    }
+  }
 }
 
 impl fmt::Display for CreditCard {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            CreditCard::Visa => write!(f, "Visa"),
-            CreditCard::MasterCard => write!(f, "MasterCard"),
-            CreditCard::AmericanExpress => write!(f, "American Express"),
-            CreditCard::JCB => write!(f, "JCB"),
-            CreditCard::Discover => write!(f, "Discover"),
-            CreditCard::DinersClub => write!(f, "Diners Club"),
-        }
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      CreditCard::Visa => write!(f, "Visa"),
+      CreditCard::MasterCard => write!(f, "MasterCard"),
+      CreditCard::AmericanExpress => write!(f, "American Express"),
+      CreditCard::JCB => write!(f, "JCB"),
+      CreditCard::Discover => write!(f, "Discover"),
+      CreditCard::DinersClub => write!(f, "Diners Club"),
     }
+  }
 }
 
 #[derive(Debug)]
 pub enum DigitalMoney {
-    Suica,
-    Pasmo,
-    Nanaco,
-    Waon,
-    RakutenEdy,
+  Suica,
+  Pasmo,
+  Nanaco,
+  Waon,
+  RakutenEdy,
+}
+
+impl DetailMethod for DigitalMoney {}
+
+impl TryFrom<&str> for DigitalMoney {
+  type Error = PaymentMethodNameError;
+
+  fn try_from(value: &str) -> Result<Self, Self::Error> {
+    match value {
+      "Suica" => Ok(DigitalMoney::Suica),
+      "PASMO" => Ok(DigitalMoney::Pasmo),
+      "nanaco" => Ok(DigitalMoney::Nanaco),
+      "WAON" => Ok(DigitalMoney::Waon),
+      "楽天Edy" => Ok(DigitalMoney::RakutenEdy),
+      _ => Err(PaymentMethodNameError::MethodNameNotFound(value.to_string()))
+    }
+  }
 }
 
 impl fmt::Display for DigitalMoney {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            DigitalMoney::Suica => write!(f, "Suica"),
-            DigitalMoney::Pasmo => write!(f, "PASMO"),
-            DigitalMoney::Nanaco => write!(f, "nanaco"),
-            DigitalMoney::Waon => write!(f, "WAON"),
-            DigitalMoney::RakutenEdy => write!(f, "楽天Edy"),
-        }
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      DigitalMoney::Suica => write!(f, "Suica"),
+      DigitalMoney::Pasmo => write!(f, "PASMO"),
+      DigitalMoney::Nanaco => write!(f, "nanaco"),
+      DigitalMoney::Waon => write!(f, "WAON"),
+      DigitalMoney::RakutenEdy => write!(f, "楽天Edy"),
     }
+  }
 }
 
 // モバイル決済
 #[derive(Debug)]
 pub enum MobilePayment {
-    PayPay,
-    LinePay,
-    MerPay,
-    RakutenPay,
-    DBarai,
-    Venmo,
-    CashApp,
-    Zelle,
-    PayPal,
+  PayPay,
+  LinePay,
+  MerPay,
+  RakutenPay,
+  DBarai,
+  Venmo,
+  CashApp,
+  Zelle,
+  PayPal,
+}
+
+impl DetailMethod for MobilePayment {}
+
+impl TryFrom<&str> for MobilePayment {
+  type Error = PaymentMethodNameError;
+
+  fn try_from(value: &str) -> Result<Self, Self::Error> {
+    match value {
+      "PayPay" => Ok(MobilePayment::PayPay),
+      "LINE Pay" => Ok(MobilePayment::LinePay),
+      "メルペイ" => Ok(MobilePayment::MerPay),
+      "楽天ペイ" => Ok(MobilePayment::RakutenPay),
+      "d払い" => Ok(MobilePayment::DBarai),
+      "Venmo" => Ok(MobilePayment::Venmo),
+      "Cash App" => Ok(MobilePayment::CashApp),
+      "Zelle" => Ok(MobilePayment::Zelle),
+      "PayPal" => Ok(MobilePayment::PayPal),
+      _ => Err(PaymentMethodNameError::MethodNameNotFound(value.to_string()))
+    }
+  }
 }
 
 impl fmt::Display for MobilePayment {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            MobilePayment::PayPay => write!(f, "PayPay"),
-            MobilePayment::LinePay => write!(f, "LINE Pay"),
-            MobilePayment::MerPay => write!(f, "メルペイ"),
-            MobilePayment::RakutenPay => write!(f, "楽天ペイ"),
-            MobilePayment::DBarai => write!(f, "d払い"),
-            MobilePayment::Venmo => write!(f, "Venmo"),
-            MobilePayment::CashApp => write!(f, "Cash App"),
-            MobilePayment::Zelle => write!(f, "Zelle"),
-            MobilePayment::PayPal => write!(f, "PayPal"),
-        }
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      MobilePayment::PayPay => write!(f, "PayPay"),
+      MobilePayment::LinePay => write!(f, "LINE Pay"),
+      MobilePayment::MerPay => write!(f, "メルペイ"),
+      MobilePayment::RakutenPay => write!(f, "楽天ペイ"),
+      MobilePayment::DBarai => write!(f, "d払い"),
+      MobilePayment::Venmo => write!(f, "Venmo"),
+      MobilePayment::CashApp => write!(f, "Cash App"),
+      MobilePayment::Zelle => write!(f, "Zelle"),
+      MobilePayment::PayPal => write!(f, "PayPal"),
     }
+  }
 }
 
 // デジタルウォレット
 #[derive(Debug)]
 pub enum DigitalWallet {
-    ApplePay,
-    GooglePay,
-    AmazonPay,
+  ApplePay,
+  GooglePay,
+  AmazonPay,
+}
+
+impl DetailMethod for DigitalWallet {}
+
+impl TryFrom<&str> for DigitalWallet {
+  type Error = PaymentMethodNameError;
+
+  fn try_from(value: &str) -> Result<Self, Self::Error> {
+    match value {
+      "Apple Pay" => Ok(DigitalWallet::ApplePay),
+      "Google Pay" => Ok(DigitalWallet::GooglePay),
+      "Amazon Pay" => Ok(DigitalWallet::AmazonPay),
+      _ => Err(PaymentMethodNameError::MethodNameNotFound(value.to_string()))
+    }
+  }
 }
 
 impl fmt::Display for DigitalWallet {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            DigitalWallet::ApplePay => write!(f, "Apple Pay"),
-            DigitalWallet::GooglePay => write!(f, "Google Pay"),
-            DigitalWallet::AmazonPay => write!(f, "Amazon Pay"),
-        }
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      DigitalWallet::ApplePay => write!(f, "Apple Pay"),
+      DigitalWallet::GooglePay => write!(f, "Google Pay"),
+      DigitalWallet::AmazonPay => write!(f, "Amazon Pay"),
     }
+  }
 }
 
 // 後払い決済
 #[derive(Debug)]
 pub enum BNPL {
-    Affirm,
-    Klarna,
-    Afterpay,
+  Affirm,
+  Klarna,
+  Afterpay,
+}
+
+impl DetailMethod for BNPL {}
+
+impl TryFrom<&str> for BNPL {
+  type Error = PaymentMethodNameError;
+
+  fn try_from(value: &str) -> Result<Self, Self::Error> {
+    match value {
+      "Affirm" => Ok(BNPL::Affirm),
+      "Klarna" => Ok(BNPL::Klarna),
+      "Afterpay" => Ok(BNPL::Afterpay),
+      _ => Err(PaymentMethodNameError::MethodNameNotFound(value.to_string()))
+    }
+  }
 }
 
 impl fmt::Display for BNPL {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            BNPL::Affirm => write!(f, "Affirm"),
-            BNPL::Klarna => write!(f, "Klarna"),
-            BNPL::Afterpay => write!(f, "Afterpay"),
-        }
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      BNPL::Affirm => write!(f, "Affirm"),
+      BNPL::Klarna => write!(f, "Klarna"),
+      BNPL::Afterpay => write!(f, "Afterpay"),
     }
+  }
 }
 
 // 銀行振込
 #[derive(Debug)]
 pub enum BankTransfer {
-    JapaneseBankTransfer,
-    JapaneseDirectDebit,
-    ACH,
+  JapaneseBankTransfer,
+  JapaneseDirectDebit,
+  ACH,
+}
+
+impl DetailMethod for BankTransfer {}
+
+impl TryFrom<&str> for BankTransfer {
+  type Error = PaymentMethodNameError;
+
+  fn try_from(value: &str) -> Result<Self, Self::Error> {
+    match value {
+      "銀行振込" => Ok(BankTransfer::JapaneseBankTransfer),
+      "口座振替" => Ok(BankTransfer::JapaneseDirectDebit),
+      "ACH Transfer" => Ok(BankTransfer::ACH),
+      _ => Err(PaymentMethodNameError::MethodNameNotFound(value.to_string()))
+    }
+  }
 }
 
 impl fmt::Display for BankTransfer {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            BankTransfer::JapaneseBankTransfer => write!(f, "銀行振込"),
-            BankTransfer::JapaneseDirectDebit => write!(f, "口座振替"),
-            BankTransfer::ACH => write!(f, "ACH Transfer"),
-        }
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      BankTransfer::JapaneseBankTransfer => write!(f, "銀行振込"),
+      BankTransfer::JapaneseDirectDebit => write!(f, "口座振替"),
+      BankTransfer::ACH => write!(f, "ACH Transfer"),
     }
+  }
 }
 
 // デビットカード
 #[derive(Debug)]
 pub enum DebitCard {}
+impl DetailMethod for DebitCard {}
 
 impl fmt::Display for DebitCard {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "デビットカード")
-    }
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "デビットカード")
+  }
 }
 
 // キャリア決済
@@ -206,137 +323,10 @@ impl fmt::Display for DebitCard {
 pub enum CarrierBilling {}
 
 impl fmt::Display for CarrierBilling {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "キャリア決済")
-    }
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "キャリア決済")
+  }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_credit_card_methods() {
-        let test_cases = vec![
-            (CreditCard::Visa, "Credit Card", "Visa"),
-            (CreditCard::MasterCard, "Credit Card", "MasterCard"),
-            (
-                CreditCard::AmericanExpress,
-                "Credit Card",
-                "American Express",
-            ),
-            (CreditCard::JCB, "Credit Card", "JCB"),
-            (CreditCard::Discover, "Credit Card", "Discover"),
-            (CreditCard::DinersClub, "Credit Card", "Diners Club"),
-        ];
-
-        for (card, expected_method, expected_detail) in test_cases {
-            let result = PaymentMethodName::new(PaymentMethodAggregate::CreditCard(card));
-            assert_eq!(
-                (expected_method.to_string(), expected_detail.to_string()),
-                result.get_method_detail_name()
-            );
-        }
-    }
-
-    #[test]
-    fn test_digital_money_methods() {
-        let test_cases = vec![
-            (DigitalMoney::Suica, "Digital Money", "Suica"),
-            (DigitalMoney::Pasmo, "Digital Money", "PASMO"),
-            (DigitalMoney::Nanaco, "Digital Money", "nanaco"),
-            (DigitalMoney::Waon, "Digital Money", "WAON"),
-            (DigitalMoney::RakutenEdy, "Digital Money", "楽天Edy"),
-        ];
-
-        for (money, expected_method, expected_detail) in test_cases {
-            let result = PaymentMethodName::new(PaymentMethodAggregate::DigitalMoney(money));
-            assert_eq!(
-                (expected_method.to_string(), expected_detail.to_string()),
-                result.get_method_detail_name()
-            );
-        }
-    }
-
-    #[test]
-    fn test_mobile_payment_methods() {
-        let test_cases = vec![
-            (MobilePayment::PayPay, "Mobile Payment", "PayPay"),
-            (MobilePayment::LinePay, "Mobile Payment", "LINE Pay"),
-            (MobilePayment::MerPay, "Mobile Payment", "メルペイ"),
-            (MobilePayment::RakutenPay, "Mobile Payment", "楽天ペイ"),
-            (MobilePayment::DBarai, "Mobile Payment", "d払い"),
-            (MobilePayment::Venmo, "Mobile Payment", "Venmo"),
-            (MobilePayment::CashApp, "Mobile Payment", "Cash App"),
-            (MobilePayment::Zelle, "Mobile Payment", "Zelle"),
-            (MobilePayment::PayPal, "Mobile Payment", "PayPal"),
-        ];
-
-        for (payment, expected_method, expected_detail) in test_cases {
-            let result = PaymentMethodName::new(PaymentMethodAggregate::MobilePayment(payment));
-            assert_eq!(
-                (expected_method.to_string(), expected_detail.to_string()),
-                result.get_method_detail_name()
-            );
-        }
-    }
-
-    #[test]
-    fn test_digital_wallet_methods() {
-        let test_cases = vec![
-            (DigitalWallet::ApplePay, "Digital Wallet", "Apple Pay"),
-            (DigitalWallet::GooglePay, "Digital Wallet", "Google Pay"),
-            (DigitalWallet::AmazonPay, "Digital Wallet", "Amazon Pay"),
-        ];
-
-        for (wallet, expected_method, expected_detail) in test_cases {
-            let result = PaymentMethodName::new(PaymentMethodAggregate::DigitalWallet(wallet));
-            assert_eq!(
-                (expected_method.to_string(), expected_detail.to_string()),
-                result.get_method_detail_name()
-            );
-        }
-    }
-
-    #[test]
-    fn test_bnpl_methods() {
-        let test_cases = vec![
-            (BNPL::Affirm, "BNPL", "Affirm"),
-            (BNPL::Klarna, "BNPL", "Klarna"),
-            (BNPL::Afterpay, "BNPL", "Afterpay"),
-        ];
-
-        for (bnpl, expected_method, expected_detail) in test_cases {
-            let result = PaymentMethodName::new(PaymentMethodAggregate::BNPL(bnpl));
-            assert_eq!(
-                (expected_method.to_string(), expected_detail.to_string()),
-                result.get_method_detail_name()
-            );
-        }
-    }
-
-    #[test]
-    fn test_bank_transfer_methods() {
-        let test_cases = vec![
-            (
-                BankTransfer::JapaneseBankTransfer,
-                "Bank Transfer",
-                "銀行振込",
-            ),
-            (
-                BankTransfer::JapaneseDirectDebit,
-                "Bank Transfer",
-                "口座振替",
-            ),
-            (BankTransfer::ACH, "Bank Transfer", "ACH Transfer"),
-        ];
-
-        for (transfer, expected_method, expected_detail) in test_cases {
-            let result = PaymentMethodName::new(PaymentMethodAggregate::BankTransfer(transfer));
-            assert_eq!(
-                (expected_method.to_string(), expected_detail.to_string()),
-                result.get_method_detail_name()
-            );
-        }
-    }
-}
+mod tests {}
