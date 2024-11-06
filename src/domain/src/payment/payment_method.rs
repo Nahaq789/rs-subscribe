@@ -4,8 +4,8 @@ use thiserror::Error;
 pub trait PaymentMethodAggregate: Debug + Display {
     fn clone_box(&self) -> Box<dyn PaymentMethodAggregate>;
 }
-pub trait DetailMethod: Debug + Display {
-    fn clone_box(&self) -> Box<dyn DetailMethod>;
+pub trait DetailMethodAggregate: Debug + Display {
+    fn clone_box(&self) -> Box<dyn DetailMethodAggregate>;
 }
 
 #[derive(Debug, Error)]
@@ -21,7 +21,7 @@ pub struct PaymentMethodName {
 
 #[derive(Debug)]
 pub struct DetailMethodName {
-    detail: Box<dyn DetailMethod>,
+    detail: Box<dyn DetailMethodAggregate>,
 }
 
 impl PaymentMethodName {
@@ -41,11 +41,19 @@ impl Clone for PaymentMethodName {
     }
 }
 
+impl PartialEq for PaymentMethodName {
+    fn eq(&self, other: &Self) -> bool {
+        self.method.to_string() == other.method.to_string()
+    }
+}
+
+impl Eq for PaymentMethodName {}
+
 impl DetailMethodName {
-    pub fn new(d: Box<dyn DetailMethod>) -> Self {
+    pub fn new(d: Box<dyn DetailMethodAggregate>) -> Self {
         Self { detail: d }
     }
-    pub fn value(&self) -> &dyn DetailMethod {
+    pub fn value(&self) -> &dyn DetailMethodAggregate {
         &*self.detail
     }
 }
@@ -58,7 +66,15 @@ impl Clone for DetailMethodName {
     }
 }
 
-#[derive(Debug, Clone)]
+impl PartialEq for DetailMethodName {
+    fn eq(&self, other: &Self) -> bool {
+        self.detail.to_string() == other.detail.to_string()
+    }
+}
+
+impl Eq for DetailMethodName {}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MethodNameAggregate {
     CreditCard,
     DigitalMoney,
@@ -119,8 +135,8 @@ pub enum CreditCard {
     DinersClub,
 }
 
-impl DetailMethod for CreditCard {
-    fn clone_box(&self) -> Box<dyn DetailMethod> {
+impl DetailMethodAggregate for CreditCard {
+    fn clone_box(&self) -> Box<dyn DetailMethodAggregate> {
         Box::new(self.clone())
     }
 }
@@ -165,8 +181,8 @@ pub enum DigitalMoney {
     RakutenEdy,
 }
 
-impl DetailMethod for DigitalMoney {
-    fn clone_box(&self) -> Box<dyn DetailMethod> {
+impl DetailMethodAggregate for DigitalMoney {
+    fn clone_box(&self) -> Box<dyn DetailMethodAggregate> {
         Box::new(self.clone())
     }
 }
@@ -214,8 +230,8 @@ pub enum MobilePayment {
     PayPal,
 }
 
-impl DetailMethod for MobilePayment {
-    fn clone_box(&self) -> Box<dyn DetailMethod> {
+impl DetailMethodAggregate for MobilePayment {
+    fn clone_box(&self) -> Box<dyn DetailMethodAggregate> {
         Box::new(self.clone())
     }
 }
@@ -265,8 +281,8 @@ pub enum DigitalWallet {
     AmazonPay,
 }
 
-impl DetailMethod for DigitalWallet {
-    fn clone_box(&self) -> Box<dyn DetailMethod> {
+impl DetailMethodAggregate for DigitalWallet {
+    fn clone_box(&self) -> Box<dyn DetailMethodAggregate> {
         Box::new(self.clone())
     }
 }
@@ -304,8 +320,8 @@ pub enum BNPL {
     Afterpay,
 }
 
-impl DetailMethod for BNPL {
-    fn clone_box(&self) -> Box<dyn DetailMethod> {
+impl DetailMethodAggregate for BNPL {
+    fn clone_box(&self) -> Box<dyn DetailMethodAggregate> {
         Box::new(self.clone())
     }
 }
@@ -343,8 +359,8 @@ pub enum BankTransfer {
     ACH,
 }
 
-impl DetailMethod for BankTransfer {
-    fn clone_box(&self) -> Box<dyn DetailMethod> {
+impl DetailMethodAggregate for BankTransfer {
+    fn clone_box(&self) -> Box<dyn DetailMethodAggregate> {
         Box::new(self.clone())
     }
 }
@@ -377,8 +393,8 @@ impl fmt::Display for BankTransfer {
 // デビットカード
 #[derive(Debug, Clone)]
 pub enum DebitCard {}
-impl DetailMethod for DebitCard {
-    fn clone_box(&self) -> Box<dyn DetailMethod> {
+impl DetailMethodAggregate for DebitCard {
+    fn clone_box(&self) -> Box<dyn DetailMethodAggregate> {
         Box::new(self.clone())
     }
 }
@@ -392,8 +408,8 @@ impl fmt::Display for DebitCard {
 // キャリア決済
 #[derive(Debug, Clone)]
 pub enum CarrierBilling {}
-impl DetailMethod for CarrierBilling {
-    fn clone_box(&self) -> Box<dyn DetailMethod> {
+impl DetailMethodAggregate for CarrierBilling {
+    fn clone_box(&self) -> Box<dyn DetailMethodAggregate> {
         Box::new(self.clone())
     }
 }
