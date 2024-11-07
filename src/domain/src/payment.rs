@@ -5,6 +5,27 @@ use chrono::{DateTime, Utc};
 use payment_method::{DetailMethodName, PaymentMethodName};
 use payment_method_id::PaymentMethodId;
 
+/// 支払方法情報を管理する構造体
+///
+/// # フィールド
+/// * `payment_method_id` - [PaymentMethodId] 支払方法を一意に識別するID
+/// * `method_name` - [PaymentMethodName] 支払方法名（クレジットカード、口座振替など）
+/// * `detail_name` - [DetailMethodName] 詳細な支払方法名（VISAカード、JCBカードなど）
+/// * `additional_name` - 追加の支払方法名（任意）
+/// * `created_at` - 作成日時
+/// * `updated_at` - 更新日時
+///
+/// # 使用例
+/// ```
+/// let payment_method = PaymentMethod::new(
+///     payment_method_id,
+///     PaymentMethodName::CreditCard,
+///     DetailMethodName::Visa,
+///     Some("My Visa Card".to_string()),
+///     Some(Utc::now()),
+///     Some(Utc::now())
+/// );
+/// ```
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct PaymentMethod {
@@ -17,6 +38,18 @@ pub struct PaymentMethod {
 }
 
 impl PaymentMethod {
+    /// 新しい支払方法インスタンスを作成する
+    ///
+    /// # 引数
+    /// * `payment_method_id` - [PaymentMethodId] 支払方法ID
+    /// * `method_name` - [PaymentMethodName] 支払方法名
+    /// * `detail_name` - [DetailMethodName] 詳細な支払方法名
+    /// * `additional_name` - 追加の支払方法名（オプション）
+    /// * `created_at` - 作成日時（オプション）
+    /// * `updated_at` - 更新日時（オプション）
+    ///
+    /// # 戻り値
+    /// - [PaymentMethod] 作成された支払方法情報
     pub fn new(
         payment_method_id: PaymentMethodId,
         method_name: PaymentMethodName,
