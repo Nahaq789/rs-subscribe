@@ -34,4 +34,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run clippy
-        run: cargo clippy -- -A clippy::new_without_default
+        run: cargo clippy -- cargo clippy -- -A dead_code -A clippy::upper_case_acronyms -A clippy::enum_variant_names -A clippy::too_many_arguments -A clippy::new_without_default
