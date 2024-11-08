@@ -33,8 +33,7 @@ pub enum AggregateIdError {
 pub fn generate_id(p: &str, u: Option<Uuid>) -> String {
     match u {
         Some(u) => {
-            let value = Uuid::from(u);
-            format!("{}_{}", p, value)
+            format!("{}_{}", p, u)
         }
         None => {
             let value = Uuid::new_v4();
