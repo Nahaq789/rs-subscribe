@@ -33,7 +33,7 @@ impl FromStr for PaymentCycle {
         match s.to_lowercase().as_str() {
             "monthly" => Ok(Self::Monthly),
             "yearly" => Ok(Self::Yearly),
-            _ => Ok(Self::Monthly)
+            _ => Ok(Self::Monthly),
         }
     }
 }
