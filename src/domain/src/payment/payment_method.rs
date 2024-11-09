@@ -125,7 +125,7 @@ impl TryFrom<&str> for MethodNameAggregate {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum CreditCard {
     Visa,
     MasterCard,
@@ -172,7 +172,7 @@ impl fmt::Display for CreditCard {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DigitalMoney {
     Suica,
     Pasmo,
@@ -217,7 +217,7 @@ impl fmt::Display for DigitalMoney {
 }
 
 // モバイル決済
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum MobilePayment {
     PayPay,
     LinePay,
@@ -274,7 +274,7 @@ impl fmt::Display for MobilePayment {
 }
 
 // デジタルウォレット
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DigitalWallet {
     ApplePay,
     GooglePay,
@@ -313,7 +313,7 @@ impl fmt::Display for DigitalWallet {
 }
 
 // 後払い決済
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum BNPL {
     Affirm,
     Klarna,
@@ -352,7 +352,7 @@ impl fmt::Display for BNPL {
 }
 
 // 銀行振込
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum BankTransfer {
     JapaneseBankTransfer,
     JapaneseDirectDebit,
@@ -391,7 +391,7 @@ impl fmt::Display for BankTransfer {
 }
 
 // デビットカード
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum DebitCard {
     None
 }
@@ -408,7 +408,7 @@ impl fmt::Display for DebitCard {
 }
 
 // キャリア決済
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum CarrierBilling {
     None
 }
@@ -539,6 +539,7 @@ mod tests {
 
             for (input, expected) in test_cases {
                 let card = CreditCard::try_from(input).unwrap();
+                assert_eq!(card, expected);
                 assert_eq!(card.to_string(), input);
             }
         }
@@ -576,6 +577,7 @@ mod tests {
 
             for (input, expected) in test_cases {
                 let money = DigitalMoney::try_from(input).unwrap();
+                assert_eq!(money, expected);
                 assert_eq!(money.to_string(), input);
             }
         }
@@ -613,6 +615,7 @@ mod tests {
 
             for (input, expected) in test_cases {
                 let payment = MobilePayment::try_from(input).unwrap();
+                assert_eq!(payment, expected);
                 assert_eq!(payment.to_string(), input);
             }
         }
@@ -644,6 +647,7 @@ mod tests {
 
             for (input, expected) in test_cases {
                 let wallet = DigitalWallet::try_from(input).unwrap();
+                assert_eq!(wallet, expected);
                 assert_eq!(wallet.to_string(), input);
             }
         }
@@ -675,6 +679,7 @@ mod tests {
 
             for (input, expected) in test_cases {
                 let bnpl = BNPL::try_from(input).unwrap();
+                assert_eq!(bnpl, expected);
                 assert_eq!(bnpl.to_string(), input);
             }
         }
@@ -706,7 +711,7 @@ mod tests {
 
             for (input, expected) in test_cases {
                 let transfer = BankTransfer::try_from(input).unwrap();
-                // assert_eq!(transfer, expected);
+                assert_eq!(transfer, expected);
                 assert_eq!(transfer.to_string(), input);
             }
         }
