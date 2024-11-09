@@ -392,7 +392,9 @@ impl fmt::Display for BankTransfer {
 
 // デビットカード
 #[derive(Debug, Clone)]
-pub enum DebitCard {}
+pub enum DebitCard {
+    None
+}
 impl DetailMethodAggregate for DebitCard {
     fn clone_box(&self) -> Box<dyn DetailMethodAggregate> {
         Box::new(self.clone())
@@ -407,7 +409,9 @@ impl fmt::Display for DebitCard {
 
 // キャリア決済
 #[derive(Debug, Clone)]
-pub enum CarrierBilling {}
+pub enum CarrierBilling {
+    None
+}
 impl DetailMethodAggregate for CarrierBilling {
     fn clone_box(&self) -> Box<dyn DetailMethodAggregate> {
         Box::new(self.clone())
@@ -421,4 +425,347 @@ impl fmt::Display for CarrierBilling {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    mod method_name_aggregate_tests {
+        use super::*;
+
+        #[test]
+        fn test_all_variants_conversion() {
+            let test_cases = vec![
+                ("Credit Card", MethodNameAggregate::CreditCard),
+                ("Digital Money", MethodNameAggregate::DigitalMoney),
+                ("Debit Card", MethodNameAggregate::DebitCard),
+                ("Bank Transfer", MethodNameAggregate::BankTransfer),
+                ("Mobile Payment", MethodNameAggregate::MobilePayment),
+                ("Digital Wallet", MethodNameAggregate::DigitalWallet),
+                ("Buy Now Pay Later", MethodNameAggregate::BNPL),
+                ("Carrier Billing", MethodNameAggregate::CarrierBilling),
+            ];
+
+            for (input, expected) in test_cases {
+                let method = MethodNameAggregate::try_from(input).unwrap();
+                assert_eq!(method, expected);
+                assert_eq!(method.to_string(), input);
+            }
+        }
+
+        #[test]
+        fn test_invalid_conversion() {
+            let result = MethodNameAggregate::try_from("Invalid Method");
+            assert!(result.is_err());
+            assert_eq!(
+                result.unwrap_err().to_string(),
+                "Method name not found: Invalid Method"
+            );
+        }
+
+        #[test]
+        fn test_clone_box() {
+            let original = Box::new(MethodNameAggregate::CreditCard);
+            let cloned = original.clone_box();
+            assert_eq!(original.to_string(), cloned.to_string());
+        }
+    }
+
+    mod payment_method_name_tests {
+        use super::*;
+
+        #[test]
+        fn test_new_and_value() {
+            let method = PaymentMethodName::new(Box::new(MethodNameAggregate::CreditCard));
+            assert_eq!(method.value().to_string(), "Credit Card");
+        }
+
+        #[test]
+        fn test_clone() {
+            let original = PaymentMethodName::new(Box::new(MethodNameAggregate::CreditCard));
+            let cloned = original.clone();
+            assert_eq!(original, cloned);
+        }
+
+        #[test]
+        fn test_equality() {
+            let method1 = PaymentMethodName::new(Box::new(MethodNameAggregate::CreditCard));
+            let method2 = PaymentMethodName::new(Box::new(MethodNameAggregate::CreditCard));
+            let method3 = PaymentMethodName::new(Box::new(MethodNameAggregate::DigitalMoney));
+
+            assert_eq!(method1, method2);
+            assert_ne!(method1, method3);
+        }
+    }
+
+    mod detail_method_name_tests {
+        use super::*;
+
+        #[test]
+        fn test_new_and_value() {
+            let detail = DetailMethodName::new(Box::new(CreditCard::Visa));
+            assert_eq!(detail.value().to_string(), "Visa");
+        }
+
+        #[test]
+        fn test_clone() {
+            let original = DetailMethodName::new(Box::new(CreditCard::Visa));
+            let cloned = original.clone();
+            assert_eq!(original.value().to_string(), cloned.value().to_string());
+        }
+
+        #[test]
+        fn test_equality() {
+            let detail1 = DetailMethodName::new(Box::new(CreditCard::Visa));
+            let detail2 = DetailMethodName::new(Box::new(CreditCard::Visa));
+            let detail3 = DetailMethodName::new(Box::new(CreditCard::MasterCard));
+
+            assert_eq!(detail1, detail2);
+            assert_ne!(detail1, detail3);
+        }
+    }
+
+    mod credit_card_tests {
+        use super::*;
+
+        #[test]
+        fn test_all_variants() {
+            let test_cases = vec![
+                ("Visa", CreditCard::Visa),
+                ("MasterCard", CreditCard::MasterCard),
+                ("American Express", CreditCard::AmericanExpress),
+                ("JCB", CreditCard::JCB),
+                ("Discover", CreditCard::Discover),
+                ("Diners Club", CreditCard::DinersClub),
+            ];
+
+            for (input, expected) in test_cases {
+                let card = CreditCard::try_from(input).unwrap();
+                assert_eq!(card.to_string(), input);
+            }
+        }
+
+        #[test]
+        fn test_invalid_conversion() {
+            let result = CreditCard::try_from("Invalid Card");
+            assert!(result.is_err());
+            assert_eq!(
+                result.unwrap_err().to_string(),
+                "Method name not found: Invalid Card"
+            );
+        }
+
+        #[test]
+        fn test_clone_box() {
+            let original = Box::new(CreditCard::Visa);
+            let cloned = original.clone_box();
+            assert_eq!(original.to_string(), cloned.to_string());
+        }
+    }
+
+    mod digital_money_tests {
+        use super::*;
+
+        #[test]
+        fn test_all_variants() {
+            let test_cases = vec![
+                ("Suica", DigitalMoney::Suica),
+                ("PASMO", DigitalMoney::Pasmo),
+                ("nanaco", DigitalMoney::Nanaco),
+                ("WAON", DigitalMoney::Waon),
+                ("楽天Edy", DigitalMoney::RakutenEdy),
+            ];
+
+            for (input, expected) in test_cases {
+                let money = DigitalMoney::try_from(input).unwrap();
+                assert_eq!(money.to_string(), input);
+            }
+        }
+
+        #[test]
+        fn test_invalid_conversion() {
+            let result = DigitalMoney::try_from("Invalid Money");
+            assert!(result.is_err());
+        }
+
+        #[test]
+        fn test_clone_box() {
+            let original = Box::new(DigitalMoney::Suica);
+            let cloned = original.clone_box();
+            assert_eq!(original.to_string(), cloned.to_string());
+        }
+    }
+
+    mod mobile_payment_tests {
+        use super::*;
+
+        #[test]
+        fn test_all_variants() {
+            let test_cases = vec![
+                ("PayPay", MobilePayment::PayPay),
+                ("LINE Pay", MobilePayment::LinePay),
+                ("メルペイ", MobilePayment::MerPay),
+                ("楽天ペイ", MobilePayment::RakutenPay),
+                ("d払い", MobilePayment::DBarai),
+                ("Venmo", MobilePayment::Venmo),
+                ("Cash App", MobilePayment::CashApp),
+                ("Zelle", MobilePayment::Zelle),
+                ("PayPal", MobilePayment::PayPal),
+            ];
+
+            for (input, expected) in test_cases {
+                let payment = MobilePayment::try_from(input).unwrap();
+                assert_eq!(payment.to_string(), input);
+            }
+        }
+
+        #[test]
+        fn test_invalid_conversion() {
+            let result = MobilePayment::try_from("Invalid Payment");
+            assert!(result.is_err());
+        }
+
+        #[test]
+        fn test_clone_box() {
+            let original = Box::new(MobilePayment::PayPay);
+            let cloned = original.clone_box();
+            assert_eq!(original.to_string(), cloned.to_string());
+        }
+    }
+
+    mod digital_wallet_tests {
+        use super::*;
+
+        #[test]
+        fn test_all_variants() {
+            let test_cases = vec![
+                ("Apple Pay", DigitalWallet::ApplePay),
+                ("Google Pay", DigitalWallet::GooglePay),
+                ("Amazon Pay", DigitalWallet::AmazonPay),
+            ];
+
+            for (input, expected) in test_cases {
+                let wallet = DigitalWallet::try_from(input).unwrap();
+                assert_eq!(wallet.to_string(), input);
+            }
+        }
+
+        #[test]
+        fn test_invalid_conversion() {
+            let result = DigitalWallet::try_from("Invalid Wallet");
+            assert!(result.is_err());
+        }
+
+        #[test]
+        fn test_clone_box() {
+            let original = Box::new(DigitalWallet::ApplePay);
+            let cloned = original.clone_box();
+            assert_eq!(original.to_string(), cloned.to_string());
+        }
+    }
+
+    mod bnpl_tests {
+        use super::*;
+
+        #[test]
+        fn test_all_variants() {
+            let test_cases = vec![
+                ("Affirm", BNPL::Affirm),
+                ("Klarna", BNPL::Klarna),
+                ("Afterpay", BNPL::Afterpay),
+            ];
+
+            for (input, expected) in test_cases {
+                let bnpl = BNPL::try_from(input).unwrap();
+                assert_eq!(bnpl.to_string(), input);
+            }
+        }
+
+        #[test]
+        fn test_invalid_conversion() {
+            let result = BNPL::try_from("Invalid BNPL");
+            assert!(result.is_err());
+        }
+
+        #[test]
+        fn test_clone_box() {
+            let original = Box::new(BNPL::Affirm);
+            let cloned = original.clone_box();
+            assert_eq!(original.to_string(), cloned.to_string());
+        }
+    }
+
+    mod bank_transfer_tests {
+        use super::*;
+
+        #[test]
+        fn test_all_variants() {
+            let test_cases = vec![
+                ("銀行振込", BankTransfer::JapaneseBankTransfer),
+                ("口座振替", BankTransfer::JapaneseDirectDebit),
+                ("ACH Transfer", BankTransfer::ACH),
+            ];
+
+            for (input, expected) in test_cases {
+                let transfer = BankTransfer::try_from(input).unwrap();
+                // assert_eq!(transfer, expected);
+                assert_eq!(transfer.to_string(), input);
+            }
+        }
+
+        #[test]
+        fn test_invalid_conversion() {
+            let result = BankTransfer::try_from("Invalid Transfer");
+            assert!(result.is_err());
+        }
+
+        #[test]
+        fn test_clone_box() {
+            let original = Box::new(BankTransfer::JapaneseBankTransfer);
+            let cloned = original.clone_box();
+            assert_eq!(original.to_string(), cloned.to_string());
+        }
+    }
+
+    mod debit_card_tests {
+        use super::*;
+
+        #[test]
+        fn test_display() {
+            let debit_card = DebitCard::None;
+            assert_eq!(debit_card.to_string(), "デビットカード");
+        }
+
+        #[test]
+        fn test_clone_box() {
+            let original = Box::new(DebitCard::None);
+            let cloned = original.clone_box();
+            assert_eq!(original.to_string(), cloned.to_string());
+        }
+    }
+
+    mod carrier_billing_tests {
+        use super::*;
+
+        #[test]
+        fn test_display() {
+            let carrier_billing = CarrierBilling::None;
+            assert_eq!(carrier_billing.to_string(), "キャリア決済");
+        }
+
+        #[test]
+        fn test_clone_box() {
+            let original = Box::new(CarrierBilling::None);
+            let cloned = original.clone_box();
+            assert_eq!(original.to_string(), cloned.to_string());
+        }
+    }
+
+    mod error_tests {
+        use super::*;
+
+        #[test]
+        fn test_error_display() {
+            let error = PaymentMethodNameError::MethodNameNotFound("Test".to_string());
+            assert_eq!(error.to_string(), "Method name not found: Test");
+        }
+    }
+}
