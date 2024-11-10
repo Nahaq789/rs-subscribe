@@ -220,3 +220,76 @@ impl fmt::Display for PaymentMethodName {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_payment_method_name_from_str() {
+        let test_case = vec![
+            // Credit Card
+            ("Visa", PaymentMethodName::CreditCard(CreditCard::Visa)),
+            ("MasterCard", PaymentMethodName::CreditCard(CreditCard::MasterCard)),
+            ("American Express", PaymentMethodName::CreditCard(CreditCard::AmericanExpress)),
+            ("JCB", PaymentMethodName::CreditCard(CreditCard::JCB)),
+            ("Discover", PaymentMethodName::CreditCard(CreditCard::Discover)),
+            ("Diners Club", PaymentMethodName::CreditCard(CreditCard::DinersClub)),
+
+            // Digital Money
+            ("Suica", PaymentMethodName::DigitalMoney(DigitalMoney::Suica)),
+            ("PASMO", PaymentMethodName::DigitalMoney(DigitalMoney::Pasmo)),
+            ("nanaco", PaymentMethodName::DigitalMoney(DigitalMoney::Nanaco)),
+            ("WAON", PaymentMethodName::DigitalMoney(DigitalMoney::Waon)),
+            ("楽天Edy", PaymentMethodName::DigitalMoney(DigitalMoney::RakutenEdy)),
+
+            // Mobile Payment
+            ("PayPay", PaymentMethodName::MobilePayment(MobilePayment::PayPay)),
+            ("LinePay", PaymentMethodName::MobilePayment(MobilePayment::LinePay)),
+            ("MerPay", PaymentMethodName::MobilePayment(MobilePayment::MerPay)),
+            ("RakutenPay", PaymentMethodName::MobilePayment(MobilePayment::RakutenPay)),
+            ("DBarai", PaymentMethodName::MobilePayment(MobilePayment::DBarai)),
+            ("Venmo", PaymentMethodName::MobilePayment(MobilePayment::Venmo)),
+            ("CashApp", PaymentMethodName::MobilePayment(MobilePayment::CashApp)),
+            ("Zelle", PaymentMethodName::MobilePayment(MobilePayment::Zelle)),
+            ("PayPal", PaymentMethodName::MobilePayment(MobilePayment::PayPal)),
+
+            // Digital Wallet
+            ("ApplePay", PaymentMethodName::DigitalWallet(DigitalWallet::ApplePay)),
+            ("GooglePay", PaymentMethodName::DigitalWallet(DigitalWallet::GooglePay)),
+            ("AmazonPay", PaymentMethodName::DigitalWallet(DigitalWallet::AmazonPay)),
+
+            // Bank Transfer
+            ("JapaneseBankTransfer", PaymentMethodName::BankTransfer(BankTransfer::JapaneseBankTransfer)),
+            ("JapaneseDirectDebit", PaymentMethodName::BankTransfer(BankTransfer::JapaneseDirectDebit)),
+            ("ACH", PaymentMethodName::BankTransfer(BankTransfer::ACH)),
+
+            // BNPL
+            ("Affirm", PaymentMethodName::BNPL(BNPL::Affirm)),
+            ("Klarna", PaymentMethodName::BNPL(BNPL::Klarna)),
+            ("Afterpay", PaymentMethodName::BNPL(BNPL::Afterpay)),
+        ];
+
+        for i in test_case {
+            let result = PaymentMethodName::from_str(i.0).unwrap();
+            assert_eq!(result, i.1, "input: {}", i.1)
+        }
+    }
+
+    #[test]
+    fn test_payment_method_name_from_str_error() {
+        let error_cases = vec![
+            "",
+            "Invalid",
+            "visa",
+            "VISA",
+            "mastercard",
+            "apple pay",
+            "suica",
+        ];
+
+        for input in error_cases {
+            assert!(PaymentMethodName::from_str(input).is_err(), "input: {}", input)
+        }
+    }
+}
