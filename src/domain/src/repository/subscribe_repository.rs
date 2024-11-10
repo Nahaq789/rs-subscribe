@@ -32,7 +32,11 @@ pub trait SubscribeRepository {
     ///
     /// # 戻り値
     /// - Option<[Subscribe]> サブスク情報（存在しない場合はNone）
-    async fn find_by_id(&self, subscribe_id: &SubscribeId, user_id: &UserId) -> Result<Option<Subscribe>, SubscribeError>;
+    async fn find_by_id(
+        &self,
+        subscribe_id: &SubscribeId,
+        user_id: &UserId,
+    ) -> Result<Option<Subscribe>, SubscribeError>;
 
     /// サブスク情報を更新する
     ///

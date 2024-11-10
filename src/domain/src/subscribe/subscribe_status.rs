@@ -27,7 +27,7 @@ impl FromStr for SubscribeStatus {
             "ACTIVE" => Ok(SubscribeStatus::ACTIVE),
             "PAUSED" => Ok(SubscribeStatus::PAUSED),
             "CANCELLED" => Ok(SubscribeStatus::CANCELLED),
-            _ => Err(SubscribeError::InvalidSubscribeStatus(s.to_string()))
+            _ => Err(SubscribeError::InvalidSubscribeStatus(s.to_string())),
         }
     }
 }
@@ -53,7 +53,7 @@ mod tests {
     fn test_subscribe_status_from_str_success() {
         let test_case = vec![
             ("ACTIVE", SubscribeStatus::ACTIVE),
-            ("PAUSED", SubscribeStatus::PAUSED,),
+            ("PAUSED", SubscribeStatus::PAUSED),
             ("CANCELLED", SubscribeStatus::CANCELLED),
         ];
 
@@ -66,11 +66,7 @@ mod tests {
 
     #[test]
     fn test_subscribe_status_from_str_failed() {
-        let test_case = vec![
-            "ACT IVE",
-            "PAU SED",
-            "CAN CELLED"
-        ];
+        let test_case = vec!["ACT IVE", "PAU SED", "CAN CELLED"];
 
         for input in test_case {
             let result = SubscribeStatus::from_str(input);
