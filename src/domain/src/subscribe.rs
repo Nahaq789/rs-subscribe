@@ -8,7 +8,7 @@ use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use uuid::Uuid;
 
-mod subscribe_error;
+pub mod subscribe_error;
 pub mod subscribe_id;
 mod subscribe_name;
 mod subscribe_status;
