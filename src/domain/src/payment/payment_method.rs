@@ -138,7 +138,7 @@ impl fmt::Display for BNPL {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Affirm => write!(f, "Affirm"),
-            Self::Afterpay => write!(f, "Affirm"),
+            Self::Afterpay => write!(f, "Afterpay"),
             Self::Klarna => write!(f, "Klarna"),
         }
     }
@@ -355,6 +355,134 @@ mod tests {
                 "input: {}",
                 input
             )
+        }
+    }
+
+    #[test]
+    fn test_credit_card_fmt() {
+        let test_case = vec![
+            ("Visa", CreditCard::Visa.to_string()),
+            ("MasterCard", CreditCard::MasterCard.to_string()),
+            ("American Express", CreditCard::AmericanExpress.to_string()),
+            ("JCB", CreditCard::JCB.to_string()),
+            ("Discover", CreditCard::Discover.to_string()),
+            ("Diners Club", CreditCard::DinersClub.to_string()),
+        ];
+
+        for (expected, actual) in test_case {
+            assert_eq!(expected, actual)
+        }
+    }
+
+    #[test]
+    fn test_digital_money_fmt() {
+        let test_case = vec![
+            ("Suica", DigitalMoney::Suica.to_string()),
+            ("PASMO", DigitalMoney::Pasmo.to_string()),
+            ("nanaco", DigitalMoney::Nanaco.to_string()),
+            ("WAON", DigitalMoney::Waon.to_string()),
+            ("楽天Edy", DigitalMoney::RakutenEdy.to_string()),
+        ];
+
+        for (expected, actual) in test_case {
+            assert_eq!(expected, actual);
+        }
+    }
+
+    #[test]
+    fn test_mobile_payment_fmt() {
+        let test_case = vec![
+            ("PayPay", MobilePayment::PayPay.to_string()),
+            ("LINE Pay", MobilePayment::LinePay.to_string()),
+            ("メルペイ", MobilePayment::MerPay.to_string()),
+            ("楽天ペイ", MobilePayment::RakutenPay.to_string()),
+            ("d払い", MobilePayment::DBarai.to_string()),
+            ("Venmo", MobilePayment::Venmo.to_string()),
+            ("Cash App", MobilePayment::CashApp.to_string()),
+            ("Zelle", MobilePayment::Zelle.to_string()),
+            ("PayPal", MobilePayment::PayPal.to_string()),
+        ];
+
+        for (expected, actual) in test_case {
+            assert_eq!(expected, actual);
+        }
+    }
+
+    #[test]
+    fn test_digital_wallet_fmt() {
+        let test_case = vec![
+            ("ApplePay", DigitalWallet::ApplePay.to_string()),
+            ("GooglePay", DigitalWallet::GooglePay.to_string()),
+            ("AmazonPay", DigitalWallet::AmazonPay.to_string()),
+        ];
+
+        for (expected, actual) in test_case {
+            assert_eq!(expected, actual);
+        }
+    }
+
+    #[test]
+    fn test_bank_transfer_fmt() {
+        let test_case = vec![
+            (
+                "Japanese BankTransfer",
+                BankTransfer::JapaneseBankTransfer.to_string(),
+            ),
+            (
+                "Japanese DirectDebit",
+                BankTransfer::JapaneseDirectDebit.to_string(),
+            ),
+            ("ACH", BankTransfer::ACH.to_string()),
+        ];
+
+        for (expected, actual) in test_case {
+            assert_eq!(expected, actual);
+        }
+    }
+
+    #[test]
+    fn test_bnpl_fmt() {
+        let test_case = vec![
+            ("Affirm", BNPL::Affirm.to_string()),
+            ("Klarna", BNPL::Klarna.to_string()),
+            ("Afterpay", BNPL::Afterpay.to_string()), // Note: This seems to be a bug in the original code
+        ];
+
+        for (expected, actual) in test_case {
+            assert_eq!(expected, actual);
+        }
+    }
+
+    #[test]
+    fn test_payment_method_name_category() {
+        let test_case = vec![
+            (
+                PaymentMethodName::CreditCard(CreditCard::Visa),
+                "Credit Card",
+            ),
+            (
+                PaymentMethodName::DigitalMoney(DigitalMoney::Suica),
+                "Digital Money",
+            ),
+            (
+                PaymentMethodName::MobilePayment(MobilePayment::PayPay),
+                "Mobile Payment",
+            ),
+            (
+                PaymentMethodName::DigitalWallet(DigitalWallet::ApplePay),
+                "Digital Wallet",
+            ),
+            (
+                PaymentMethodName::BankTransfer(BankTransfer::ACH),
+                "Bank Transfer",
+            ),
+            (PaymentMethodName::BNPL(BNPL::Affirm), "Buy Now Pay Later"),
+            (PaymentMethodName::DebitCard, "Debit Card"),
+            (PaymentMethodName::CarrierBilling, "Carrier Billing"),
+        ];
+
+        for (payment_method, expected_category) in test_case {
+            assert_eq!(payment_method.category(), expected_category);
         }
     }
 }

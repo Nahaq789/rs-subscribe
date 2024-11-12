@@ -13,4 +13,7 @@ use thiserror::Error;
 pub enum SubscribeError {
     #[error("Invalid Amount: {0:?}")]
     InvalidAmountError(#[from] AmountError),
+
+    #[error("Not match Subscribe Status: {0}")]
+    InvalidSubscribeStatus(String),
 }
