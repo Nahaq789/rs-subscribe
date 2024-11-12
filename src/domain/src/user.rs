@@ -1,7 +1,6 @@
 use crate::user::user_id::UserId;
 use chrono::{DateTime, Utc};
 
-pub mod user_error;
 pub mod user_id;
 
 /// ユーザー情報を表す構造体
