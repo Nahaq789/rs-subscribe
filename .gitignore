@@ -21,7 +21,7 @@ bootstrap
 lambda.zip
 
 # Environment variables
-#.env
+.env
 
 # Logs
 *.log
