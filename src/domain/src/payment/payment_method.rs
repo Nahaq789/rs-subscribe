@@ -8,6 +8,7 @@ pub enum PaymentMethodNameError {
   Invalid(String),
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum PaymentMethodName {
   CreditCard(CreditCard),
@@ -20,6 +21,7 @@ pub enum PaymentMethodName {
   CarrierBilling,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CreditCard {
   Visa,
@@ -43,6 +45,7 @@ impl fmt::Display for CreditCard {
   }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DigitalMoney {
   Suica,
@@ -64,6 +67,7 @@ impl fmt::Display for DigitalMoney {
   }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MobilePayment {
   PayPay,
@@ -93,6 +97,7 @@ impl fmt::Display for MobilePayment {
   }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DigitalWallet {
   ApplePay,
@@ -110,6 +115,7 @@ impl fmt::Display for DigitalWallet {
   }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BankTransfer {
   JapaneseBankTransfer,
@@ -127,6 +133,7 @@ impl fmt::Display for BankTransfer {
   }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BNPL {
   Affirm,
