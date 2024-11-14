@@ -1,7 +1,7 @@
 use crate::{generate_id, AggregateId, AggregateIdError};
 use std::{
-    fmt::{Display, Formatter},
-    str::FromStr,
+  fmt::{Display, Formatter},
+  str::FromStr,
 };
 use uuid::Uuid;
 
@@ -11,8 +11,8 @@ use uuid::Uuid;
 /// 例: "sub_550e8400-e29b-41d4-a716-446655440000"
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SubscribeId {
-    /// UUIDの値
-    value: String,
+  /// UUIDの値
+  value: String,
 }
 
 /// プレフィックス文字列
@@ -20,180 +20,180 @@ pub struct SubscribeId {
 const SUBSCRIBE_PREFIX: &str = "sub";
 
 impl SubscribeId {
-    /// 新しいサブスクIDを生成する
-    ///
-    /// # 戻り値
-    /// - [SubscribeId] 生成されたサブスクID
-    pub fn new() -> Self {
-        let value = generate_id(SUBSCRIBE_PREFIX, None);
-        Self { value }
-    }
+  /// 新しいサブスクIDを生成する
+  ///
+  /// # 戻り値
+  /// - [SubscribeId] 生成されたサブスクID
+  pub fn new() -> Self {
+    let value = generate_id(SUBSCRIBE_PREFIX, None);
+    Self { value }
+  }
 }
 
 impl AggregateId for SubscribeId {
-    /// プレフィックスを取得する
-    ///
-    /// # 戻り値
-    /// - [String] "SUBSCRIBE"という文字列
-    fn type_name(&self) -> String {
-        SUBSCRIBE_PREFIX.to_string()
-    }
+  /// プレフィックスを取得する
+  ///
+  /// # 戻り値
+  /// - [String] "SUBSCRIBE"という文字列
+  fn type_name(&self) -> String {
+    SUBSCRIBE_PREFIX.to_string()
+  }
 
-    /// IDの値を取得する
-    ///
-    /// # 戻り値
-    /// - [String] UUID文字列への参照
-    fn value(&self) -> &String {
-        &self.value
-    }
+  /// IDの値を取得する
+  ///
+  /// # 戻り値
+  /// - [String] UUID文字列への参照
+  fn value(&self) -> &String {
+    &self.value
+  }
 }
 
 impl From<Uuid> for SubscribeId {
-    /// UUIDからサブスクIDを生成する
-    ///
-    /// # 引数
-    /// * `value` - [Uuid] 変換元のUUID
-    ///
-    /// # 戻り値
-    /// - [SubscribeId] 生成されたサブスクID
-    fn from(value: Uuid) -> Self {
-        Self {
-            value: generate_id(SUBSCRIBE_PREFIX, Some(value)),
-        }
+  /// UUIDからサブスクIDを生成する
+  ///
+  /// # 引数
+  /// * `value` - [Uuid] 変換元のUUID
+  ///
+  /// # 戻り値
+  /// - [SubscribeId] 生成されたサブスクID
+  fn from(value: Uuid) -> Self {
+    Self {
+      value: generate_id(SUBSCRIBE_PREFIX, Some(value)),
     }
+  }
 }
 
 impl Display for SubscribeId {
-    /// 文字列表現を取得する
-    ///
-    /// # 引数
-    /// * `f` - [Formatter] フォーマッター
-    ///
-    /// # 戻り値
-    /// - [std::fmt::Result] フォーマット結果
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.value)
-    }
+  /// 文字列表現を取得する
+  ///
+  /// # 引数
+  /// * `f` - [Formatter] フォーマッター
+  ///
+  /// # 戻り値
+  /// - [std::fmt::Result] フォーマット結果
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}", self.value)
+  }
 }
 
 impl FromStr for SubscribeId {
-    type Err = AggregateIdError;
+  type Err = AggregateIdError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let value: Vec<&str> = s.split("_").collect();
-        if value.len() != 2 {
-            return Err(AggregateIdError::InvalidFormat);
-        }
-        if value[0] != SUBSCRIBE_PREFIX {
-            return Err(AggregateIdError::InvalidFormat);
-        }
-        let uuid = Uuid::parse_str(value[1]).map_err(|_| AggregateIdError::InvalidUuid)?;
-        Ok(Self::from(uuid))
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    let value: Vec<&str> = s.split("_").collect();
+    if value.len() != 2 {
+      return Err(AggregateIdError::InvalidFormat);
     }
+    if value[0] != SUBSCRIBE_PREFIX {
+      return Err(AggregateIdError::InvalidFormat);
+    }
+    let uuid = Uuid::parse_str(value[1]).map_err(|_| AggregateIdError::InvalidUuid)?;
+    Ok(Self::from(uuid))
+  }
 }
 
 #[cfg(test)]
 mod tests {
 
-    use super::*;
+  use super::*;
 
-    #[test]
-    fn test_new_success() {
-        let id = SubscribeId::new();
-        assert!(!id.value.is_empty());
-        assert!(id.value.starts_with("sub"))
-    }
+  #[test]
+  fn test_new_success() {
+    let id = SubscribeId::new();
+    assert!(!id.value.is_empty());
+    assert!(id.value.starts_with("sub"))
+  }
 
-    #[test]
-    fn test_type_name_success() {
-        let id = SubscribeId::new();
-        assert!(!id.type_name().is_empty());
-        assert_eq!(SUBSCRIBE_PREFIX, id.type_name())
-    }
+  #[test]
+  fn test_type_name_success() {
+    let id = SubscribeId::new();
+    assert!(!id.type_name().is_empty());
+    assert_eq!(SUBSCRIBE_PREFIX, id.type_name())
+  }
 
-    #[test]
-    fn test_from_success() {
-        let uuid = Uuid::new_v4();
-        let format = format!("sub_{}", uuid);
-        let result = SubscribeId::from(uuid);
-        assert!(result.value.starts_with("sub"));
-        assert_eq!(format, result.value)
-    }
+  #[test]
+  fn test_from_success() {
+    let uuid = Uuid::new_v4();
+    let format = format!("sub_{}", uuid);
+    let result = SubscribeId::from(uuid);
+    assert!(result.value.starts_with("sub"));
+    assert_eq!(format, result.value)
+  }
 
-    #[test]
-    fn test_from_str_success() {
-        let uuid = Uuid::new_v4();
-        let format = format!("sub_{}", uuid);
-        let result = SubscribeId::from_str(&format);
-        assert!(result.is_ok());
-        assert_eq!(format, result.unwrap().value);
-    }
+  #[test]
+  fn test_from_str_success() {
+    let uuid = Uuid::new_v4();
+    let format = format!("sub_{}", uuid);
+    let result = SubscribeId::from_str(&format);
+    assert!(result.is_ok());
+    assert_eq!(format, result.unwrap().value);
+  }
 
-    #[test]
-    fn test_from_str_falied_invalid_format() {
-        let result = SubscribeId::from_str("Invalid");
-        assert!(matches!(result, Err(AggregateIdError::InvalidFormat)))
-    }
+  #[test]
+  fn test_from_str_falied_invalid_format() {
+    let result = SubscribeId::from_str("Invalid");
+    assert!(matches!(result, Err(AggregateIdError::InvalidFormat)))
+  }
 
-    #[test]
-    fn test_from_str_falied_invali_uuid() {
-        let format = format!("sub_{}", "Invalid");
-        let result = SubscribeId::from_str(&format);
-        assert!(matches!(result, Err(AggregateIdError::InvalidUuid)))
-    }
+  #[test]
+  fn test_from_str_falied_invali_uuid() {
+    let format = format!("sub_{}", "Invalid");
+    let result = SubscribeId::from_str(&format);
+    assert!(matches!(result, Err(AggregateIdError::InvalidUuid)))
+  }
 
-    #[test]
-    fn test_display_format() {
-        let id = SubscribeId::new();
-        let display_string = id.to_string();
-        assert_eq!(display_string, id.value);
-    }
+  #[test]
+  fn test_display_format() {
+    let id = SubscribeId::new();
+    let display_string = id.to_string();
+    assert_eq!(display_string, id.value);
+  }
 
-    #[test]
-    fn test_clone_equality() {
-        let id1 = SubscribeId::new();
-        let id2 = id1.clone();
-        assert_eq!(id1, id2);
-    }
+  #[test]
+  fn test_clone_equality() {
+    let id1 = SubscribeId::new();
+    let id2 = id1.clone();
+    assert_eq!(id1, id2);
+  }
 
-    #[test]
-    fn test_debug_format() {
-        let id = SubscribeId::new();
-        let debug_string = format!("{:?}", id);
-        assert!(!debug_string.is_empty());
-    }
+  #[test]
+  fn test_debug_format() {
+    let id = SubscribeId::new();
+    let debug_string = format!("{:?}", id);
+    assert!(!debug_string.is_empty());
+  }
 
-    #[test]
-    fn test_from_str_falied_wrong_prefix() {
-        let uuid = Uuid::new_v4();
-        let format = format!("wrong_{}", uuid);
-        let result = SubscribeId::from_str(&format);
-        assert!(matches!(result, Err(AggregateIdError::InvalidFormat)));
-    }
+  #[test]
+  fn test_from_str_falied_wrong_prefix() {
+    let uuid = Uuid::new_v4();
+    let format = format!("wrong_{}", uuid);
+    let result = SubscribeId::from_str(&format);
+    assert!(matches!(result, Err(AggregateIdError::InvalidFormat)));
+  }
 
-    #[test]
-    fn test_value_reference() {
-        let id = SubscribeId::new();
-        let value_ref = id.value();
-        assert_eq!(&id.value, value_ref);
-    }
+  #[test]
+  fn test_value_reference() {
+    let id = SubscribeId::new();
+    let value_ref = id.value();
+    assert_eq!(&id.value, value_ref);
+  }
 
-    #[test]
-    fn test_multiple_instances_unique() {
-        let id1 = SubscribeId::new();
-        let id2 = SubscribeId::new();
-        assert_ne!(id1, id2);
-    }
+  #[test]
+  fn test_multiple_instances_unique() {
+    let id1 = SubscribeId::new();
+    let id2 = SubscribeId::new();
+    assert_ne!(id1, id2);
+  }
 
-    #[test]
-    fn test_from_str_empty_string() {
-        let result = SubscribeId::from_str("");
-        assert!(matches!(result, Err(AggregateIdError::InvalidFormat)));
-    }
+  #[test]
+  fn test_from_str_empty_string() {
+    let result = SubscribeId::from_str("");
+    assert!(matches!(result, Err(AggregateIdError::InvalidFormat)));
+  }
 
-    #[test]
-    fn test_from_str_too_many_parts() {
-        let result = SubscribeId::from_str("sub_uuid_extra");
-        assert!(matches!(result, Err(AggregateIdError::InvalidFormat)));
-    }
+  #[test]
+  fn test_from_str_too_many_parts() {
+    let result = SubscribeId::from_str("sub_uuid_extra");
+    assert!(matches!(result, Err(AggregateIdError::InvalidFormat)));
+  }
 }
