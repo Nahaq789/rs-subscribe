@@ -1,0 +1,7 @@
+max_width = 100
+tab_spaces = 2
+hard_tabs = false
+newline_style = "Auto"
+reorder_imports = true
+reorder_modules = true
+fn_params_layout = "Tall"

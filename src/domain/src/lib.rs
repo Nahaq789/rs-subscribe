@@ -18,27 +18,27 @@ mod value_object;
 /// - value: 値を返します
 /// - generate_id: Uuidを生成します
 pub trait AggregateId {
-    fn type_name(&self) -> String;
-    fn value(&self) -> &String;
+  fn type_name(&self) -> String;
+  fn value(&self) -> &String;
 }
 
 #[derive(Debug, Error)]
 pub enum AggregateIdError {
-    #[error("It is not in the prefix + UUID format.")]
-    InvalidFormat,
+  #[error("It is not in the prefix + UUID format.")]
+  InvalidFormat,
 
-    #[error("Invalid UUID format")]
-    InvalidUuid,
+  #[error("Invalid UUID format")]
+  InvalidUuid,
 }
 
 pub fn generate_id(p: &str, u: Option<Uuid>) -> String {
-    match u {
-        Some(u) => {
-            format!("{}_{}", p, u)
-        }
-        None => {
-            let value = Uuid::new_v4();
-            format!("{}_{}", p, value)
-        }
+  match u {
+    Some(u) => {
+      format!("{}_{}", p, u)
     }
+    None => {
+      let value = Uuid::new_v4();
+      format!("{}_{}", p, value)
+    }
+  }
 }

@@ -11,9 +11,9 @@ use thiserror::Error;
 /// * `AmountError` からの変換を実装
 #[derive(Debug, Error)]
 pub enum SubscribeError {
-    #[error("Invalid Amount: {0:?}")]
-    InvalidAmountError(#[from] AmountError),
+  #[error("Invalid Amount: {0:?}")]
+  InvalidAmountError(#[from] AmountError),
 
-    #[error("Not match Subscribe Status: {0}")]
-    InvalidSubscribeStatus(String),
+  #[error("Not match Subscribe Status: {0}")]
+  InvalidSubscribeStatus(String),
 }
