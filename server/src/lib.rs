@@ -21,5 +21,5 @@ pub struct AppSettings {
 #[derive(Debug, Error)]
 pub enum SettingsError {
   #[error(Cannot load config. key: {0})]
-  InvalidLoadConfig(String)
+  InvalidLoadConfig(String),
 }
