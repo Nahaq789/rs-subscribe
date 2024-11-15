@@ -1,1 +1,5 @@
-pub struct Client {}
+#[derive(Debug, Clone)]
+pub struct Client {
+  region: String,
+  
+}
