@@ -1909,6 +1909,7 @@ dependencies = [
  "aws-config",
  "aws-sdk-dynamodb",
  "axum",
+ "thiserror",
  "tokio",
  "tracing",
  "tracing-subscriber",
