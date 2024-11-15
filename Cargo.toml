@@ -8,6 +8,9 @@ members = [
 ]
 
 [workspace.dependencies]
+aws-config = { version = "1.5.10", features = ["behavior-version-latest"] }
+aws-sdk-dynamodb = "1.53.0"
+
 axum = "0.7.7"
 async-trait = "0.1.83"
 tracing = "0.1.40"

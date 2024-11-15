@@ -4,8 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = { workspace = true}
-tokio = { workspace = true}
-anyhow = { workspace = true}
-tracing = { workspace = true}
-tracing-subscriber = { workspace = true}
+aws-config = { workspace = true }
+aws-sdk-dynamodb = { workspace = true }
+
+axum = { workspace = true }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+thiserror = { workspace = true }
