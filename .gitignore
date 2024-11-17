@@ -22,6 +22,8 @@ lambda.zip
 
 # Environment variables
 .env
+.env.local
+.env.*.local
 
 # Logs
 *.log
