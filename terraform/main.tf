@@ -1,3 +1,13 @@
+module "ecr" {
+  source = "./ecr"
+}
+
+module "lambda" {
+  source = "./lambda"
+  lambda_role_arn = aws_iam_role.lambda_iam_role.arn
+  ecr_repository_url = module.ecr.repository_url
+}
+
 # AWSプロバイダの設定
 provider "aws" {
   region     = var.region
@@ -7,7 +17,7 @@ provider "aws" {
 
 # lambda用のRole設定
 resource "aws_iam_role" "lambda_iam_role" {
-  name               = "terraform_lambda_iam_role"
+  name               = "subscribe_lambda_iam_role"
   assume_role_policy = <<POLICY
   {
     "Version": "2012-10-17",
@@ -56,8 +66,7 @@ resource "aws_iam_role_policy" "lambda_access_policy" {
           "ecr:BatchGetImage"
         ]
         Resource = [
-          aws_ecr_repository.write_api_repo.arn,
-          aws_ecr_repository.read_api_repo.arn
+          module.ecr.repository_arn
         ]
       }
     ]
