@@ -622,6 +622,7 @@ dependencies = [
  "iana-time-zone",
  "js-sys",
  "num-traits",
+ "serde",
  "wasm-bindgen",
  "windows-targets",
 ]
@@ -1246,6 +1247,12 @@ dependencies = [
 [[package]]
 name = "infrastructure"
 version = "0.1.0"
+dependencies = [
+ "aws-sdk-dynamodb",
+ "chrono",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "itoa"
