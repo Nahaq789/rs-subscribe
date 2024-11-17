@@ -1,1 +1,3 @@
-pub struct PaymentRepositoryImpl {}
+pub struct PaymentRepositoryImpl {
+  client: aws_sdk_dynamodb::Client,
+}
