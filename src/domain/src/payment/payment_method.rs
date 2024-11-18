@@ -377,7 +377,7 @@ mod tests {
     ];
 
     for (expected, actual) in test_case {
-      assert_eq!(expected, actual)
+      assert_eq!(expected.to_string(), actual)
     }
   }
 
@@ -392,7 +392,7 @@ mod tests {
     ];
 
     for (expected, actual) in test_case {
-      assert_eq!(expected, actual);
+      assert_eq!(expected.to_string(), actual);
     }
   }
 
@@ -411,7 +411,7 @@ mod tests {
     ];
 
     for (expected, actual) in test_case {
-      assert_eq!(expected, actual);
+      assert_eq!(expected.to_string(), actual);
     }
   }
 
@@ -424,7 +424,7 @@ mod tests {
     ];
 
     for (expected, actual) in test_case {
-      assert_eq!(expected, actual);
+      assert_eq!(expected.to_string(), actual);
     }
   }
 
@@ -443,7 +443,7 @@ mod tests {
     ];
 
     for (expected, actual) in test_case {
-      assert_eq!(expected, actual);
+      assert_eq!(expected.to_string(), actual);
     }
   }
 
@@ -456,7 +456,7 @@ mod tests {
     ];
 
     for (expected, actual) in test_case {
-      assert_eq!(expected, actual);
+      assert_eq!(expected.to_string(), actual);
     }
   }
 
