@@ -492,4 +492,31 @@ mod tests {
       assert_eq!(payment_method.category(), expected_category);
     }
   }
+
+  #[test]
+  fn test_payment_method_fmt() {
+    let test_case = vec![
+      (PaymentMethodName::CreditCard(CreditCard::Visa), "Visa"),
+      (
+        PaymentMethodName::DigitalMoney(DigitalMoney::Pasmo),
+        "PASMO",
+      ),
+      (
+        PaymentMethodName::MobilePayment(MobilePayment::CashApp),
+        "Cash App",
+      ),
+      (
+        PaymentMethodName::DigitalWallet(DigitalWallet::AmazonPay),
+        "AmazonPay",
+      ),
+      (PaymentMethodName::BankTransfer(BankTransfer::ACH), "ACH"),
+      (PaymentMethodName::BNPL(BNPL::Affirm), "Affirm"),
+      (PaymentMethodName::DebitCard, "デビットカード"),
+      (PaymentMethodName::CarrierBilling, "キャリア決済"),
+    ];
+
+    for (kind, expected) in test_case {
+      assert_eq!(kind.to_string(), expected)
+    }
+  }
 }
