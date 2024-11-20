@@ -12,3 +12,7 @@ thiserror = { workspace = true }
 rust_decimal = { workspace = true }
 rstest = { workspace = true }
 chrono = { workspace = true }
+
+[lib]
+name = "domain"
+path = "src/lib.rs"
