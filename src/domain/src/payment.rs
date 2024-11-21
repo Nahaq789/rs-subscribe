@@ -1,10 +1,10 @@
 pub mod payment_error;
-pub mod payment_method;
 pub mod payment_method_id;
+pub mod payment_method_name;
 
 use chrono::{DateTime, Utc};
-use payment_method::PaymentMethodName;
 use payment_method_id::PaymentMethodId;
+use payment_method_name::PaymentMethodName;
 
 /// 支払方法情報を管理する構造体
 ///
