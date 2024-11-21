@@ -85,6 +85,7 @@ mod tests {
   fn test_payment_method_new() {
     let payment_method_id = PaymentMethodId::new();
     let method_name = PaymentMethodName::from_str("Visa").unwrap();
+    let method_kind_name = method_name.clone().to_string();
     let additional_name = "hoge";
     let created_at = Some(Utc::now());
     let updated_at = Some(Utc::now());
@@ -99,6 +100,7 @@ mod tests {
 
     assert_eq!(payment_method_id, result.payment_method_id);
     assert_eq!(method_name, result.method_name);
+    assert_eq!(method_kind_name, result.method_kind_name);
     assert_eq!(additional_name, result.additional_name);
     assert!(created_at.is_some());
     assert_eq!(created_at, result.created_at);
