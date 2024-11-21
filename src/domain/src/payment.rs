@@ -20,6 +20,7 @@ use payment_method_id::PaymentMethodId;
 pub struct PaymentMethod {
   payment_method_id: PaymentMethodId,
   method_name: PaymentMethodName,
+  method_kind_name: String,
   additional_name: String,
   created_at: Option<DateTime<Utc>>,
   updated_at: Option<DateTime<Utc>>,
@@ -47,7 +48,8 @@ impl PaymentMethod {
   ) -> Self {
     Self {
       payment_method_id,
-      method_name,
+      method_name: method_name.clone(),
+      method_kind_name: method_name.to_string(),
       additional_name: additional_name.to_string(),
       created_at,
       updated_at,
