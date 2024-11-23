@@ -14,14 +14,14 @@ pub trait PaymentRepository {
   /// * `table` - 保存先のテーブル名
   ///
   /// # Returns
-  /// * `Ok(PaymentMethod)` - 作成された支払い方法の情報
+  /// * `Ok(())` - void
   /// * `Err(PaymentError)` - 作成処理が失敗した場合のエラー
   async fn create(
     &self,
     payment: &PaymentMethod,
     user_id: &UserId,
     table: &str,
-  ) -> Result<PaymentMethod, PaymentError>;
+  ) -> Result<(), PaymentError>;
 
   /// ユーザーIDに紐づく全ての支払い方法を取得する
   ///
