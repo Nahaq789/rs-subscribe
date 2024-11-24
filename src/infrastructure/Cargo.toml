@@ -8,3 +8,7 @@ aws-sdk-dynamodb = { workspace = true }
 chrono = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
+async-trait = { workspace = true }
+thiserror = { workspace = true }
+
+domain = { path = "../domain"}

@@ -1,10 +1,10 @@
-pub mod payment_errpr;
-pub mod payment_method;
+pub mod payment_error;
 pub mod payment_method_id;
+pub mod payment_method_name;
 
 use chrono::{DateTime, Utc};
-use payment_method::PaymentMethodName;
 use payment_method_id::PaymentMethodId;
+use payment_method_name::PaymentMethodName;
 
 /// 支払方法情報を管理する構造体
 ///
@@ -20,7 +20,8 @@ use payment_method_id::PaymentMethodId;
 pub struct PaymentMethod {
   payment_method_id: PaymentMethodId,
   method_name: PaymentMethodName,
-  additional_name: Option<String>,
+  method_kind_name: String,
+  additional_name: String,
   created_at: Option<DateTime<Utc>>,
   updated_at: Option<DateTime<Utc>>,
 }
@@ -41,17 +42,38 @@ impl PaymentMethod {
   pub fn new(
     payment_method_id: PaymentMethodId,
     method_name: PaymentMethodName,
-    additional_name: Option<String>,
+    additional_name: &str,
     created_at: Option<DateTime<Utc>>,
     updated_at: Option<DateTime<Utc>>,
   ) -> Self {
     Self {
       payment_method_id,
-      method_name,
-      additional_name,
+      method_name: method_name.clone(),
+      method_kind_name: method_name.to_string(),
+      additional_name: additional_name.to_string(),
       created_at,
       updated_at,
     }
+  }
+
+  pub fn payment_method_id(&self) -> &PaymentMethodId {
+    &self.payment_method_id
+  }
+
+  pub fn method_name(&self) -> &PaymentMethodName {
+    &self.method_name
+  }
+
+  pub fn additional_name(&self) -> &String {
+    &self.additional_name
+  }
+
+  pub fn created_at(&self) -> &Option<DateTime<Utc>> {
+    &self.created_at
+  }
+
+  pub fn updated_at(&self) -> &Option<DateTime<Utc>> {
+    &self.updated_at
   }
 }
 
@@ -63,21 +85,22 @@ mod tests {
   fn test_payment_method_new() {
     let payment_method_id = PaymentMethodId::new();
     let method_name = PaymentMethodName::from_str("Visa").unwrap();
-    let additional_name = Some("hoge".to_string());
+    let method_kind_name = method_name.clone().to_string();
+    let additional_name = "hoge";
     let created_at = Some(Utc::now());
     let updated_at = Some(Utc::now());
 
     let result = PaymentMethod::new(
       payment_method_id.clone(),
       method_name.clone(),
-      additional_name.clone(),
+      additional_name,
       created_at,
       updated_at,
     );
 
     assert_eq!(payment_method_id, result.payment_method_id);
     assert_eq!(method_name, result.method_name);
-    assert!(additional_name.is_some());
+    assert_eq!(method_kind_name, result.method_kind_name);
     assert_eq!(additional_name, result.additional_name);
     assert!(created_at.is_some());
     assert_eq!(created_at, result.created_at);
