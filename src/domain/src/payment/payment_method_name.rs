@@ -1,16 +1,32 @@
 use std::fmt;
 use std::fmt::Formatter;
+use std::str::FromStr;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum PaymentMethodNameError {
-  #[error("Invalid payment method: {0}")]
-  Invalid(String),
+  #[error("Invalid payment method category: {0}")]
+  InvalidCategoryName(String),
+
+  #[error("Invalid payment method kind: {0}")]
+  InvalidKindName(String),
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum PaymentMethodCategoryName {
+  CreditCard,
+  DigitalMoney,
+  MobilePayment,
+  DigitalWallet,
+  BankTransfer,
+  BNPL,
+  DebitCard,
+  CarrierBilling,
 }
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum PaymentMethodName {
+pub enum PaymentMethodKindName {
   CreditCard(CreditCard),
   DigitalMoney(DigitalMoney),
   MobilePayment(MobilePayment),
@@ -151,8 +167,44 @@ impl fmt::Display for BNPL {
   }
 }
 
-impl PaymentMethodName {
-  pub fn from_str(s: &str) -> Result<Self, PaymentMethodNameError> {
+impl fmt::Display for PaymentMethodCategoryName {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      Self::CreditCard => write!(f, "Credit Card"),
+      Self::DigitalMoney => write!(f, "Digital Money"),
+      Self::MobilePayment => write!(f, "Mobile Payment"),
+      Self::DigitalWallet => write!(f, "Digital Wallet"),
+      Self::BankTransfer => write!(f, "Bank Transfer"),
+      Self::BNPL => write!(f, "BNPL"),
+      Self::DebitCard => write!(f, "Debit Card"),
+      Self::CarrierBilling => write!(f, "Carrier Billing"),
+    }
+  }
+}
+
+impl FromStr for PaymentMethodCategoryName {
+  type Err = PaymentMethodNameError;
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    match s {
+      "Credit Card" => Ok(Self::CreditCard),
+      "Digital Money" => Ok(Self::DigitalMoney),
+      "Mobile Payment" => Ok(Self::MobilePayment),
+      "Digital Wallet" => Ok(Self::DigitalWallet),
+      "Bank Transfer" => Ok(Self::BankTransfer),
+      "BNPL" => Ok(Self::BNPL),
+      "Debit Card" => Ok(Self::DebitCard),
+      "Carrier Billing" => Ok(Self::CarrierBilling),
+
+      _ => Err(PaymentMethodNameError::InvalidCategoryName(s.to_string())),
+    }
+  }
+}
+
+impl FromStr for PaymentMethodKindName {
+  type Err = PaymentMethodNameError;
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
     match s {
       // Credit Card
       "Visa" => Ok(Self::CreditCard(CreditCard::Visa)),
@@ -195,25 +247,12 @@ impl PaymentMethodName {
       "Klarna" => Ok(Self::BNPL(BNPL::Klarna)),
       "Afterpay" => Ok(Self::BNPL(BNPL::Afterpay)),
 
-      _ => Err(PaymentMethodNameError::Invalid(s.to_string())),
-    }
-  }
-
-  pub fn category(&self) -> &'static str {
-    match self {
-      Self::CreditCard(_) => "Credit Card",
-      Self::DigitalMoney(_) => "Digital Money",
-      Self::MobilePayment(_) => "Mobile Payment",
-      Self::DigitalWallet(_) => "Digital Wallet",
-      Self::BankTransfer(_) => "Bank Transfer",
-      Self::BNPL(_) => "Buy Now Pay Later",
-      Self::DebitCard => "Debit Card",
-      Self::CarrierBilling => "Carrier Billing",
+      _ => Err(PaymentMethodNameError::InvalidKindName(s.to_string())),
     }
   }
 }
 
-impl fmt::Display for PaymentMethodName {
+impl fmt::Display for PaymentMethodKindName {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     match self {
       Self::CreditCard(cc) => write!(f, "{}", cc),
@@ -233,119 +272,125 @@ mod tests {
   use super::*;
 
   #[test]
-  fn test_payment_method_name_from_str() {
+  fn test_payment_method_kind_name_from_str() {
     let test_case = vec![
       // Credit Card
-      ("Visa", PaymentMethodName::CreditCard(CreditCard::Visa)),
+      ("Visa", PaymentMethodKindName::CreditCard(CreditCard::Visa)),
       (
         "MasterCard",
-        PaymentMethodName::CreditCard(CreditCard::MasterCard),
+        PaymentMethodKindName::CreditCard(CreditCard::MasterCard),
       ),
       (
         "American Express",
-        PaymentMethodName::CreditCard(CreditCard::AmericanExpress),
+        PaymentMethodKindName::CreditCard(CreditCard::AmericanExpress),
       ),
-      ("JCB", PaymentMethodName::CreditCard(CreditCard::JCB)),
+      ("JCB", PaymentMethodKindName::CreditCard(CreditCard::JCB)),
       (
         "Discover",
-        PaymentMethodName::CreditCard(CreditCard::Discover),
+        PaymentMethodKindName::CreditCard(CreditCard::Discover),
       ),
       (
         "Diners Club",
-        PaymentMethodName::CreditCard(CreditCard::DinersClub),
+        PaymentMethodKindName::CreditCard(CreditCard::DinersClub),
       ),
       // Digital Money
       (
         "Suica",
-        PaymentMethodName::DigitalMoney(DigitalMoney::Suica),
+        PaymentMethodKindName::DigitalMoney(DigitalMoney::Suica),
       ),
       (
         "PASMO",
-        PaymentMethodName::DigitalMoney(DigitalMoney::Pasmo),
+        PaymentMethodKindName::DigitalMoney(DigitalMoney::Pasmo),
       ),
       (
         "nanaco",
-        PaymentMethodName::DigitalMoney(DigitalMoney::Nanaco),
+        PaymentMethodKindName::DigitalMoney(DigitalMoney::Nanaco),
       ),
-      ("WAON", PaymentMethodName::DigitalMoney(DigitalMoney::Waon)),
+      (
+        "WAON",
+        PaymentMethodKindName::DigitalMoney(DigitalMoney::Waon),
+      ),
       (
         "楽天Edy",
-        PaymentMethodName::DigitalMoney(DigitalMoney::RakutenEdy),
+        PaymentMethodKindName::DigitalMoney(DigitalMoney::RakutenEdy),
       ),
       // Mobile Payment
       (
         "PayPay",
-        PaymentMethodName::MobilePayment(MobilePayment::PayPay),
+        PaymentMethodKindName::MobilePayment(MobilePayment::PayPay),
       ),
       (
         "LinePay",
-        PaymentMethodName::MobilePayment(MobilePayment::LinePay),
+        PaymentMethodKindName::MobilePayment(MobilePayment::LinePay),
       ),
       (
         "MerPay",
-        PaymentMethodName::MobilePayment(MobilePayment::MerPay),
+        PaymentMethodKindName::MobilePayment(MobilePayment::MerPay),
       ),
       (
         "RakutenPay",
-        PaymentMethodName::MobilePayment(MobilePayment::RakutenPay),
+        PaymentMethodKindName::MobilePayment(MobilePayment::RakutenPay),
       ),
       (
         "DBarai",
-        PaymentMethodName::MobilePayment(MobilePayment::DBarai),
+        PaymentMethodKindName::MobilePayment(MobilePayment::DBarai),
       ),
       (
         "Venmo",
-        PaymentMethodName::MobilePayment(MobilePayment::Venmo),
+        PaymentMethodKindName::MobilePayment(MobilePayment::Venmo),
       ),
       (
         "CashApp",
-        PaymentMethodName::MobilePayment(MobilePayment::CashApp),
+        PaymentMethodKindName::MobilePayment(MobilePayment::CashApp),
       ),
       (
         "Zelle",
-        PaymentMethodName::MobilePayment(MobilePayment::Zelle),
+        PaymentMethodKindName::MobilePayment(MobilePayment::Zelle),
       ),
       (
         "PayPal",
-        PaymentMethodName::MobilePayment(MobilePayment::PayPal),
+        PaymentMethodKindName::MobilePayment(MobilePayment::PayPal),
       ),
       // Digital Wallet
       (
         "ApplePay",
-        PaymentMethodName::DigitalWallet(DigitalWallet::ApplePay),
+        PaymentMethodKindName::DigitalWallet(DigitalWallet::ApplePay),
       ),
       (
         "GooglePay",
-        PaymentMethodName::DigitalWallet(DigitalWallet::GooglePay),
+        PaymentMethodKindName::DigitalWallet(DigitalWallet::GooglePay),
       ),
       (
         "AmazonPay",
-        PaymentMethodName::DigitalWallet(DigitalWallet::AmazonPay),
+        PaymentMethodKindName::DigitalWallet(DigitalWallet::AmazonPay),
       ),
       // Bank Transfer
       (
         "JapaneseBankTransfer",
-        PaymentMethodName::BankTransfer(BankTransfer::JapaneseBankTransfer),
+        PaymentMethodKindName::BankTransfer(BankTransfer::JapaneseBankTransfer),
       ),
       (
         "JapaneseDirectDebit",
-        PaymentMethodName::BankTransfer(BankTransfer::JapaneseDirectDebit),
+        PaymentMethodKindName::BankTransfer(BankTransfer::JapaneseDirectDebit),
       ),
-      ("ACH", PaymentMethodName::BankTransfer(BankTransfer::ACH)),
+      (
+        "ACH",
+        PaymentMethodKindName::BankTransfer(BankTransfer::ACH),
+      ),
       // BNPL
-      ("Affirm", PaymentMethodName::BNPL(BNPL::Affirm)),
-      ("Klarna", PaymentMethodName::BNPL(BNPL::Klarna)),
-      ("Afterpay", PaymentMethodName::BNPL(BNPL::Afterpay)),
+      ("Affirm", PaymentMethodKindName::BNPL(BNPL::Affirm)),
+      ("Klarna", PaymentMethodKindName::BNPL(BNPL::Klarna)),
+      ("Afterpay", PaymentMethodKindName::BNPL(BNPL::Afterpay)),
     ];
 
     for i in test_case {
-      let result = PaymentMethodName::from_str(i.0).unwrap();
+      let result = PaymentMethodKindName::from_str(i.0).unwrap();
       assert_eq!(result, i.1, "input: {}", i.1)
     }
   }
 
   #[test]
-  fn test_payment_method_name_from_str_error() {
+  fn test_payment_method_kind_name_from_str_error() {
     let error_cases = vec![
       "",
       "Invalid",
@@ -358,7 +403,7 @@ mod tests {
 
     for input in error_cases {
       assert!(
-        PaymentMethodName::from_str(input).is_err(),
+        PaymentMethodKindName::from_str(input).is_err(),
         "input: {}",
         input
       )
@@ -461,62 +506,72 @@ mod tests {
   }
 
   #[test]
-  fn test_payment_method_name_category() {
+  fn test_payment_method_kind_name_fmt() {
     let test_case = vec![
+      (PaymentMethodKindName::CreditCard(CreditCard::Visa), "Visa"),
       (
-        PaymentMethodName::CreditCard(CreditCard::Visa),
-        "Credit Card",
-      ),
-      (
-        PaymentMethodName::DigitalMoney(DigitalMoney::Suica),
-        "Digital Money",
-      ),
-      (
-        PaymentMethodName::MobilePayment(MobilePayment::PayPay),
-        "Mobile Payment",
-      ),
-      (
-        PaymentMethodName::DigitalWallet(DigitalWallet::ApplePay),
-        "Digital Wallet",
-      ),
-      (
-        PaymentMethodName::BankTransfer(BankTransfer::ACH),
-        "Bank Transfer",
-      ),
-      (PaymentMethodName::BNPL(BNPL::Affirm), "Buy Now Pay Later"),
-      (PaymentMethodName::DebitCard, "Debit Card"),
-      (PaymentMethodName::CarrierBilling, "Carrier Billing"),
-    ];
-
-    for (payment_method, expected_category) in test_case {
-      assert_eq!(payment_method.category(), expected_category);
-    }
-  }
-
-  #[test]
-  fn test_payment_method_fmt() {
-    let test_case = vec![
-      (PaymentMethodName::CreditCard(CreditCard::Visa), "Visa"),
-      (
-        PaymentMethodName::DigitalMoney(DigitalMoney::Pasmo),
+        PaymentMethodKindName::DigitalMoney(DigitalMoney::Pasmo),
         "PASMO",
       ),
       (
-        PaymentMethodName::MobilePayment(MobilePayment::CashApp),
+        PaymentMethodKindName::MobilePayment(MobilePayment::CashApp),
         "Cash App",
       ),
       (
-        PaymentMethodName::DigitalWallet(DigitalWallet::AmazonPay),
+        PaymentMethodKindName::DigitalWallet(DigitalWallet::AmazonPay),
         "AmazonPay",
       ),
-      (PaymentMethodName::BankTransfer(BankTransfer::ACH), "ACH"),
-      (PaymentMethodName::BNPL(BNPL::Affirm), "Affirm"),
-      (PaymentMethodName::DebitCard, "デビットカード"),
-      (PaymentMethodName::CarrierBilling, "キャリア決済"),
+      (
+        PaymentMethodKindName::BankTransfer(BankTransfer::ACH),
+        "ACH",
+      ),
+      (PaymentMethodKindName::BNPL(BNPL::Affirm), "Affirm"),
+      (PaymentMethodKindName::DebitCard, "デビットカード"),
+      (PaymentMethodKindName::CarrierBilling, "キャリア決済"),
     ];
 
     for (kind, expected) in test_case {
       assert_eq!(kind.to_string(), expected)
     }
+  }
+
+  #[test]
+  fn test_payment_method_category_name_from_str() {
+    let test_case = create_payment_method_category_test_case();
+
+    for (found, expected) in test_case {
+      let result = PaymentMethodCategoryName::from_str(found).unwrap();
+      assert_eq!(result, expected)
+    }
+
+    let invalid_test_case = PaymentMethodCategoryName::from_str("invalid");
+    assert!(matches!(
+      invalid_test_case,
+      Err(PaymentMethodNameError::InvalidCategoryName(_))
+    ))
+  }
+
+  #[test]
+  fn test_payment_method_category_name_fmt() {
+    let test_case = create_payment_method_category_test_case();
+
+    for (expected, found) in test_case {
+      let result = found.to_string();
+      assert_eq!(expected, &result)
+    }
+  }
+
+  fn create_payment_method_category_test_case() -> Vec<(&'static str, PaymentMethodCategoryName)> {
+    let test_case = vec![
+      ("Credit Card", PaymentMethodCategoryName::CreditCard),
+      ("Digital Money", PaymentMethodCategoryName::DigitalMoney),
+      ("Mobile Payment", PaymentMethodCategoryName::MobilePayment),
+      ("Digital Wallet", PaymentMethodCategoryName::DigitalWallet),
+      ("Bank Transfer", PaymentMethodCategoryName::BankTransfer),
+      ("BNPL", PaymentMethodCategoryName::BNPL),
+      ("Debit Card", PaymentMethodCategoryName::DebitCard),
+      ("Carrier Billing", PaymentMethodCategoryName::CarrierBilling),
+    ];
+    test_case
   }
 }

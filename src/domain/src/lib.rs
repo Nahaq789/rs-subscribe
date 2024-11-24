@@ -25,7 +25,7 @@ pub trait AggregateId {
 
 #[derive(Debug, Error)]
 pub enum AggregateIdError {
-  #[error("It is not in the prefix + UUID format.")]
+  #[error("It is not in the prefix_UUID format.")]
   InvalidFormat,
 
   #[error("Invalid UUID format")]
