@@ -196,7 +196,7 @@ impl FromStr for PaymentMethodCategoryName {
       "Debit Card" => Ok(Self::DebitCard),
       "Carrier Billing" => Ok(Self::CarrierBilling),
 
-      _ => Err(PaymentMethodNameError::InvalidCategoryName(s.to_string()))
+      _ => Err(PaymentMethodNameError::InvalidCategoryName(s.to_string())),
     }
   }
 }
@@ -306,7 +306,10 @@ mod tests {
         "nanaco",
         PaymentMethodKindName::DigitalMoney(DigitalMoney::Nanaco),
       ),
-      ("WAON", PaymentMethodKindName::DigitalMoney(DigitalMoney::Waon)),
+      (
+        "WAON",
+        PaymentMethodKindName::DigitalMoney(DigitalMoney::Waon),
+      ),
       (
         "楽天Edy",
         PaymentMethodKindName::DigitalMoney(DigitalMoney::RakutenEdy),
@@ -370,7 +373,10 @@ mod tests {
         "JapaneseDirectDebit",
         PaymentMethodKindName::BankTransfer(BankTransfer::JapaneseDirectDebit),
       ),
-      ("ACH", PaymentMethodKindName::BankTransfer(BankTransfer::ACH)),
+      (
+        "ACH",
+        PaymentMethodKindName::BankTransfer(BankTransfer::ACH),
+      ),
       // BNPL
       ("Affirm", PaymentMethodKindName::BNPL(BNPL::Affirm)),
       ("Klarna", PaymentMethodKindName::BNPL(BNPL::Klarna)),
@@ -515,7 +521,10 @@ mod tests {
         PaymentMethodKindName::DigitalWallet(DigitalWallet::AmazonPay),
         "AmazonPay",
       ),
-      (PaymentMethodKindName::BankTransfer(BankTransfer::ACH), "ACH"),
+      (
+        PaymentMethodKindName::BankTransfer(BankTransfer::ACH),
+        "ACH",
+      ),
       (PaymentMethodKindName::BNPL(BNPL::Affirm), "Affirm"),
       (PaymentMethodKindName::DebitCard, "デビットカード"),
       (PaymentMethodKindName::CarrierBilling, "キャリア決済"),
@@ -537,7 +546,8 @@ mod tests {
 
     let invalid_test_case = PaymentMethodCategoryName::from_str("invalid");
     assert!(matches!(
-      invalid_test_case, Err(PaymentMethodNameError::InvalidCategoryName(_))
+      invalid_test_case,
+      Err(PaymentMethodNameError::InvalidCategoryName(_))
     ))
   }
 

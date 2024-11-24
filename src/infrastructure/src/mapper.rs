@@ -58,7 +58,7 @@ mod tests {
     let binding2 = &AttributeValue::S("fuga".to_string());
     let test_case = vec![
       (Some(binding1), "hoge".to_string()),
-      (Some(binding2), "fuga".to_string())
+      (Some(binding2), "fuga".to_string()),
     ];
 
     for (found, expected) in test_case {
@@ -71,10 +71,7 @@ mod tests {
   fn test_as_string_default_value() {
     let binding1 = None;
     let binding2 = None;
-    let test_case = vec![
-      (binding1, ""),
-      (binding2, "")
-    ];
+    let test_case = vec![(binding1, ""), (binding2, "")];
 
     for (found, expected) in test_case {
       let result = as_string(found, "");

@@ -93,7 +93,10 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .table_name(table)
       .key_condition_expression(USER_ID_CONDITION)
       .expression_attribute_names(USER_ID_NAME, USER_ID_VALUE)
-      .expression_attribute_values(USER_ID_VALUE, AttributeValue::S(user_id.value().to_string()))
+      .expression_attribute_values(
+        USER_ID_VALUE,
+        AttributeValue::S(user_id.value().to_string()),
+      )
       .send()
       .await
       .map_err(|e| PaymentError::QueryError(e.to_string()))?;
@@ -106,9 +109,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
           .collect();
         result
       }
-      None => {
-        Ok(vec![])
-      }
+      None => Ok(vec![]),
     }
   }
 
@@ -152,13 +153,12 @@ impl PaymentRepository for PaymentRepositoryImpl {
 }
 
 impl Mapper<PaymentMethod, PaymentError> for PaymentRepositoryImpl {
-  fn to_domain_model(
-    v: HashMap<String, AttributeValue>,
-  ) -> Result<PaymentMethod, PaymentError> {
+  fn to_domain_model(v: HashMap<String, AttributeValue>) -> Result<PaymentMethod, PaymentError> {
     let payment_method_id = PaymentMethodId::from_str(&as_string(v.get(PAYMENT_METHOD_KEY), ""))?;
     let user_id = UserId::from_str(&as_string(v.get(USER_ID), ""))?;
     let method_name = PaymentMethodCategoryName::from_str(&as_string(v.get(METHOD_NAME), ""))?;
-    let method_kind_name = PaymentMethodKindName::from_str(&as_string(v.get(METHOD_KIND_NAME), ""))?;
+    let method_kind_name =
+      PaymentMethodKindName::from_str(&as_string(v.get(METHOD_KIND_NAME), ""))?;
     let additional_name = &as_string(v.get(ADDITIONAL_NAME), "");
     let created_at = as_datetime(v.get(CREATED_AT));
     let updated_at = as_datetime(v.get(UPDATED_AT));
@@ -182,30 +182,61 @@ mod tests {
   use super::*;
   #[test]
   fn test_to_domain_model() {
-    let test_case = vec![
-      HashMap::from([
-        (PAYMENT_METHOD_KEY.to_string(), AttributeValue::S("pay_550e8400-e29b-41d4-a716-446655440000".to_string())),
-        (USER_ID.to_string(), AttributeValue::S("usr_550e8400-e29b-41d4-a716-446655440000".to_string())),
-        (METHOD_NAME.to_string(), AttributeValue::S("Credit Card".to_string())),
-        (METHOD_KIND_NAME.to_string(), AttributeValue::S("JCB".to_string())),
-        (CREATED_AT.to_string(), AttributeValue::S("2024-01-01T00:00:00Z".to_string())),
-        (UPDATED_AT.to_string(), AttributeValue::S("2077-02-02T00:00:00Z".to_string())),
-      ])
-    ];
+    let test_case = vec![HashMap::from([
+      (
+        PAYMENT_METHOD_KEY.to_string(),
+        AttributeValue::S("pay_550e8400-e29b-41d4-a716-446655440000".to_string()),
+      ),
+      (
+        USER_ID.to_string(),
+        AttributeValue::S("usr_550e8400-e29b-41d4-a716-446655440000".to_string()),
+      ),
+      (
+        METHOD_NAME.to_string(),
+        AttributeValue::S("Credit Card".to_string()),
+      ),
+      (
+        METHOD_KIND_NAME.to_string(),
+        AttributeValue::S("JCB".to_string()),
+      ),
+      (
+        CREATED_AT.to_string(),
+        AttributeValue::S("2024-01-01T00:00:00Z".to_string()),
+      ),
+      (
+        UPDATED_AT.to_string(),
+        AttributeValue::S("2077-02-02T00:00:00Z".to_string()),
+      ),
+    ])];
 
-    let _ = test_case.into_iter().map(|test| {
-      match PaymentRepositoryImpl::to_domain_model(test.clone()) {
-        Ok(v) => {
-          assert_eq!(v.payment_method_id().value().to_string(), as_string(test.get(PAYMENT_METHOD_KEY), ""));
-          assert_eq!(v.user_id().value().to_string(), as_string(test.get(USER_ID), ""));
-          assert_eq!(v.method_name().to_string(), as_string(test.get(METHOD_NAME), ""));
-          assert_eq!(v.method_kind_name().to_string(), as_string(test.get(METHOD_KIND_NAME), ""))
-        }
-        Err(e) => {
-          println!("{:?}", e.to_string());
-          assert!(false)
-        }
-      }
-    }).collect::<()>();
+    let _ = test_case
+      .into_iter()
+      .map(
+        |test| match PaymentRepositoryImpl::to_domain_model(test.clone()) {
+          Ok(v) => {
+            assert_eq!(
+              v.payment_method_id().value().to_string(),
+              as_string(test.get(PAYMENT_METHOD_KEY), "")
+            );
+            assert_eq!(
+              v.user_id().value().to_string(),
+              as_string(test.get(USER_ID), "")
+            );
+            assert_eq!(
+              v.method_name().to_string(),
+              as_string(test.get(METHOD_NAME), "")
+            );
+            assert_eq!(
+              v.method_kind_name().to_string(),
+              as_string(test.get(METHOD_KIND_NAME), "")
+            )
+          }
+          Err(e) => {
+            println!("{:?}", e.to_string());
+            assert!(false)
+          }
+        },
+      )
+      .collect::<()>();
   }
 }
