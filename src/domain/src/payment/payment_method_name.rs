@@ -377,7 +377,7 @@ mod tests {
     ];
 
     for (expected, actual) in test_case {
-      assert_eq!(expected, actual)
+      assert_eq!(expected.to_string(), actual)
     }
   }
 
@@ -392,7 +392,7 @@ mod tests {
     ];
 
     for (expected, actual) in test_case {
-      assert_eq!(expected, actual);
+      assert_eq!(expected.to_string(), actual);
     }
   }
 
@@ -411,7 +411,7 @@ mod tests {
     ];
 
     for (expected, actual) in test_case {
-      assert_eq!(expected, actual);
+      assert_eq!(expected.to_string(), actual);
     }
   }
 
@@ -424,7 +424,7 @@ mod tests {
     ];
 
     for (expected, actual) in test_case {
-      assert_eq!(expected, actual);
+      assert_eq!(expected.to_string(), actual);
     }
   }
 
@@ -443,7 +443,7 @@ mod tests {
     ];
 
     for (expected, actual) in test_case {
-      assert_eq!(expected, actual);
+      assert_eq!(expected.to_string(), actual);
     }
   }
 
@@ -456,7 +456,7 @@ mod tests {
     ];
 
     for (expected, actual) in test_case {
-      assert_eq!(expected, actual);
+      assert_eq!(expected.to_string(), actual);
     }
   }
 
@@ -490,6 +490,33 @@ mod tests {
 
     for (payment_method, expected_category) in test_case {
       assert_eq!(payment_method.category(), expected_category);
+    }
+  }
+
+  #[test]
+  fn test_payment_method_fmt() {
+    let test_case = vec![
+      (PaymentMethodName::CreditCard(CreditCard::Visa), "Visa"),
+      (
+        PaymentMethodName::DigitalMoney(DigitalMoney::Pasmo),
+        "PASMO",
+      ),
+      (
+        PaymentMethodName::MobilePayment(MobilePayment::CashApp),
+        "Cash App",
+      ),
+      (
+        PaymentMethodName::DigitalWallet(DigitalWallet::AmazonPay),
+        "AmazonPay",
+      ),
+      (PaymentMethodName::BankTransfer(BankTransfer::ACH), "ACH"),
+      (PaymentMethodName::BNPL(BNPL::Affirm), "Affirm"),
+      (PaymentMethodName::DebitCard, "デビットカード"),
+      (PaymentMethodName::CarrierBilling, "キャリア決済"),
+    ];
+
+    for (kind, expected) in test_case {
+      assert_eq!(kind.to_string(), expected)
     }
   }
 }

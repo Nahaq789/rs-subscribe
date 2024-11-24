@@ -1,50 +1,87 @@
-use crate::payment::payment_errpr::PaymentError;
+use crate::payment::payment_error::PaymentError;
 use crate::payment::payment_method_id::PaymentMethodId;
 use crate::payment::PaymentMethod;
+use crate::user::user_id::UserId;
 use async_trait::async_trait;
 
-/// 支払い方法のリポジトリインターフェース
+/// 支払い方法を管理するリポジトリのトレイト定義
 #[async_trait]
 pub trait PaymentRepository {
-  /// 新しい支払い方法を作成する
+  /// 支払い方法を新規作成する
   ///
-  /// # 引数
-  /// * `payment` - [PaymentMethod] 作成する支払い方法情報
+  /// # Arguments
+  /// * `payment` - 作成する支払い方法の情報
+  /// * `table` - 保存先のテーブル名
   ///
-  /// # 戻り値
-  /// - [PaymentMethod] 作成された支払い方法情報
-  async fn create(&self, payment: &PaymentMethod) -> Result<PaymentMethod, PaymentError>;
+  /// # Returns
+  /// * `Ok(())` - void
+  /// * `Err(PaymentError)` - 作成処理が失敗した場合のエラー
+  async fn create(
+    &self,
+    payment: &PaymentMethod,
+    user_id: &UserId,
+    table: &str,
+  ) -> Result<(), PaymentError>;
 
-  /// すべての支払い方法を取得する
+  /// ユーザーIDに紐づく全ての支払い方法を取得する
   ///
-  /// # 戻り値
-  /// - Vec<[PaymentMethod]> 支払い方法のリスト
-  async fn find_all(&self) -> Result<Vec<PaymentMethod>, PaymentError>;
+  /// # Arguments
+  /// * `user_id` - 取得対象のユーザーID
+  /// * `table` - 検索対象のテーブル名
+  ///
+  /// # Returns
+  /// * `Ok(Vec<PaymentMethod>)` - 取得された支払い方法のリスト
+  /// * `Err(PaymentError)` - 取得処理が失敗した場合のエラー
+  async fn find_all(
+    &self,
+    user_id: &UserId,
+    table: &str,
+  ) -> Result<Vec<PaymentMethod>, PaymentError>;
 
-  /// IDによって支払い方法を検索する
+  /// 指定されたIDの支払い方法を取得する
   ///
-  /// # 引数
-  /// * `payment_id` - [PaymentMethodId] 検索する支払い方法のID
+  /// # Arguments
+  /// * `payment_id` - 取得する支払い方法のID
+  /// * `table` - 検索対象のテーブル名
   ///
-  /// # 戻り値
-  /// - [PaymentMethod] 検索された支払い方法情報
-  async fn find_by_id(&self, payment_id: &PaymentMethodId) -> Result<PaymentMethod, PaymentError>;
+  /// # Returns
+  /// * `Ok(PaymentMethod)` - 取得された支払い方法の情報
+  /// * `Err(PaymentError)` - 取得処理が失敗した場合のエラー
+  async fn find_by_id(
+    &self,
+    payment_id: &PaymentMethodId,
+    table: &str,
+  ) -> Result<PaymentMethod, PaymentError>;
 
-  /// 支払い方法を更新する
+  /// 支払い方法の情報を更新する
   ///
-  /// # 引数
-  /// * `payment` - [PaymentMethod] 更新する支払い方法情報
+  /// # Arguments
+  /// * `payment` - 更新する支払い方法の情報
+  /// * `table` - 更新対象のテーブル名
   ///
-  /// # 戻り値
-  /// - [PaymentMethod] 更新された支払い方法情報
-  async fn update(&self, payment: &PaymentMethod) -> Result<PaymentMethod, PaymentError>;
+  /// # Returns
+  /// * `Ok(PaymentMethod)` - 更新後の支払い方法の情報
+  /// * `Err(PaymentError)` - 更新処理が失敗した場合のエラー
+  async fn update(
+    &self,
+    payment: &PaymentMethod,
+    table: &str,
+  ) -> Result<PaymentMethod, PaymentError>;
 
   /// 支払い方法を削除する
   ///
-  /// # 引数
-  /// * `payment_id` - [PaymentMethodId] 削除する支払い方法のID
+  /// # Arguments
+  /// * `payment_id` - 削除する支払い方法のID
+  /// * `table` - 削除対象のテーブル名
+  /// * `key` - 削除に使用する認証キー
   ///
-  /// # 戻り値
-  /// - () 削除が成功した場合
-  async fn delete(&self, payment_id: &PaymentMethodId) -> Result<(), PaymentError>;
+  /// # Returns
+  /// * `Ok(())` - 削除処理が成功した場合
+  /// * `Err(PaymentError)` - 削除処理が失敗した場合のエラー
+  async fn delete(
+    &self,
+    payment_id: &PaymentMethodId,
+    table: &str,
+    key: &str,
+  ) -> Result<(), PaymentError>;
 }

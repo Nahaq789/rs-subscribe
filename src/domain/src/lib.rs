@@ -1,15 +1,16 @@
+extern crate core;
+
 use std::str;
 
 use thiserror::Error;
 use uuid::Uuid;
 
-mod payment;
+pub mod payment;
 pub mod payment_cycle;
 pub mod repository;
 pub mod subscribe;
 pub mod user;
 mod value_object;
-
 /// 集約ID用のトレイトです
 ///
 /// 各集約IDはAggregateIdを実装しなければなりません
