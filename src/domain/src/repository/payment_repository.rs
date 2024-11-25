@@ -6,7 +6,7 @@ use async_trait::async_trait;
 
 /// 支払い方法を管理するリポジトリのトレイト定義
 #[async_trait]
-pub trait PaymentRepository {
+pub trait PaymentRepository: Send + Sync {
   /// 支払い方法を新規作成する
   ///
   /// # Arguments
