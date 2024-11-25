@@ -13,6 +13,12 @@ pub enum PaymentError {
   #[error("Failed to query payment methods: {0}")]
   QueryError(String),
 
+  #[error("Failed to find by id payment methods: {0}")]
+  FindByIdError(String),
+
+  #[error("Failed to update payment method: {0}")]
+  UpdatePaymentMethodError(String),
+
   #[error("{0}")]
   PaymentMethodIdFailed(String),
 
