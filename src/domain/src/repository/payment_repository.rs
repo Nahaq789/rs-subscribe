@@ -60,13 +60,9 @@ pub trait PaymentRepository {
   /// * `table` - 更新対象のテーブル名
   ///
   /// # Returns
-  /// * `Ok(PaymentMethod)` - 更新後の支払い方法の情報
+  /// * `Ok(())` - void
   /// * `Err(PaymentError)` - 更新処理が失敗した場合のエラー
-  async fn update(
-    &self,
-    payment: &PaymentMethod,
-    table: &str,
-  ) -> Result<PaymentMethod, PaymentError>;
+  async fn update(&self, payment: &PaymentMethod, table: &str) -> Result<(), PaymentError>;
 
   /// 支払い方法を削除する
   ///
