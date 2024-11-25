@@ -124,16 +124,17 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .client
       .get_item()
       .table_name(table)
-      .key(PAYMENT_METHOD_KEY, AttributeValue::S(payment_id.value().to_string()))
+      .key(
+        PAYMENT_METHOD_KEY,
+        AttributeValue::S(payment_id.value().to_string()),
+      )
       .send()
       .await
       .map_err(|e| FindByIdError(e.to_string()))?;
 
     match result.item {
-      Some(item) => {
-        PaymentRepositoryImpl::to_domain_model(item)
-      }
-      None => Err(PaymentError::FindByIdError(payment_id.value().to_string()))
+      Some(item) => PaymentRepositoryImpl::to_domain_model(item),
+      None => Err(PaymentError::FindByIdError(payment_id.value().to_string())),
     }
   }
 
