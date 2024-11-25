@@ -137,7 +137,6 @@ impl PaymentRepository for PaymentRepositoryImpl {
     payment_id: &PaymentMethodId,
     table: &str,
   ) -> Result<PaymentMethod, PaymentError> {
-    let a = payment_id.value();
     let result = self
       .client
       .get_item()
