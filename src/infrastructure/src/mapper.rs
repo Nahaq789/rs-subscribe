@@ -16,7 +16,7 @@ use std::str::FromStr;
 /// }
 /// ```
 pub trait Mapper<T, E> {
-  fn to_domain_model(v: HashMap<String, AttributeValue>) -> Result<T, E>;
+  fn map_to_domain_model(v: HashMap<String, AttributeValue>) -> Result<T, E>;
 }
 
 /// DynamoDBのAttributeValueから文字列を取得します
