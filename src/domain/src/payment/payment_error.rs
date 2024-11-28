@@ -24,6 +24,9 @@ pub enum PaymentError {
 
   #[error("{0}")]
   PaymentMethodNameFailed(String),
+
+  #[error("Required payment method field '{0}' was missing")]
+  MissingField(String),
 }
 
 impl From<AggregateIdError> for PaymentError {

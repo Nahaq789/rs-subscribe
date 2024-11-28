@@ -27,7 +27,7 @@ pub struct PaymentMethod {
   method_name: PaymentMethodCategoryName,
   method_kind_name: PaymentMethodKindName,
   additional_name: String,
-  created_at: Option<DateTime<Utc>>,
+  created_at: DateTime<Utc>,
   updated_at: Option<DateTime<Utc>>,
 }
 
@@ -40,7 +40,7 @@ impl PaymentMethod {
   /// * `method_name` - [PaymentMethodKindName] 支払方法名
   /// * `detail_name` - [DetailMethodName] 詳細な支払方法名
   /// * `additional_name` - 追加の支払方法名（オプション）
-  /// * `created_at` - 作成日時（オプション）
+  /// * `created_at` - 作成日時
   /// * `updated_at` - 更新日時（オプション）
   ///
   /// # 戻り値
@@ -51,7 +51,7 @@ impl PaymentMethod {
     method_name: PaymentMethodCategoryName,
     method_kind_name: PaymentMethodKindName,
     additional_name: &str,
-    created_at: Option<DateTime<Utc>>,
+    created_at: DateTime<Utc>,
     updated_at: Option<DateTime<Utc>>,
   ) -> Self {
     Self {
@@ -85,7 +85,7 @@ impl PaymentMethod {
     &self.additional_name
   }
 
-  pub fn created_at(&self) -> &Option<DateTime<Utc>> {
+  pub fn created_at(&self) -> &DateTime<Utc> {
     &self.created_at
   }
 
@@ -106,7 +106,7 @@ mod tests {
     let method_name = PaymentMethodCategoryName::CreditCard;
     let method_kind_name = PaymentMethodKindName::CreditCard(CreditCard::Visa);
     let additional_name = "hoge";
-    let created_at = Some(Utc::now());
+    let created_at = Utc::now();
     let updated_at = Some(Utc::now());
 
     let result = PaymentMethod::new(
@@ -124,7 +124,6 @@ mod tests {
     assert_eq!(method_name, result.method_name);
     assert_eq!(method_kind_name, result.method_kind_name);
     assert_eq!(additional_name, result.additional_name);
-    assert!(created_at.is_some());
     assert_eq!(created_at, result.created_at);
     assert!(updated_at.is_some());
     assert_eq!(updated_at, result.updated_at);
