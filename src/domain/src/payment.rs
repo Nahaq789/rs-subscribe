@@ -120,10 +120,13 @@ impl PaymentMethod {
     }
   }
 
-  pub fn is_valid_method_combination(method_name: &PaymentMethodCategoryName, kind_name: &PaymentMethodKindName) -> Result<(), PaymentError> {
+  pub fn is_valid_method_combination(
+    method_name: &PaymentMethodCategoryName,
+    kind_name: &PaymentMethodKindName,
+  ) -> Result<(), PaymentError> {
     match Self::_is_valid_method_combination(method_name, kind_name) {
       true => Ok(()),
-      false => Err(PaymentError::InvalidMethodCombination)
+      false => Err(PaymentError::InvalidMethodCombination),
     }
   }
 }

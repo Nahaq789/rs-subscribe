@@ -16,12 +16,7 @@ pub trait PaymentRepository: Send + Sync {
   /// # Returns
   /// * `Ok(())` - void
   /// * `Err(PaymentError)` - 作成処理が失敗した場合のエラー
-  async fn create(
-    &self,
-    payment: &PaymentMethod,
-    user_id: &UserId,
-    table: &str,
-  ) -> Result<(), PaymentError>;
+  async fn create(&self, payment: &PaymentMethod, table: &str) -> Result<(), PaymentError>;
 
   /// ユーザーIDに紐づく全ての支払い方法を取得する
   ///
