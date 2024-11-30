@@ -2,6 +2,7 @@ pub mod payment_error;
 pub mod payment_method_id;
 pub mod payment_method_name;
 
+use crate::payment::payment_error::PaymentError;
 use crate::payment::payment_method_name::PaymentMethodCategoryName;
 use crate::user::user_id::UserId;
 use chrono::{DateTime, Utc};
@@ -92,12 +93,47 @@ impl PaymentMethod {
   pub fn updated_at(&self) -> &Option<DateTime<Utc>> {
     &self.updated_at
   }
+
+  fn _is_valid_method_combination(
+    method_name: &PaymentMethodCategoryName,
+    kind_name: &PaymentMethodKindName,
+  ) -> bool {
+    match kind_name {
+      PaymentMethodKindName::CreditCard(_) => method_name == &PaymentMethodCategoryName::CreditCard,
+      PaymentMethodKindName::DigitalMoney(_) => {
+        method_name == &PaymentMethodCategoryName::DigitalMoney
+      }
+      PaymentMethodKindName::MobilePayment(_) => {
+        method_name == &PaymentMethodCategoryName::MobilePayment
+      }
+      PaymentMethodKindName::DigitalWallet(_) => {
+        method_name == &PaymentMethodCategoryName::DigitalWallet
+      }
+      PaymentMethodKindName::BankTransfer(_) => {
+        method_name == &PaymentMethodCategoryName::BankTransfer
+      }
+      PaymentMethodKindName::BNPL(_) => method_name == &PaymentMethodCategoryName::BNPL,
+      PaymentMethodKindName::DebitCard => method_name == &PaymentMethodCategoryName::DebitCard,
+      PaymentMethodKindName::CarrierBilling => {
+        method_name == &PaymentMethodCategoryName::CarrierBilling
+      }
+    }
+  }
+
+  pub fn is_valid_method_combination(method_name: &PaymentMethodCategoryName, kind_name: &PaymentMethodKindName) -> Result<(), PaymentError> {
+    match Self::_is_valid_method_combination(method_name, kind_name) {
+      true => Ok(()),
+      false => Err(PaymentError::InvalidMethodCombination)
+    }
+  }
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::payment::payment_method_name::CreditCard;
+  use crate::payment::payment_method_name::{
+    BankTransfer, CreditCard, DigitalMoney, DigitalWallet, MobilePayment, BNPL,
+  };
 
   #[test]
   fn test_payment_method_new() {
@@ -127,5 +163,107 @@ mod tests {
     assert_eq!(created_at, result.created_at);
     assert!(updated_at.is_some());
     assert_eq!(updated_at, result.updated_at);
+  }
+
+  #[test]
+  fn test_is_valid_method_combination_return_true() {
+    let test_case = vec![
+      (
+        PaymentMethodCategoryName::CreditCard,
+        PaymentMethodKindName::CreditCard(CreditCard::JCB),
+      ),
+      (
+        PaymentMethodCategoryName::DigitalMoney,
+        PaymentMethodKindName::DigitalMoney(DigitalMoney::Nanaco),
+      ),
+      (
+        PaymentMethodCategoryName::MobilePayment,
+        PaymentMethodKindName::MobilePayment(MobilePayment::DBarai),
+      ),
+      (
+        PaymentMethodCategoryName::DigitalWallet,
+        PaymentMethodKindName::DigitalWallet(DigitalWallet::ApplePay),
+      ),
+      (
+        PaymentMethodCategoryName::BankTransfer,
+        PaymentMethodKindName::BankTransfer(BankTransfer::JapaneseBankTransfer),
+      ),
+      (
+        PaymentMethodCategoryName::BNPL,
+        PaymentMethodKindName::BNPL(BNPL::Affirm),
+      ),
+      (
+        PaymentMethodCategoryName::DebitCard,
+        PaymentMethodKindName::DebitCard,
+      ),
+      (
+        PaymentMethodCategoryName::CarrierBilling,
+        PaymentMethodKindName::CarrierBilling,
+      ),
+    ];
+
+    for (a, b) in test_case {
+      assert!(PaymentMethod::_is_valid_method_combination(&a, &b))
+    }
+  }
+
+  #[test]
+  fn test_is_valid_method_combination_return_false() {
+    let test_case = vec![
+      (
+        PaymentMethodCategoryName::CreditCard,
+        PaymentMethodKindName::DigitalMoney(DigitalMoney::Nanaco),
+      ),
+      (
+        PaymentMethodCategoryName::DigitalMoney,
+        PaymentMethodKindName::MobilePayment(MobilePayment::DBarai),
+      ),
+      (
+        PaymentMethodCategoryName::MobilePayment,
+        PaymentMethodKindName::DigitalWallet(DigitalWallet::ApplePay),
+      ),
+      (
+        PaymentMethodCategoryName::DigitalWallet,
+        PaymentMethodKindName::BankTransfer(BankTransfer::JapaneseBankTransfer),
+      ),
+      (
+        PaymentMethodCategoryName::BankTransfer,
+        PaymentMethodKindName::BNPL(BNPL::Affirm),
+      ),
+      (
+        PaymentMethodCategoryName::BNPL,
+        PaymentMethodKindName::DebitCard,
+      ),
+      (
+        PaymentMethodCategoryName::DebitCard,
+        PaymentMethodKindName::CarrierBilling,
+      ),
+      (
+        PaymentMethodCategoryName::CarrierBilling,
+        PaymentMethodKindName::CreditCard(CreditCard::JCB),
+      ),
+    ];
+
+    for (a, b) in test_case {
+      assert!(!PaymentMethod::_is_valid_method_combination(&a, &b))
+    }
+  }
+
+  #[test]
+  fn test_is_valid_method_combination() {
+    let method_name = PaymentMethodCategoryName::CreditCard;
+    let method_kind_name = PaymentMethodKindName::CreditCard(CreditCard::JCB);
+
+    let result = PaymentMethod::is_valid_method_combination(&method_name, &method_kind_name);
+    assert!(result.is_ok());
+  }
+  #[test]
+  fn test_is_valid_method_combination_failed() {
+    let method_name = PaymentMethodCategoryName::CreditCard;
+    let method_kind_name = PaymentMethodKindName::MobilePayment(MobilePayment::PayPal);
+
+    let result = PaymentMethod::is_valid_method_combination(&method_name, &method_kind_name);
+    assert!(result.is_err());
+    assert_eq!(result.unwrap_err(), PaymentError::InvalidMethodCombination)
   }
 }

@@ -24,7 +24,6 @@ pub enum PaymentMethodCategoryName {
   CarrierBilling,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum PaymentMethodKindName {
   CreditCard(CreditCard),

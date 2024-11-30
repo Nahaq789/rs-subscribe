@@ -2,7 +2,7 @@ use crate::payment::payment_method_name::PaymentMethodNameError;
 use crate::AggregateIdError;
 use thiserror::Error;
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Eq, PartialEq)]
 pub enum PaymentError {
   #[error("Failed to create payment method: {0}")]
   CreatePaymentMethodFailed(String),
@@ -27,6 +27,9 @@ pub enum PaymentError {
 
   #[error("Required payment method field '{0}' was missing")]
   MissingField(String),
+
+  #[error("Invalid method combination")]
+  InvalidMethodCombination,
 }
 
 impl From<AggregateIdError> for PaymentError {
