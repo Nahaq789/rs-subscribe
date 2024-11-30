@@ -1,6 +1,6 @@
-pub mod service;
 pub mod dtos;
-mod mapper;
+mod error;
+pub mod service;
 
 pub fn add(left: u64, right: u64) -> u64 {
   left + right
