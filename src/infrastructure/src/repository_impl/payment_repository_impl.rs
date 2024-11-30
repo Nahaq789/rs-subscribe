@@ -53,12 +53,7 @@ impl PaymentRepositoryImpl {
 
 #[async_trait::async_trait]
 impl PaymentRepository for PaymentRepositoryImpl {
-  async fn create(
-    &self,
-    payment: &PaymentMethod,
-    user_id: &UserId,
-    table: &str,
-  ) -> Result<(), PaymentError> {
+  async fn create(&self, payment: &PaymentMethod, table: &str) -> Result<(), PaymentError> {
     let request = self
       .client
       .put_item()
@@ -67,7 +62,10 @@ impl PaymentRepository for PaymentRepositoryImpl {
         PAYMENT_METHOD_KEY,
         AttributeValue::S(payment.payment_method_id().value().to_string()),
       )
-      .item(USER_ID, AttributeValue::S(user_id.value().to_string()))
+      .item(
+        USER_ID,
+        AttributeValue::S(payment.user_id().value().to_string()),
+      )
       .item(
         METHOD_NAME,
         AttributeValue::S(payment.method_name().to_string()),
@@ -82,10 +80,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
       )
       .item(
         CREATED_AT,
-        match payment.created_at() {
-          Some(v) => AttributeValue::S(v.to_rfc3339()),
-          None => AttributeValue::Null(true),
-        },
+        AttributeValue::S(payment.created_at().to_rfc3339()),
       )
       .item(
         UPDATED_AT,
@@ -124,7 +119,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
       Some(items) => {
         let result = items
           .into_iter()
-          .map(|item| PaymentRepositoryImpl::to_domain_model(item))
+          .map(|item| PaymentRepositoryImpl::map_to_domain_model(item))
           .collect();
         result
       }
@@ -137,7 +132,6 @@ impl PaymentRepository for PaymentRepositoryImpl {
     payment_id: &PaymentMethodId,
     table: &str,
   ) -> Result<PaymentMethod, PaymentError> {
-    let a = payment_id.value();
     let result = self
       .client
       .get_item()
@@ -151,7 +145,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .map_err(|e| FindByIdError(e.to_string()))?;
 
     match result.item {
-      Some(item) => PaymentRepositoryImpl::to_domain_model(item),
+      Some(item) => PaymentRepositoryImpl::map_to_domain_model(item),
       None => Err(PaymentError::FindByIdError(payment_id.value().to_string())),
     }
   }
@@ -220,14 +214,17 @@ impl PaymentRepository for PaymentRepositoryImpl {
 }
 
 impl Mapper<PaymentMethod, PaymentError> for PaymentRepositoryImpl {
-  fn to_domain_model(v: HashMap<String, AttributeValue>) -> Result<PaymentMethod, PaymentError> {
+  fn map_to_domain_model(
+    v: HashMap<String, AttributeValue>,
+  ) -> Result<PaymentMethod, PaymentError> {
     let payment_method_id = PaymentMethodId::from_str(&as_string(v.get(PAYMENT_METHOD_KEY), ""))?;
     let user_id = UserId::from_str(&as_string(v.get(USER_ID), ""))?;
     let method_name = PaymentMethodCategoryName::from_str(&as_string(v.get(METHOD_NAME), ""))?;
     let method_kind_name =
       PaymentMethodKindName::from_str(&as_string(v.get(METHOD_KIND_NAME), ""))?;
     let additional_name = &as_string(v.get(ADDITIONAL_NAME), "");
-    let created_at = as_datetime(v.get(CREATED_AT));
+    let created_at =
+      as_datetime(v.get(CREATED_AT)).ok_or(PaymentError::MissingField("created_at".to_string()))?;
     let updated_at = as_datetime(v.get(UPDATED_AT));
 
     let payment = PaymentMethod::new(
@@ -279,7 +276,7 @@ mod tests {
     let _ = test_case
       .into_iter()
       .map(
-        |test| match PaymentRepositoryImpl::to_domain_model(test.clone()) {
+        |test| match PaymentRepositoryImpl::map_to_domain_model(test.clone()) {
           Ok(v) => {
             assert_eq!(
               v.payment_method_id().value().to_string(),
