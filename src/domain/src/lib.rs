@@ -11,6 +11,7 @@ pub mod repository;
 pub mod subscribe;
 pub mod user;
 mod value_object;
+
 /// 集約ID用のトレイトです
 ///
 /// 各集約IDはAggregateIdを実装しなければなりません

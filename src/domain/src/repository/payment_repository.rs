@@ -6,7 +6,7 @@ use async_trait::async_trait;
 
 /// 支払い方法を管理するリポジトリのトレイト定義
 #[async_trait]
-pub trait PaymentRepository {
+pub trait PaymentRepository: Send + Sync {
   /// 支払い方法を新規作成する
   ///
   /// # Arguments
@@ -16,12 +16,7 @@ pub trait PaymentRepository {
   /// # Returns
   /// * `Ok(())` - void
   /// * `Err(PaymentError)` - 作成処理が失敗した場合のエラー
-  async fn create(
-    &self,
-    payment: &PaymentMethod,
-    user_id: &UserId,
-    table: &str,
-  ) -> Result<(), PaymentError>;
+  async fn create(&self, payment: &PaymentMethod, table: &str) -> Result<(), PaymentError>;
 
   /// ユーザーIDに紐づく全ての支払い方法を取得する
   ///
