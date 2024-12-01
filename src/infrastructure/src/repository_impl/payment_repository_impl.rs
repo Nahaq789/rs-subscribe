@@ -130,6 +130,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
   async fn find_by_id(
     &self,
     payment_id: &PaymentMethodId,
+    user_id: &UserId,
     table: &str,
   ) -> Result<PaymentMethod, PaymentError> {
     let result = self
@@ -140,6 +141,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
         PAYMENT_METHOD_KEY,
         AttributeValue::S(payment_id.value().to_string()),
       )
+      .key(USER_ID, AttributeValue::S(user_id.value().to_string()))
       .send()
       .await
       .map_err(|e| FindByIdError(e.to_string()))?;
@@ -193,14 +195,18 @@ impl PaymentRepository for PaymentRepositoryImpl {
   async fn delete(
     &self,
     payment_id: &PaymentMethodId,
+    user_id: &UserId,
     table: &str,
-    key: &str,
   ) -> Result<(), PaymentError> {
     match self
       .client
       .delete_item()
       .table_name(table)
-      .key(key, AttributeValue::S(payment_id.value().to_owned()))
+      .key(
+        PAYMENT_METHOD_KEY,
+        AttributeValue::S(payment_id.value().to_owned()),
+      )
+      .key(USER_ID, AttributeValue::S(user_id.value().to_owned()))
       .send()
       .await
     {
