@@ -27,3 +27,4 @@ chrono = { version = "0.4.38", features = ["serde"] }
 
 # test
 rstest = "0.23.0"
+mockall = "0.13.1"
