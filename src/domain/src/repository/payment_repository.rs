@@ -37,6 +37,7 @@ pub trait PaymentRepository: Send + Sync {
   ///
   /// # Arguments
   /// * `payment_id` - 取得する支払い方法のID
+  /// * `user_id` - ユーザーID
   /// * `table` - 検索対象のテーブル名
   ///
   /// # Returns
@@ -45,6 +46,7 @@ pub trait PaymentRepository: Send + Sync {
   async fn find_by_id(
     &self,
     payment_id: &PaymentMethodId,
+    user_id: &UserId,
     table: &str,
   ) -> Result<PaymentMethod, PaymentError>;
 
@@ -63,8 +65,8 @@ pub trait PaymentRepository: Send + Sync {
   ///
   /// # Arguments
   /// * `payment_id` - 削除する支払い方法のID
+  /// * `user_id` - ユーザーID
   /// * `table` - 削除対象のテーブル名
-  /// * `key` - 削除に使用する認証キー
   ///
   /// # Returns
   /// * `Ok(())` - 削除処理が成功した場合
@@ -72,7 +74,7 @@ pub trait PaymentRepository: Send + Sync {
   async fn delete(
     &self,
     payment_id: &PaymentMethodId,
+    user_id: &UserId,
     table: &str,
-    key: &str,
   ) -> Result<(), PaymentError>;
 }
