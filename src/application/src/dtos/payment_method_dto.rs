@@ -69,7 +69,7 @@ impl DTO<PaymentMethodDTO, PaymentMethod, ApplicationError> for PaymentMethodDTO
     Ok(payment_method)
   }
 
-  fn map_to_dto(v: PaymentMethod) -> Result<PaymentMethodDTO, ApplicationError> {
+  fn map_to_dto(v: &PaymentMethod) -> PaymentMethodDTO {
     let payment_method_id = v.payment_method_id().value();
     let user_id = v.user_id().value();
     let method_name = v.method_name().to_string();
@@ -88,7 +88,7 @@ impl DTO<PaymentMethodDTO, PaymentMethod, ApplicationError> for PaymentMethodDTO
       updated_at,
     );
 
-    Ok(payment_dto)
+    payment_dto
   }
 }
 
@@ -107,23 +107,17 @@ mod tests {
     let created_at = Utc::now();
     let updated_at = Some(Utc::now());
 
-    println!("{:?}", method_name);
-    println!("{:?}", method_kind_name);
-
-    println!("{:?}", method_name.to_string());
-    println!("{:?}", method_kind_name.to_string());
-
     let payment_method = PaymentMethod::new(
       payment_method_id.clone(),
       user_id.clone(),
       method_name.clone(),
       method_kind_name.clone(),
-      additional_name.clone(),
+      additional_name,
       created_at.clone(),
       updated_at.clone(),
     );
 
-    let result = PaymentMethodDTO::map_to_dto(payment_method).unwrap();
+    let result = PaymentMethodDTO::map_to_dto(&payment_method);
 
     assert_eq!(&result.payment_method_id, payment_method_id.value());
     assert_eq!(&result.user_id, user_id.value());
