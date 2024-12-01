@@ -1,7 +1,6 @@
 use crate::mapper::{as_datetime, as_string, Mapper};
 use aws_sdk_dynamodb::types::AttributeValue;
 use domain::payment::payment_error::PaymentError;
-use domain::payment::payment_error::PaymentError::FindByIdError;
 use domain::payment::payment_method_id::PaymentMethodId;
 use domain::payment::payment_method_name::{PaymentMethodCategoryName, PaymentMethodKindName};
 use domain::payment::PaymentMethod;
@@ -144,7 +143,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .key(USER_ID, AttributeValue::S(user_id.value().to_string()))
       .send()
       .await
-      .map_err(|e| FindByIdError(e.to_string()))?;
+      .map_err(|e| PaymentError::FindByIdError(e.to_string()))?;
 
     match result.item {
       Some(item) => PaymentRepositoryImpl::map_to_domain_model(item),
