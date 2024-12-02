@@ -1552,10 +1552,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "presentation"
-version = "0.1.0"
-
-[[package]]
 name = "proc-macro-crate"
 version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1976,9 +1972,11 @@ name = "server"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "application",
  "aws-config",
  "aws-sdk-dynamodb",
  "axum",
+ "infrastructure",
  "thiserror",
  "tokio",
  "tracing",
