@@ -1,4 +1,5 @@
 use crate::mapper::{as_datetime, as_string, Mapper};
+use aws_sdk_dynamodb::error::ProvideErrorMetadata;
 use aws_sdk_dynamodb::types::AttributeValue;
 use domain::payment::payment_error::PaymentError;
 use domain::payment::payment_method_id::PaymentMethodId;
@@ -112,7 +113,13 @@ impl PaymentRepository for PaymentRepositoryImpl {
       )
       .send()
       .await
-      .map_err(|e| PaymentError::QueryError(e.to_string()))?;
+      .map_err(|e| {
+        let msg = match e.message() {
+          Some(s) => s.to_string(),
+          None => e.to_string()
+        };
+        PaymentError::QueryError(msg)
+      })?;
 
     match result.items {
       Some(items) => {
