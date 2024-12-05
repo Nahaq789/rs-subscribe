@@ -1,36 +1,27 @@
 use axum::routing::get;
 use axum::{Extension, Router};
+use dotenv::dotenv;
 use server::app_state::PaymentMethodState;
 use server::controller::payment_method_controller::create_payment_method;
+use server::{set_up_tracing_subscriber, ApiSettings};
 use std::net::{Ipv4Addr, SocketAddrV4};
-use tracing::metadata::LevelFilter;
-use tracing::{event, Level};
+use std::str::FromStr;
+use tracing::{error, event, Level};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{filter, Layer};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-  tracing_subscriber::registry()
-    .with(
-      tracing_subscriber::fmt::layer()
-        .with_target(true)
-        .with_ansi(false)
-        .with_filter(
-          filter::filter_fn(|metadata| {
-            if metadata.target().contains("credentials") {
-              false
-            } else {
-              true
-            }
-          })
-        )
-        .with_filter(LevelFilter::DEBUG)
-    )
-    .init();
+  dotenv().ok();
+  set_up_tracing_subscriber();
 
   let app = create_router().await;
-  let socket_addr_v4 = SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), 8080);
+  let api = ApiSettings::build().map_err(|e| {
+    error!("{}", e);
+    e
+  })?;
+  let socket_addr_v4 = SocketAddrV4::new(Ipv4Addr::from_str(&api.host)?, api.port.parse()?);
   let listener = tokio::net::TcpListener::bind(socket_addr_v4).await?;
   event!(Level::INFO, "Application Started");
   event!(Level::INFO, "Running on {0}", socket_addr_v4);
