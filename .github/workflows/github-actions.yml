@@ -11,9 +11,12 @@ on:
 env:
   AWS_USER_POOL_ID: test_pool_id
   AWS_CLIENT_ID: test_client_id
-  AWS_REGION: test_region
+  AWS_REGION: ap-northeast-1
   AWS_CLIENT_SECRET: test_client_secret
   RUST_LOG: debug
+  PAYMENT_TABLE: payment
+  HOST: 0.0.0.0
+  PORT: 7070
 jobs:
   build:
     runs-on: ubuntu-latest

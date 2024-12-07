@@ -17,8 +17,8 @@ pub struct Database<T> {
 }
 
 impl<T> Database<T> {
-  pub fn client(&self) -> &T {
-    &self.client
+  pub fn client(self) -> T {
+    self.client
   }
 }
 

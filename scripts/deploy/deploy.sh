@@ -1,6 +1,7 @@
 #!/bin/bash
 echo "Deploy to AWS"
 echo "Running terraform init..."
+cd ../../terraform/environments/dev
 terraform init
 
 if [ $? -eq 0 ]; then
