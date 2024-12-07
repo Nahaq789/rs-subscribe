@@ -93,8 +93,16 @@ mod tests {
   const HOST: &str = "1.1.1.1";
   const PORT: &str = "7878";
   const PAYMENT_TABLE: &str = "payment";
+
+  fn clear_env() {
+    std::env::remove_var("HOST");
+    std::env::remove_var("PORT");
+    std::env::remove_var("PAYMENT_TABLE");
+  }
+
   #[test]
   fn test_api_settings_build_success() {
+    clear_env();
     std::env::set_var("HOST", HOST);
     std::env::set_var("PORT", PORT);
 
@@ -108,6 +116,7 @@ mod tests {
 
   #[test]
   fn test_api_settings_build_host_failed() {
+    clear_env();
     let result = ApiSettings::build();
 
     assert!(result.is_err());
@@ -119,6 +128,7 @@ mod tests {
 
   #[test]
   fn test_api_settings_build_port_failed() {
+    clear_env();
     std::env::set_var("HOST", HOST);
     let result = ApiSettings::build();
 
@@ -131,6 +141,7 @@ mod tests {
 
   #[test]
   fn aws_settings_build_payment_success() {
+    clear_env();
     std::env::set_var("PAYMENT_TABLE", PAYMENT_TABLE);
     let result = AwsSettings::build();
 
@@ -141,6 +152,7 @@ mod tests {
 
   #[test]
   fn aws_settings_build_payment_failed() {
+    clear_env();
     let result = AwsSettings::build();
 
     assert!(result.is_err());
@@ -152,6 +164,7 @@ mod tests {
 
   #[tokio::test]
   async fn test_create_payment_router() {
+    clear_env();
     std::env::set_var("PAYMENT_TABLE", PAYMENT_TABLE);
     let result = create_payment_router().await;
     assert!(result.is_ok())
