@@ -1,7 +1,7 @@
 use crate::mapper::{as_datetime, as_string, Mapper};
+use aws_sdk_dynamodb::error::ProvideErrorMetadata;
 use aws_sdk_dynamodb::types::AttributeValue;
 use domain::payment::payment_error::PaymentError;
-use domain::payment::payment_error::PaymentError::FindByIdError;
 use domain::payment::payment_method_id::PaymentMethodId;
 use domain::payment::payment_method_name::{PaymentMethodCategoryName, PaymentMethodKindName};
 use domain::payment::PaymentMethod;
@@ -43,21 +43,25 @@ const UPDATED_AT_VALUE: &str = ":updated_at";
 
 pub struct PaymentRepositoryImpl {
   client: aws_sdk_dynamodb::Client,
+  table: String,
 }
 
 impl PaymentRepositoryImpl {
-  pub fn new(client: aws_sdk_dynamodb::Client) -> Self {
-    Self { client }
+  pub fn new(client: aws_sdk_dynamodb::Client, table: &str) -> Self {
+    Self {
+      client,
+      table: table.to_string(),
+    }
   }
 }
 
 #[async_trait::async_trait]
 impl PaymentRepository for PaymentRepositoryImpl {
-  async fn create(&self, payment: &PaymentMethod, table: &str) -> Result<(), PaymentError> {
+  async fn create(&self, payment: &PaymentMethod) -> Result<(), PaymentError> {
     let request = self
       .client
       .put_item()
-      .table_name(table)
+      .table_name(&self.table)
       .item(
         PAYMENT_METHOD_KEY,
         AttributeValue::S(payment.payment_method_id().value().to_string()),
@@ -96,15 +100,11 @@ impl PaymentRepository for PaymentRepositoryImpl {
     }
   }
 
-  async fn find_all(
-    &self,
-    user_id: &UserId,
-    table: &str,
-  ) -> Result<Vec<PaymentMethod>, PaymentError> {
+  async fn find_all(&self, user_id: &UserId) -> Result<Vec<PaymentMethod>, PaymentError> {
     let result = self
       .client
       .query()
-      .table_name(table)
+      .table_name(&self.table)
       .key_condition_expression(USER_ID_CONDITION)
       .expression_attribute_names(USER_ID_ATTR, USER_ID)
       .expression_attribute_values(
@@ -113,7 +113,13 @@ impl PaymentRepository for PaymentRepositoryImpl {
       )
       .send()
       .await
-      .map_err(|e| PaymentError::QueryError(e.to_string()))?;
+      .map_err(|e| {
+        let msg = match e.message() {
+          Some(s) => s.to_string(),
+          None => e.to_string(),
+        };
+        PaymentError::QueryError(msg)
+      })?;
 
     match result.items {
       Some(items) => {
@@ -131,12 +137,11 @@ impl PaymentRepository for PaymentRepositoryImpl {
     &self,
     payment_id: &PaymentMethodId,
     user_id: &UserId,
-    table: &str,
   ) -> Result<PaymentMethod, PaymentError> {
     let result = self
       .client
       .get_item()
-      .table_name(table)
+      .table_name(&self.table)
       .key(
         PAYMENT_METHOD_KEY,
         AttributeValue::S(payment_id.value().to_string()),
@@ -144,7 +149,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .key(USER_ID, AttributeValue::S(user_id.value().to_string()))
       .send()
       .await
-      .map_err(|e| FindByIdError(e.to_string()))?;
+      .map_err(|e| PaymentError::FindByIdError(e.to_string()))?;
 
     match result.item {
       Some(item) => PaymentRepositoryImpl::map_to_domain_model(item),
@@ -152,11 +157,11 @@ impl PaymentRepository for PaymentRepositoryImpl {
     }
   }
 
-  async fn update(&self, payment: &PaymentMethod, table: &str) -> Result<(), PaymentError> {
+  async fn update(&self, payment: &PaymentMethod) -> Result<(), PaymentError> {
     let result = self
       .client
       .update_item()
-      .table_name(table)
+      .table_name(&self.table)
       .key(
         PAYMENT_METHOD_KEY,
         AttributeValue::S(payment.payment_method_id().value().to_string()),
@@ -196,12 +201,11 @@ impl PaymentRepository for PaymentRepositoryImpl {
     &self,
     payment_id: &PaymentMethodId,
     user_id: &UserId,
-    table: &str,
   ) -> Result<(), PaymentError> {
     match self
       .client
       .delete_item()
-      .table_name(table)
+      .table_name(&self.table)
       .key(
         PAYMENT_METHOD_KEY,
         AttributeValue::S(payment_id.value().to_owned()),

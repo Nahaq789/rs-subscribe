@@ -11,34 +11,27 @@ pub trait PaymentRepository: Send + Sync {
   ///
   /// # Arguments
   /// * `payment` - 作成する支払い方法の情報
-  /// * `table` - 保存先のテーブル名
   ///
   /// # Returns
   /// * `Ok(())` - void
   /// * `Err(PaymentError)` - 作成処理が失敗した場合のエラー
-  async fn create(&self, payment: &PaymentMethod, table: &str) -> Result<(), PaymentError>;
+  async fn create(&self, payment: &PaymentMethod) -> Result<(), PaymentError>;
 
   /// ユーザーIDに紐づく全ての支払い方法を取得する
   ///
   /// # Arguments
   /// * `user_id` - 取得対象のユーザーID
-  /// * `table` - 検索対象のテーブル名
   ///
   /// # Returns
   /// * `Ok(Vec<PaymentMethod>)` - 取得された支払い方法のリスト
   /// * `Err(PaymentError)` - 取得処理が失敗した場合のエラー
-  async fn find_all(
-    &self,
-    user_id: &UserId,
-    table: &str,
-  ) -> Result<Vec<PaymentMethod>, PaymentError>;
+  async fn find_all(&self, user_id: &UserId) -> Result<Vec<PaymentMethod>, PaymentError>;
 
   /// 指定されたIDの支払い方法を取得する
   ///
   /// # Arguments
   /// * `payment_id` - 取得する支払い方法のID
   /// * `user_id` - ユーザーID
-  /// * `table` - 検索対象のテーブル名
   ///
   /// # Returns
   /// * `Ok(PaymentMethod)` - 取得された支払い方法の情報
@@ -47,26 +40,23 @@ pub trait PaymentRepository: Send + Sync {
     &self,
     payment_id: &PaymentMethodId,
     user_id: &UserId,
-    table: &str,
   ) -> Result<PaymentMethod, PaymentError>;
 
   /// 支払い方法の情報を更新する
   ///
   /// # Arguments
   /// * `payment` - 更新する支払い方法の情報
-  /// * `table` - 更新対象のテーブル名
   ///
   /// # Returns
   /// * `Ok(())` - void
   /// * `Err(PaymentError)` - 更新処理が失敗した場合のエラー
-  async fn update(&self, payment: &PaymentMethod, table: &str) -> Result<(), PaymentError>;
+  async fn update(&self, payment: &PaymentMethod) -> Result<(), PaymentError>;
 
   /// 支払い方法を削除する
   ///
   /// # Arguments
   /// * `payment_id` - 削除する支払い方法のID
   /// * `user_id` - ユーザーID
-  /// * `table` - 削除対象のテーブル名
   ///
   /// # Returns
   /// * `Ok(())` - 削除処理が成功した場合
@@ -75,6 +65,5 @@ pub trait PaymentRepository: Send + Sync {
     &self,
     payment_id: &PaymentMethodId,
     user_id: &UserId,
-    table: &str,
   ) -> Result<(), PaymentError>;
 }
