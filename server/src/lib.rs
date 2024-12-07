@@ -2,7 +2,10 @@ pub mod app_state;
 pub mod client;
 pub mod controller;
 
-use std::str::FromStr;
+use app_state::PaymentMethodState;
+use axum::routing::get;
+use axum::{Extension, Router};
+use controller::payment_method_controller::create_payment_method;
 use thiserror::Error;
 use tracing::error;
 use tracing_subscriber::layer::SubscriberExt;
@@ -15,20 +18,37 @@ pub struct ApiSettings {
   pub port: String,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug)]
+pub struct AwsSettings {
+  payment: String,
+}
+
+#[derive(Debug, Error, PartialEq, Eq)]
 pub enum SettingsError {
   #[error("Cannot load env. key: {0}")]
   InvalidLoadConfig(String),
+
+  #[error("State build error: {0}")]
+  StateBuildError(String),
 }
 
 impl ApiSettings {
   pub fn build() -> Result<Self, SettingsError> {
-    let host = std::env::var("HOST")
-      .map_err(|_| SettingsError::InvalidLoadConfig("HOST".to_string()))?;
-    let port = std::env::var("PORT")
-      .map_err(|_| SettingsError::InvalidLoadConfig("PORT".to_string()))?;
+    let host =
+      std::env::var("HOST").map_err(|_| SettingsError::InvalidLoadConfig("HOST".to_string()))?;
+    let port =
+      std::env::var("PORT").map_err(|_| SettingsError::InvalidLoadConfig("PORT".to_string()))?;
 
     Ok(Self { host, port })
+  }
+}
+
+impl AwsSettings {
+  pub fn build() -> Result<Self, SettingsError> {
+    let payment = std::env::var("PAYMENT_TABLE")
+      .map_err(|_| SettingsError::InvalidLoadConfig("PAYMENT_TABLE".to_string()))?;
+
+    Ok(Self { payment })
   }
 }
 
@@ -52,4 +72,88 @@ pub fn set_up_tracing_subscriber() {
         })),
     )
     .init();
+}
+
+pub async fn create_payment_router() -> Result<Router, SettingsError> {
+  let aws = AwsSettings::build()?;
+  let state = PaymentMethodState::new(&aws.payment)
+    .await
+    .map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
+  Ok(
+    Router::new()
+      .route("/", get(create_payment_method))
+      .layer(Extension(state)),
+  )
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  const HOST: &str = "1.1.1.1";
+  const PORT: &str = "7878";
+  const PAYMENT_TABLE: &str = "payment";
+  #[test]
+  fn test_api_settings_build_success() {
+    std::env::set_var("HOST", HOST);
+    std::env::set_var("PORT", PORT);
+
+    let result = ApiSettings::build();
+
+    assert!(&result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(&result.host, HOST);
+    assert_eq!(&result.port, PORT)
+  }
+
+  #[test]
+  fn test_api_settings_build_host_failed() {
+    let result = ApiSettings::build();
+
+    assert!(result.is_err());
+    assert_eq!(
+      SettingsError::InvalidLoadConfig("HOST".to_string()),
+      result.unwrap_err()
+    )
+  }
+
+  #[test]
+  fn test_api_settings_build_port_failed() {
+    std::env::set_var("HOST", HOST);
+    let result = ApiSettings::build();
+
+    assert!(result.is_err());
+    assert_eq!(
+      SettingsError::InvalidLoadConfig("PORT".to_string()),
+      result.unwrap_err()
+    )
+  }
+
+  #[test]
+  fn aws_settings_build_payment_success() {
+    std::env::set_var("PAYMENT_TABLE", PAYMENT_TABLE);
+    let result = AwsSettings::build();
+
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(&result.payment, PAYMENT_TABLE)
+  }
+
+  #[test]
+  fn aws_settings_build_payment_failed() {
+    let result = AwsSettings::build();
+
+    assert!(result.is_err());
+    assert_eq!(
+      SettingsError::InvalidLoadConfig("PAYMENT_TABLE".to_string()),
+      result.unwrap_err()
+    )
+  }
+
+  #[tokio::test]
+  async fn test_create_payment_router() {
+    std::env::set_var("PAYMENT_TABLE", PAYMENT_TABLE);
+    let result = create_payment_router().await;
+    assert!(result.is_ok())
+  }
 }
