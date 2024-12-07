@@ -20,14 +20,14 @@ pub struct PaymentMethodState {
 }
 
 impl PaymentMethodState {
-  pub async fn new() -> Result<Self, StateError> {
+  pub async fn new(table: &str) -> Result<Self, StateError> {
     let build = Database::build(None).await;
     let client = match build {
       Ok(b) => b,
       Err(e) => return Err(BuildError(e.to_string())),
     };
 
-    let repository = PaymentRepositoryImpl::new(client.client());
+    let repository = PaymentRepositoryImpl::new(client.client(), table);
     let service = PaymentMethodServiceImpl::new(repository);
 
     Ok(Self {
