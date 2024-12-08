@@ -114,7 +114,7 @@ mod tests {
 
   fn create_mock_dto() -> PaymentMethodDTO {
     let dto = PaymentMethodDTO {
-      payment_method_id: PaymentMethodId::new().value().to_string(),
+      payment_method_id: Some(PaymentMethodId::new().value().to_string()),
       user_id: UserId::new().value().to_string(),
       method_name: "Credit Card".to_string(),
       method_kind_name: "JCB".to_string(),
