@@ -2011,6 +2011,8 @@ dependencies = [
  "axum",
  "dotenv",
  "infrastructure",
+ "serde",
+ "serde_json",
  "thiserror",
  "tokio",
  "tracing",

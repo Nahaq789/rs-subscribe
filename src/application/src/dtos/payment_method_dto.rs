@@ -1,7 +1,7 @@
 use crate::dtos::DTO;
 use crate::error::ApplicationError;
 use chrono::{DateTime, Utc};
-use domain::payment::payment_method_id::PaymentMethodId;
+use domain::payment::payment_method_id::{self, PaymentMethodId};
 use domain::payment::payment_method_name::{PaymentMethodCategoryName, PaymentMethodKindName};
 use domain::payment::PaymentMethod;
 use domain::user::user_id::UserId;
@@ -11,7 +11,7 @@ use std::str::FromStr;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PaymentMethodDTO {
-  pub payment_method_id: String,
+  pub payment_method_id: Option<String>,
   pub user_id: String,
   pub method_name: String,
   pub method_kind_name: String,
@@ -22,7 +22,7 @@ pub struct PaymentMethodDTO {
 
 impl PaymentMethodDTO {
   fn new(
-    payment_method_id: &str,
+    payment_method_id: Option<String>,
     user_id: &str,
     method_name: &str,
     method_kind_name: &str,
@@ -31,7 +31,7 @@ impl PaymentMethodDTO {
     updated_at: &Option<DateTime<Utc>>,
   ) -> PaymentMethodDTO {
     PaymentMethodDTO {
-      payment_method_id: payment_method_id.to_owned(),
+      payment_method_id,
       user_id: user_id.to_owned(),
       method_name: method_name.to_owned(),
       method_kind_name: method_kind_name.to_owned(),
@@ -44,8 +44,12 @@ impl PaymentMethodDTO {
 
 impl DTO<PaymentMethodDTO, PaymentMethod, ApplicationError> for PaymentMethodDTO {
   fn map_to_domain_model(v: PaymentMethodDTO) -> Result<PaymentMethod, ApplicationError> {
-    let payment_method_id = PaymentMethodId::from_str(&v.payment_method_id)
-      .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
+    let payment_method_id = match v.payment_method_id {
+      Some(v) => PaymentMethodId::from_str(&v)
+        .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?,
+      None => PaymentMethodId::new(),
+    };
+
     let user_id = UserId::from_str(&v.user_id)
       .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
     let method_name = PaymentMethodCategoryName::from_str(&v.method_name)
@@ -79,7 +83,7 @@ impl DTO<PaymentMethodDTO, PaymentMethod, ApplicationError> for PaymentMethodDTO
     let updated_at = v.updated_at();
 
     let payment_dto = PaymentMethodDTO::new(
-      payment_method_id,
+      Some(payment_method_id.to_owned()),
       user_id,
       &method_name,
       &method_kind_name,
@@ -119,7 +123,10 @@ mod tests {
 
     let result = PaymentMethodDTO::map_to_dto(&payment_method);
 
-    assert_eq!(&result.payment_method_id, payment_method_id.value());
+    assert_eq!(
+      &result.payment_method_id.unwrap(),
+      payment_method_id.value()
+    );
     assert_eq!(&result.user_id, user_id.value());
     assert_eq!(&result.method_name.to_string(), &method_name.to_string());
     assert_eq!(
@@ -140,7 +147,7 @@ mod tests {
     let updated_at = Some(Utc::now());
 
     let dto = PaymentMethodDTO {
-      payment_method_id: payment_method_id.value().to_string(),
+      payment_method_id: Some(payment_method_id.value().to_string()),
       user_id: user_id.value().to_string(),
       method_name: "Credit Card".to_string(),
       method_kind_name: "JCB".to_string(),
@@ -169,7 +176,7 @@ mod tests {
   fn test_map_to_domain_model_with_invalid_id() {
     // Setup test data with invalid ID
     let dto = PaymentMethodDTO {
-      payment_method_id: "invalid_id".to_string(),
+      payment_method_id: Some("invalid_id".to_string()),
       user_id: UserId::new().value().to_string(),
       method_name: "CreditCard".to_string(),
       method_kind_name: "JCB".to_string(),
@@ -191,7 +198,7 @@ mod tests {
   fn test_map_to_domain_model_with_invalid_method_name() {
     // Setup test data with invalid method name
     let dto = PaymentMethodDTO {
-      payment_method_id: PaymentMethodId::new().value().to_string(),
+      payment_method_id: Some(PaymentMethodId::new().value().to_string()),
       user_id: UserId::new().value().to_string(),
       method_name: "InvalidMethod".to_string(),
       method_kind_name: "JCB".to_string(),
