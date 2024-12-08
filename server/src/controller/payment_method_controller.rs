@@ -1,11 +1,14 @@
 use crate::app_state::PaymentMethodState;
+use application::dtos::payment_method_dto::PaymentMethodDTO;
 use application::error::ApplicationError;
-use axum::extract::Path;
+use axum::extract::Query;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::{Extension, Json};
 use std::fmt;
 use std::fmt::Formatter;
+
+use super::params::payment_method_params::PaymentParams;
 
 pub struct ApplicationErrorWrapper(ApplicationError);
 
@@ -29,10 +32,9 @@ impl IntoResponse for ApplicationErrorWrapper {
 
 pub async fn create_payment_method(
   Extension(module): Extension<PaymentMethodState>,
-  // Json(payload): Json<PaymentMethodDTO>,
+  Json(payload): Json<PaymentMethodDTO>,
 ) -> Result<impl IntoResponse, ApplicationErrorWrapper> {
-  let user_id = "usr_514ac014-fa95-0bae-437e-e5998be7be3c";
-  let result = module.state.find_payment_method_all(user_id).await;
+  let result = module.state.create_payment_method(payload).await;
 
   match result {
     Ok(v) => Ok((StatusCode::OK, Json(v))),
@@ -42,9 +44,9 @@ pub async fn create_payment_method(
 
 pub async fn find_payment_method_all(
   Extension(module): Extension<PaymentMethodState>,
-  Path(user_id): Path<String>,
+  Query(params): Query<PaymentParams>,
 ) -> Result<impl IntoResponse, ApplicationErrorWrapper> {
-  let result = module.state.find_payment_method_all(&user_id).await;
+  let result = module.state.find_payment_method_all(&params.user_id).await;
 
   match result {
     Ok(v) => Ok((StatusCode::OK, Json(v))),
