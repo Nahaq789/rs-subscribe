@@ -7,6 +7,7 @@ use axum::response::{IntoResponse, Response};
 use axum::{Extension, Json};
 use std::fmt;
 use std::fmt::Formatter;
+use tracing_subscriber::fmt::format::Json;
 
 use super::params::payment_method_params::PaymentParams;
 
@@ -53,3 +54,20 @@ pub async fn find_payment_method_all(
     Err(e) => Err(ApplicationErrorWrapper(e)),
   }
 }
+
+pub async fn find_payment_method_by_id(
+  Extension(module): Extension<PaymentMethodState>,
+  Query(params): Query<PaymentParams>,
+) -> Result<impl IntoResponse, ApplicationErrorWrapper> {
+  let result = module
+    .state
+    .find_payment_method_by_id(&params.payment_id, &params.user_id)
+    .await;
+
+  match result {
+    Ok(v) => Ok((StatusCode::OK, Json(v))),
+    Err(e) => Err(ApplicationErrorWrapper(e)),
+  }
+}
+
+pub async fn update_payment_method() -> Result<impl IntoResponse, ApplicationErrorWrapper> {}
