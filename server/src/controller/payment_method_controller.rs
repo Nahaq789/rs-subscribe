@@ -9,7 +9,7 @@ use serde_json::json;
 use std::fmt;
 use std::fmt::Formatter;
 
-use super::params::payment_method_params::PaymentParams;
+use super::params::payment_method_params::{FindAllParam, FindByIdParams};
 
 pub struct ApplicationErrorWrapper(ApplicationError);
 
@@ -49,10 +49,7 @@ pub async fn create_payment_method(
 
 pub async fn find_payment_method_all(
   Extension(module): Extension<PaymentMethodState>,
-  Query(PaymentParams {
-    user_id,
-    payment_id: _,
-  }): Query<PaymentParams>,
+  Query(FindAllParam { user_id }): Query<FindAllParam>,
 ) -> Result<impl IntoResponse, ApplicationErrorWrapper> {
   let result = module.state.find_payment_method_all(&user_id).await;
 
@@ -64,14 +61,14 @@ pub async fn find_payment_method_all(
 
 pub async fn find_payment_method_by_id(
   Extension(module): Extension<PaymentMethodState>,
-  Query(PaymentParams {
+  Query(FindByIdParams {
     user_id,
-    payment_id,
-  }): Query<PaymentParams>,
+    payment_method_id,
+  }): Query<FindByIdParams>,
 ) -> Result<impl IntoResponse, ApplicationErrorWrapper> {
   let result = module
     .state
-    .find_payment_method_by_id(&payment_id, &user_id)
+    .find_payment_method_by_id(&payment_method_id, &user_id)
     .await;
 
   match result {
