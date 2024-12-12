@@ -27,7 +27,11 @@ impl IntoResponse for ApplicationErrorWrapper {
       }
       _ => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
     };
-    (status, message).into_response()
+    let res = json!({
+        "message": message,
+        "status code": status.as_u16()
+    });
+    (status, Json(res)).into_response()
   }
 }
 
