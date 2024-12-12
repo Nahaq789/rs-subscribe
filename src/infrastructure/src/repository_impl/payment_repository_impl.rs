@@ -10,6 +10,7 @@ use domain::user::user_id::UserId;
 use domain::AggregateId;
 use std::collections::HashMap;
 use std::str::FromStr;
+use tracing::error;
 
 const PAYMENT_METHOD_KEY: &str = "payment_method_id";
 const USER_ID: &str = "user_id";
@@ -149,7 +150,13 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .key(USER_ID, AttributeValue::S(user_id.value().to_string()))
       .send()
       .await
-      .map_err(|e| PaymentError::FindByIdError(e.to_string()))?;
+      .map_err(|e| {
+        let msg = match e.message() {
+          Some(s) => s.to_string(),
+          None => e.to_string(),
+        };
+        PaymentError::FindByIdError(msg)
+      })?;
 
     match result.item {
       Some(item) => PaymentRepositoryImpl::map_to_domain_model(item),
@@ -165,6 +172,10 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .key(
         PAYMENT_METHOD_KEY,
         AttributeValue::S(payment.payment_method_id().value().to_string()),
+      )
+      .key(
+        USER_ID,
+        AttributeValue::S(payment.user_id().value().to_string()),
       )
       .update_expression(UPDATE_EXPRESSION)
       .expression_attribute_names(METHOD_NAME_ATTR, METHOD_NAME)
@@ -189,9 +200,19 @@ impl PaymentRepository for PaymentRepositoryImpl {
           Some(v) => AttributeValue::S(v.to_rfc3339()),
           None => AttributeValue::Null(true),
         },
-      );
+      )
+      .send()
+      .await
+      .map_err(|e| {
+        error!("{:?}", e);
+        let msg = match e.message() {
+          Some(s) => s.to_string(),
+          None => e.to_string(),
+        };
+        PaymentError::UpdatePaymentMethodError(msg)
+      });
 
-    match result.send().await {
+    match result {
       Ok(_) => Ok(()),
       Err(e) => Err(PaymentError::UpdatePaymentMethodError(e.to_string())),
     }
@@ -219,6 +240,36 @@ impl PaymentRepository for PaymentRepositoryImpl {
         Ok(())
       }
       Err(e) => Err(PaymentError::DeletePaymentMethodFailed(e.to_string())),
+    }
+  }
+
+  async fn exists(
+    &self,
+    payment_id: &PaymentMethodId,
+    user_id: &UserId,
+  ) -> Result<bool, PaymentError> {
+    let result = self
+      .client
+      .get_item()
+      .table_name(&self.table)
+      .key(
+        PAYMENT_METHOD_KEY,
+        AttributeValue::S(payment_id.value().to_string()),
+      )
+      .key(USER_ID, AttributeValue::S(user_id.value().to_string()))
+      .send()
+      .await
+      .map_err(|e| {
+        let msg = match e.message() {
+          Some(s) => s.to_string(),
+          None => e.to_string(),
+        };
+        PaymentError::FindByIdError(msg)
+      })?;
+
+    match result.item {
+      Some(_) => Ok(true),
+      None => Ok(false),
     }
   }
 }

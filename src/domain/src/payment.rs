@@ -129,8 +129,14 @@ impl PaymentMethod {
       false => Err(PaymentError::InvalidMethodCombination),
     }
   }
-}
 
+  pub fn exists(exist: bool) -> Result<(), PaymentError> {
+    match exist {
+      true => Ok(()),
+      false => Err(PaymentError::NotExists),
+    }
+  }
+}
 #[cfg(test)]
 mod tests {
   use super::*;

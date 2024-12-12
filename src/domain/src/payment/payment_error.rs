@@ -30,6 +30,9 @@ pub enum PaymentError {
 
   #[error("Invalid method combination")]
   InvalidMethodCombination,
+
+  #[error("Payment method not exist")]
+  NotExists,
 }
 
 impl From<AggregateIdError> for PaymentError {

@@ -3,6 +3,7 @@ use crate::dtos::DTO;
 use crate::error::ApplicationError;
 use crate::service::PaymentMethodService;
 use domain::payment::payment_method_id::PaymentMethodId;
+use domain::payment::PaymentMethod;
 use domain::repository::payment_repository::PaymentRepository;
 use domain::user::user_id::UserId;
 use std::str::FromStr;
@@ -65,6 +66,14 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
 
   async fn update_payment_method(&self, payment: PaymentMethodDTO) -> Result<(), ApplicationError> {
     let payment_method = PaymentMethodDTO::map_to_domain_model(payment)?;
+    let exist = self
+      .repository
+      .exists(payment_method.payment_method_id(), payment_method.user_id())
+      .await
+      .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
+
+    PaymentMethod::exists(exist)
+      .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
     match self.repository.update(&payment_method).await {
       Ok(()) => Ok(()),
       Err(e) => Err(ApplicationError::PaymentMethodError(e.to_string())),
@@ -109,12 +118,13 @@ mod tests {
       async fn find_by_id(&self, payment_id: &PaymentMethodId, user_id: &UserId) -> Result<PaymentMethod, PaymentError>;
       async fn update(&self, payment: &PaymentMethod) -> Result<(), PaymentError>;
       async fn delete(&self, payment_id: &PaymentMethodId, user_id: &UserId) -> Result<(), PaymentError>;
+      async fn exists(&self, payment_id: &PaymentMethodId, user_id: &UserId) -> Result<bool, PaymentError>;
     }
   }
 
   fn create_mock_dto() -> PaymentMethodDTO {
     let dto = PaymentMethodDTO {
-      payment_method_id: Some(PaymentMethodId::new().value().to_string()),
+      payment_method_id: PaymentMethodId::new().value().to_string(),
       user_id: UserId::new().value().to_string(),
       method_name: "Credit Card".to_string(),
       method_kind_name: "JCB".to_string(),
