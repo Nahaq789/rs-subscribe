@@ -284,6 +284,11 @@ mod tests {
       .return_once(move |_| Ok(()))
       .times(1);
 
+    mock_repository
+      .expect_exists()
+      .return_once(move |_, _| Ok(true))
+      .times(1);
+
     let dto = create_mock_dto();
     let payment_service = PaymentMethodServiceImpl::new(mock_repository);
     let result = payment_service.update_payment_method(dto).await;
@@ -299,6 +304,10 @@ mod tests {
       .expect_update()
       .return_once(move |_| Err(PaymentError::UpdatePaymentMethodError("hoge".to_string())))
       .times(1);
+
+    mock_repository
+      .expect_exists()
+      .return_once(move |_, _| Ok(true));
 
     let dto = create_mock_dto();
     let payment_service = PaymentMethodServiceImpl::new(mock_repository);
