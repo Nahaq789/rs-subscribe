@@ -2,6 +2,8 @@ pub mod payment_error;
 pub mod payment_method_id;
 pub mod payment_method_name;
 
+use std::str::FromStr;
+
 use crate::payment::payment_error::PaymentError;
 use crate::payment::payment_method_name::PaymentMethodCategoryName;
 use crate::user::user_id::UserId;
@@ -134,6 +136,23 @@ impl PaymentMethod {
     match exist {
       true => Ok(()),
       false => Err(PaymentError::NotExists),
+    }
+  }
+
+  pub fn make_updated_at() -> Option<DateTime<Utc>> {
+    Some(Utc::now())
+  }
+
+  pub fn make_created_at(
+    payment_id: &str,
+    created_at: &str,
+  ) -> Result<DateTime<Utc>, PaymentError> {
+    if "".eq(payment_id) && "".eq(created_at) {
+      return Ok(Utc::now());
+    }
+    match DateTime::from_str(created_at) {
+      Ok(v) => Ok(v),
+      Err(e) => Err(PaymentError::InvalidFormatDatetime(e.to_string())),
     }
   }
 }

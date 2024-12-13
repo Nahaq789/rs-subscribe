@@ -56,6 +56,10 @@ impl DTO<PaymentMethodDTO, PaymentMethod, ApplicationError> for PaymentMethodDTO
     let method_kind_name = PaymentMethodKindName::from_str(&v.method_kind_name)
       .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
 
+    let created_at =
+      PaymentMethod::make_created_at(&v.payment_method_id, &v.created_at.to_rfc3339())
+        .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
+
     PaymentMethod::is_valid_method_combination(&method_name, &method_kind_name)
       .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
 
@@ -65,8 +69,8 @@ impl DTO<PaymentMethodDTO, PaymentMethod, ApplicationError> for PaymentMethodDTO
       method_name,
       method_kind_name,
       &v.additional_name,
-      v.created_at,
-      v.updated_at,
+      created_at,
+      PaymentMethod::make_updated_at(),
     );
 
     Ok(payment_method)
@@ -139,8 +143,9 @@ mod tests {
     // Setup test data
     let payment_method_id = PaymentMethodId::new();
     let user_id = UserId::new();
-    let created_at = Utc::now();
-    let updated_at = Some(Utc::now());
+    let created_at =
+      PaymentMethod::make_created_at(payment_method_id.value(), &Utc::now().to_rfc3339()).unwrap();
+    let updated_at = PaymentMethod::make_updated_at();
 
     let dto = PaymentMethodDTO {
       payment_method_id: payment_method_id.value().to_string(),
@@ -154,7 +159,8 @@ mod tests {
 
     // Execute
     let result = PaymentMethodDTO::map_to_domain_model(dto).unwrap();
-
+    println!("{:?}", result.updated_at());
+    println!("{:?}", updated_at);
     // Assert
     assert_eq!(
       result.payment_method_id().value(),
@@ -165,7 +171,10 @@ mod tests {
     assert_eq!(result.method_kind_name().to_string(), "JCB");
     assert_eq!(result.additional_name(), "test_card");
     assert_eq!(result.created_at(), &created_at);
-    assert_eq!(result.updated_at(), &updated_at);
+    assert_eq!(
+      result.updated_at().unwrap().timestamp(),
+      updated_at.unwrap().timestamp()
+    );
   }
 
   #[test]

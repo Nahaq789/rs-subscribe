@@ -33,6 +33,9 @@ pub enum PaymentError {
 
   #[error("Payment method not exist")]
   NotExists,
+
+  #[error("Invaled format datetime to utc: {0}")]
+  InvalidFormatDatetime(String),
 }
 
 impl From<AggregateIdError> for PaymentError {
