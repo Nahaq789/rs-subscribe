@@ -139,18 +139,21 @@ impl PaymentMethod {
     }
   }
 
-  pub fn make_updated_at() -> Option<DateTime<Utc>> {
-    Some(Utc::now())
+  pub fn make_updated_at(created_at: &Option<DateTime<Utc>>) -> Option<DateTime<Utc>> {
+    match created_at {
+      Some(_) => Some(Utc::now()),
+      None => None,
+    }
   }
 
   pub fn make_created_at(
     payment_id: &str,
-    created_at: &str,
+    created_at: Option<DateTime<Utc>>,
   ) -> Result<DateTime<Utc>, PaymentError> {
-    if "".eq(payment_id) && "".eq(created_at) {
+    if "".eq(payment_id) || created_at.is_none() {
       return Ok(Utc::now());
     }
-    match DateTime::from_str(created_at) {
+    match DateTime::from_str(&created_at.unwrap_or_default().to_string()) {
       Ok(v) => Ok(v),
       Err(e) => Err(PaymentError::InvalidFormatDatetime(e.to_string())),
     }

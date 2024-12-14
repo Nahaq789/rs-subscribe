@@ -129,7 +129,7 @@ mod tests {
       method_name: "Credit Card".to_string(),
       method_kind_name: "JCB".to_string(),
       additional_name: "test_card".to_string(),
-      created_at: Utc::now(),
+      created_at: Some(Utc::now()),
       updated_at: None,
     };
     dto

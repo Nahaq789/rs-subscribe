@@ -16,7 +16,7 @@ pub struct PaymentMethodDTO {
   pub method_name: String,
   pub method_kind_name: String,
   pub additional_name: String,
-  pub created_at: DateTime<Utc>,
+  pub created_at: Option<DateTime<Utc>>,
   pub updated_at: Option<DateTime<Utc>>,
 }
 
@@ -27,7 +27,7 @@ impl PaymentMethodDTO {
     method_name: &str,
     method_kind_name: &str,
     additional_name: &str,
-    created_at: &DateTime<Utc>,
+    created_at: &Option<DateTime<Utc>>,
     updated_at: &Option<DateTime<Utc>>,
   ) -> PaymentMethodDTO {
     PaymentMethodDTO {
@@ -56,9 +56,10 @@ impl DTO<PaymentMethodDTO, PaymentMethod, ApplicationError> for PaymentMethodDTO
     let method_kind_name = PaymentMethodKindName::from_str(&v.method_kind_name)
       .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
 
-    let created_at =
-      PaymentMethod::make_created_at(&v.payment_method_id, &v.created_at.to_rfc3339())
-        .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
+    let created_at = PaymentMethod::make_created_at(&v.payment_method_id, v.created_at)
+      .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
+
+    let updated_at = PaymentMethod::make_updated_at(&v.created_at);
 
     PaymentMethod::is_valid_method_combination(&method_name, &method_kind_name)
       .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
@@ -70,7 +71,7 @@ impl DTO<PaymentMethodDTO, PaymentMethod, ApplicationError> for PaymentMethodDTO
       method_kind_name,
       &v.additional_name,
       created_at,
-      PaymentMethod::make_updated_at(),
+      updated_at,
     );
 
     Ok(payment_method)
@@ -82,7 +83,7 @@ impl DTO<PaymentMethodDTO, PaymentMethod, ApplicationError> for PaymentMethodDTO
     let method_name = v.method_name().to_string();
     let method_kind_name = v.method_kind_name().to_string();
     let additional_name = v.additional_name();
-    let created_at = v.created_at();
+    let created_at = Some(v.created_at().to_owned());
     let updated_at = v.updated_at();
 
     let payment_dto = PaymentMethodDTO::new(
@@ -91,7 +92,7 @@ impl DTO<PaymentMethodDTO, PaymentMethod, ApplicationError> for PaymentMethodDTO
       &method_name,
       &method_kind_name,
       additional_name,
-      created_at,
+      &created_at,
       updated_at,
     );
 
@@ -134,7 +135,7 @@ mod tests {
       &method_kind_name.to_string()
     );
     assert_eq!(&result.additional_name, additional_name);
-    assert_eq!(&result.created_at, &created_at);
+    assert_eq!(&result.created_at, &Some(created_at));
     assert_eq!(&result.updated_at, &updated_at)
   }
 
@@ -144,8 +145,8 @@ mod tests {
     let payment_method_id = PaymentMethodId::new();
     let user_id = UserId::new();
     let created_at =
-      PaymentMethod::make_created_at(payment_method_id.value(), &Utc::now().to_rfc3339()).unwrap();
-    let updated_at = PaymentMethod::make_updated_at();
+      PaymentMethod::make_created_at(payment_method_id.value(), Some(Utc::now())).unwrap();
+    let updated_at = PaymentMethod::make_updated_at(&Some(Utc::now()));
 
     let dto = PaymentMethodDTO {
       payment_method_id: payment_method_id.value().to_string(),
@@ -153,7 +154,7 @@ mod tests {
       method_name: "Credit Card".to_string(),
       method_kind_name: "JCB".to_string(),
       additional_name: "test_card".to_string(),
-      created_at,
+      created_at: Some(created_at),
       updated_at,
     };
 
@@ -186,7 +187,7 @@ mod tests {
       method_name: "CreditCard".to_string(),
       method_kind_name: "JCB".to_string(),
       additional_name: "test_card".to_string(),
-      created_at: Utc::now(),
+      created_at: Some(Utc::now()),
       updated_at: None,
     };
 
@@ -208,7 +209,7 @@ mod tests {
       method_name: "InvalidMethod".to_string(),
       method_kind_name: "JCB".to_string(),
       additional_name: "test_card".to_string(),
-      created_at: Utc::now(),
+      created_at: Some(Utc::now()),
       updated_at: None,
     };
 
