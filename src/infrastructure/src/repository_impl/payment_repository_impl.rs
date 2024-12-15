@@ -10,7 +10,7 @@ use domain::user::user_id::UserId;
 use domain::AggregateId;
 use std::collections::HashMap;
 use std::str::FromStr;
-use tracing::error;
+use tracing::{error, info};
 
 const PAYMENT_METHOD_KEY: &str = "payment_method_id";
 const USER_ID: &str = "user_id";
@@ -96,7 +96,10 @@ impl PaymentRepository for PaymentRepositoryImpl {
       );
 
     match request.send().await {
-      Ok(_) => Ok(()),
+      Ok(p) => {
+        info!("{:?}", p);
+        Ok(())
+      }
       Err(e) => Err(PaymentError::CreatePaymentMethodFailed(e.to_string())),
     }
   }
@@ -124,6 +127,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
 
     match result.items {
       Some(items) => {
+        info!("{:?}", items);
         let result = items
           .into_iter()
           .map(|item| PaymentRepositoryImpl::map_to_domain_model(item))
@@ -159,7 +163,10 @@ impl PaymentRepository for PaymentRepositoryImpl {
       })?;
 
     match result.item {
-      Some(item) => PaymentRepositoryImpl::map_to_domain_model(item),
+      Some(item) => {
+        info!("{:?}", item);
+        PaymentRepositoryImpl::map_to_domain_model(item)
+      }
       None => Err(PaymentError::FindByIdError(payment_id.value().to_string())),
     }
   }
@@ -223,7 +230,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
     payment_id: &PaymentMethodId,
     user_id: &UserId,
   ) -> Result<(), PaymentError> {
-    match self
+    let result = self
       .client
       .delete_item()
       .table_name(&self.table)
@@ -234,12 +241,23 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .key(USER_ID, AttributeValue::S(user_id.value().to_owned()))
       .send()
       .await
-    {
-      Ok(out) => {
-        println!("delete item: {:?}", out);
+      .map_err(|e| {
+        let msg = match e.message() {
+          Some(s) => s.to_string(),
+          None => e.to_string(),
+        };
+        PaymentError::DeletePaymentMethodFailed(msg)
+      });
+
+    match result {
+      Ok(u) => {
+        info!("{:?}", u);
         Ok(())
       }
-      Err(e) => Err(PaymentError::DeletePaymentMethodFailed(e.to_string())),
+      Err(e) => {
+        error!("{:?}", e);
+        Err(PaymentError::DeletePaymentMethodFailed(e.to_string()))
+      }
     }
   }
 
