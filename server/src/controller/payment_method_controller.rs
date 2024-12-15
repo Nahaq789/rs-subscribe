@@ -42,7 +42,7 @@ pub async fn create_payment_method(
   let result = module.state.create_payment_method(payload).await;
   let response = json!({
       "message": "payment method created",
-      "status code": 200
+      "status code": StatusCode::OK.as_u16()
   });
 
   match result {
@@ -88,11 +88,34 @@ pub async fn update_payment_method(
   let result = module.state.update_payment_method(payload).await;
   let response = json!({
       "message": "payment method updated",
-      "status code": 200
+      "status code": StatusCode::OK.as_u16()
   });
 
   match result {
     Ok(_) => Ok((StatusCode::OK, Json(response))),
+    Err(e) => Err(ApplicationErrorWrapper(e)),
+  }
+}
+
+pub async fn delete_payment_method(
+  Extension(module): Extension<PaymentMethodState>,
+  Query(FindByIdParams {
+    user_id,
+    payment_method_id,
+  }): Query<FindByIdParams>,
+) -> Result<impl IntoResponse, ApplicationErrorWrapper> {
+  let result = module
+    .state
+    .delete_payment_method(&payment_method_id, &user_id)
+    .await;
+
+  let response = json!({
+      "message": "payment method deleted",
+      "status code": StatusCode::OK.as_u16()
+  });
+
+  match result {
+    Ok(()) => Ok((StatusCode::OK, Json(response))),
     Err(e) => Err(ApplicationErrorWrapper(e)),
   }
 }

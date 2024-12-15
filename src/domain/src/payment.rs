@@ -162,8 +162,11 @@ impl PaymentMethod {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::payment::payment_method_name::{
-    BankTransfer, CreditCard, DigitalMoney, DigitalWallet, MobilePayment, BNPL,
+  use crate::{
+    payment::payment_method_name::{
+      BankTransfer, CreditCard, DigitalMoney, DigitalWallet, MobilePayment, BNPL,
+    },
+    AggregateId,
   };
 
   #[test]
@@ -296,5 +299,45 @@ mod tests {
     let result = PaymentMethod::is_valid_method_combination(&method_name, &method_kind_name);
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), PaymentError::InvalidMethodCombination)
+  }
+
+  #[test]
+  fn test_exists_success() {
+    let result = PaymentMethod::exists(true);
+    assert!(result.is_ok())
+  }
+
+  #[test]
+  fn test_exists_failed() {
+    let result = PaymentMethod::exists(false);
+    assert!(result.is_err())
+  }
+
+  #[test]
+  fn test_make_updated_at_some() {
+    let result = PaymentMethod::make_updated_at(&Some(Utc::now()));
+    assert!(result.is_some())
+  }
+
+  #[test]
+  fn test_make_updated_at_none() {
+    let result = PaymentMethod::make_updated_at(&None);
+    assert!(result.is_none())
+  }
+
+  #[test]
+  fn test_make_created_at() {
+    let payment_id = PaymentMethodId::new();
+
+    let test_case = vec![
+      (payment_id.value().as_ref(), None),
+      ("", Some(Utc::now())),
+      ("", None),
+    ];
+
+    for (id, date) in test_case {
+      let result = PaymentMethod::make_created_at(id, date);
+      assert!(result.is_ok());
+    }
   }
 }
