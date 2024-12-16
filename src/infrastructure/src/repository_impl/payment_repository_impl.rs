@@ -300,7 +300,11 @@ impl PaymentRepository for PaymentRepositoryImpl {
     match result.item {
       Some(_) => Ok(true),
       None => {
-        error!("{:?}", PaymentError::NotExists.to_string());
+        error!(
+          "{:?}, {:?}",
+          PaymentError::NotExists.to_string(),
+          &payment_id
+        );
         Ok(false)
       }
     }
