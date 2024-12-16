@@ -100,7 +100,10 @@ impl PaymentRepository for PaymentRepositoryImpl {
         info!("{:?}", p);
         Ok(())
       }
-      Err(e) => Err(PaymentError::CreatePaymentMethodFailed(e.to_string())),
+      Err(e) => {
+        error!("{:?}", e);
+        Err(PaymentError::CreatePaymentMethodFailed(e.to_string()))
+      }
     }
   }
 
@@ -167,7 +170,11 @@ impl PaymentRepository for PaymentRepositoryImpl {
         info!("{:?}", item);
         PaymentRepositoryImpl::map_to_domain_model(item)
       }
-      None => Err(PaymentError::FindByIdError(payment_id.value().to_string())),
+      None => {
+        let error = PaymentError::FindByIdError(payment_id.value().to_string());
+        error!("{:?}", error);
+        Err(error)
+      }
     }
   }
 
@@ -211,7 +218,6 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .send()
       .await
       .map_err(|e| {
-        error!("{:?}", e);
         let msg = match e.message() {
           Some(s) => s.to_string(),
           None => e.to_string(),
@@ -220,8 +226,14 @@ impl PaymentRepository for PaymentRepositoryImpl {
       });
 
     match result {
-      Ok(_) => Ok(()),
-      Err(e) => Err(PaymentError::UpdatePaymentMethodError(e.to_string())),
+      Ok(v) => {
+        info!("{:?}", v);
+        Ok(())
+      }
+      Err(e) => {
+        error!("{:?}", e);
+        Err(PaymentError::UpdatePaymentMethodError(e.to_string()))
+      }
     }
   }
 
@@ -287,7 +299,10 @@ impl PaymentRepository for PaymentRepositoryImpl {
 
     match result.item {
       Some(_) => Ok(true),
-      None => Ok(false),
+      None => {
+        error!("{:?}", PaymentError::NotExists.to_string());
+        Ok(false)
+      }
     }
   }
 }

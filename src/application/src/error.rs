@@ -10,17 +10,9 @@ pub enum ApplicationError {
   #[error("Payment method error: '{0}'")]
   PaymentMethodError(String),
 }
-
-impl ApplicationError {
-  fn log(&self, msg: &str) {
-    error!("{:?}", msg)
-  }
-}
-
 impl From<PaymentError> for ApplicationError {
   fn from(value: PaymentError) -> Self {
     let error = Self::PaymentMethodError(value.to_string());
-    error.log(&value.to_string());
     error
   }
 }
@@ -28,7 +20,6 @@ impl From<PaymentError> for ApplicationError {
 impl From<AggregateIdError> for ApplicationError {
   fn from(value: AggregateIdError) -> Self {
     let error = Self::InvalidAggregateIdFormatError(value.to_string());
-    error.log(&value.to_string());
     error
   }
 }
