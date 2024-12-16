@@ -103,6 +103,14 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
     let user_id = UserId::from_str(&user_id)
       .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
 
+    let exist = self
+      .repository
+      .exists(&payment_id, &user_id)
+      .await
+      .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
+
+    PaymentMethod::exists(exist)
+      .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
     match self.repository.delete(&payment_id, &user_id).await {
       Ok(()) => Ok(()),
       Err(e) => {
