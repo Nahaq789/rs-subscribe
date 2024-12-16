@@ -1,4 +1,4 @@
-use domain::payment::payment_error::PaymentError;
+use domain::{payment::payment_error::PaymentError, AggregateIdError};
 use thiserror::Error;
 use tracing::error;
 
@@ -20,6 +20,14 @@ impl ApplicationError {
 impl From<PaymentError> for ApplicationError {
   fn from(value: PaymentError) -> Self {
     let error = Self::PaymentMethodError(value.to_string());
+    error.log(&value.to_string());
+    error
+  }
+}
+
+impl From<AggregateIdError> for ApplicationError {
+  fn from(value: AggregateIdError) -> Self {
+    let error = Self::InvalidAggregateIdFormatError(value.to_string());
     error.log(&value.to_string());
     error
   }

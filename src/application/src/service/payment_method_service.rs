@@ -31,8 +31,7 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
     &self,
     user_id: &str,
   ) -> Result<Vec<PaymentMethodDTO>, ApplicationError> {
-    let user_id = UserId::from_str(user_id)
-      .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
+    let user_id = UserId::from_str(user_id)?;
     let v = self.repository.find_all(&user_id).await?;
     let result = v
       .iter()
@@ -46,10 +45,8 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
     payment_id: &str,
     user_id: &str,
   ) -> Result<PaymentMethodDTO, ApplicationError> {
-    let payment_id = PaymentMethodId::from_str(payment_id)
-      .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
-    let user_id = UserId::from_str(user_id)
-      .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
+    let payment_id = PaymentMethodId::from_str(payment_id)?;
+    let user_id = UserId::from_str(user_id)?;
     let v = self.repository.find_by_id(&payment_id, &user_id).await?;
     let result = PaymentMethodDTO::map_to_dto(&v);
     Ok(result)
@@ -72,10 +69,8 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
     payment_id: &str,
     user_id: &str,
   ) -> Result<(), ApplicationError> {
-    let payment_id = PaymentMethodId::from_str(&payment_id)
-      .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
-    let user_id = UserId::from_str(&user_id)
-      .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
+    let payment_id = PaymentMethodId::from_str(&payment_id)?;
+    let user_id = UserId::from_str(&user_id)?;
 
     let exist = self.repository.exists(&payment_id, &user_id).await?;
 
