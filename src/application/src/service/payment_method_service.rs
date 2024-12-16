@@ -7,6 +7,7 @@ use domain::payment::PaymentMethod;
 use domain::repository::payment_repository::PaymentRepository;
 use domain::user::user_id::UserId;
 use std::str::FromStr;
+use tracing::error;
 
 pub struct PaymentMethodServiceImpl<T: PaymentRepository> {
   repository: T,
@@ -24,7 +25,10 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
     let payment_method = PaymentMethodDTO::map_to_domain_model(payment)?;
     match self.repository.create(&payment_method).await {
       Ok(_) => Ok(()),
-      Err(e) => Err(ApplicationError::PaymentMethodError(e.to_string())),
+      Err(e) => {
+        error!("{:?}", e);
+        Err(ApplicationError::PaymentMethodError(e.to_string()))
+      }
     }
   }
 
@@ -42,7 +46,10 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
           .collect();
         Ok(result)
       }
-      Err(e) => Err(ApplicationError::PaymentMethodError(e.to_string())),
+      Err(e) => {
+        error!("{:?}", e);
+        Err(ApplicationError::PaymentMethodError(e.to_string()))
+      }
     }
   }
 
@@ -60,7 +67,10 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
         let result = PaymentMethodDTO::map_to_dto(&v);
         Ok(result)
       }
-      Err(e) => Err(ApplicationError::PaymentMethodError(e.to_string())),
+      Err(e) => {
+        error!("{:?}", e);
+        Err(ApplicationError::PaymentMethodError(e.to_string()))
+      }
     }
   }
 
@@ -76,7 +86,10 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
       .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
     match self.repository.update(&payment_method).await {
       Ok(()) => Ok(()),
-      Err(e) => Err(ApplicationError::PaymentMethodError(e.to_string())),
+      Err(e) => {
+        error!("{:?}", e);
+        Err(ApplicationError::PaymentMethodError(e.to_string()))
+      }
     }
   }
 
@@ -92,7 +105,10 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
 
     match self.repository.delete(&payment_id, &user_id).await {
       Ok(()) => Ok(()),
-      Err(e) => Err(ApplicationError::PaymentMethodError(e.to_string())),
+      Err(e) => {
+        error!("{:?}", e);
+        Err(ApplicationError::PaymentMethodError(e.to_string()))
+      }
     }
   }
 }
