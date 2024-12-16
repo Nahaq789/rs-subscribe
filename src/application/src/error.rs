@@ -1,4 +1,6 @@
+use domain::payment::payment_error::PaymentError;
 use thiserror::Error;
+use tracing::error;
 
 #[derive(Debug, Error, Clone, PartialEq)]
 pub enum ApplicationError {
@@ -7,6 +9,20 @@ pub enum ApplicationError {
 
   #[error("Payment method error: '{0}'")]
   PaymentMethodError(String),
+}
+
+impl ApplicationError {
+  fn log(&self, msg: &str) {
+    error!("{:?}", msg)
+  }
+}
+
+impl From<PaymentError> for ApplicationError {
+  fn from(value: PaymentError) -> Self {
+    let error = Self::PaymentMethodError(value.to_string());
+    error.log(&value.to_string());
+    error
+  }
 }
 
 #[cfg(test)]
