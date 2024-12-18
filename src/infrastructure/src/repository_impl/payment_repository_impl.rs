@@ -10,6 +10,7 @@ use domain::user::user_id::UserId;
 use domain::AggregateId;
 use std::collections::HashMap;
 use std::str::FromStr;
+use tracing::{error, info};
 
 const PAYMENT_METHOD_KEY: &str = "payment_method_id";
 const USER_ID: &str = "user_id";
@@ -95,8 +96,14 @@ impl PaymentRepository for PaymentRepositoryImpl {
       );
 
     match request.send().await {
-      Ok(_) => Ok(()),
-      Err(e) => Err(PaymentError::CreatePaymentMethodFailed(e.to_string())),
+      Ok(p) => {
+        info!("{:?}", p);
+        Ok(())
+      }
+      Err(e) => {
+        error!("{:?}", e);
+        Err(PaymentError::CreatePaymentMethodFailed(e.to_string()))
+      }
     }
   }
 
@@ -123,6 +130,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
 
     match result.items {
       Some(items) => {
+        info!("{:?}", items);
         let result = items
           .into_iter()
           .map(|item| PaymentRepositoryImpl::map_to_domain_model(item))
@@ -149,11 +157,24 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .key(USER_ID, AttributeValue::S(user_id.value().to_string()))
       .send()
       .await
-      .map_err(|e| PaymentError::FindByIdError(e.to_string()))?;
+      .map_err(|e| {
+        let msg = match e.message() {
+          Some(s) => s.to_string(),
+          None => e.to_string(),
+        };
+        PaymentError::FindByIdError(msg)
+      })?;
 
     match result.item {
-      Some(item) => PaymentRepositoryImpl::map_to_domain_model(item),
-      None => Err(PaymentError::FindByIdError(payment_id.value().to_string())),
+      Some(item) => {
+        info!("{:?}", item);
+        PaymentRepositoryImpl::map_to_domain_model(item)
+      }
+      None => {
+        let error = PaymentError::FindByIdError(payment_id.value().to_string());
+        error!("{:?}", error);
+        Err(error)
+      }
     }
   }
 
@@ -165,6 +186,10 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .key(
         PAYMENT_METHOD_KEY,
         AttributeValue::S(payment.payment_method_id().value().to_string()),
+      )
+      .key(
+        USER_ID,
+        AttributeValue::S(payment.user_id().value().to_string()),
       )
       .update_expression(UPDATE_EXPRESSION)
       .expression_attribute_names(METHOD_NAME_ATTR, METHOD_NAME)
@@ -189,11 +214,26 @@ impl PaymentRepository for PaymentRepositoryImpl {
           Some(v) => AttributeValue::S(v.to_rfc3339()),
           None => AttributeValue::Null(true),
         },
-      );
+      )
+      .send()
+      .await
+      .map_err(|e| {
+        let msg = match e.message() {
+          Some(s) => s.to_string(),
+          None => e.to_string(),
+        };
+        PaymentError::UpdatePaymentMethodError(msg)
+      });
 
-    match result.send().await {
-      Ok(_) => Ok(()),
-      Err(e) => Err(PaymentError::UpdatePaymentMethodError(e.to_string())),
+    match result {
+      Ok(v) => {
+        info!("{:?}", v);
+        Ok(())
+      }
+      Err(e) => {
+        error!("{:?}", e);
+        Err(PaymentError::UpdatePaymentMethodError(e.to_string()))
+      }
     }
   }
 
@@ -202,7 +242,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
     payment_id: &PaymentMethodId,
     user_id: &UserId,
   ) -> Result<(), PaymentError> {
-    match self
+    let result = self
       .client
       .delete_item()
       .table_name(&self.table)
@@ -213,12 +253,60 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .key(USER_ID, AttributeValue::S(user_id.value().to_owned()))
       .send()
       .await
-    {
-      Ok(out) => {
-        println!("delete item: {:?}", out);
+      .map_err(|e| {
+        let msg = match e.message() {
+          Some(s) => s.to_string(),
+          None => e.to_string(),
+        };
+        PaymentError::DeletePaymentMethodFailed(msg)
+      });
+
+    match result {
+      Ok(u) => {
+        info!("{:?}", u);
         Ok(())
       }
-      Err(e) => Err(PaymentError::DeletePaymentMethodFailed(e.to_string())),
+      Err(e) => {
+        error!("{:?}", e);
+        Err(PaymentError::DeletePaymentMethodFailed(e.to_string()))
+      }
+    }
+  }
+
+  async fn exists(
+    &self,
+    payment_id: &PaymentMethodId,
+    user_id: &UserId,
+  ) -> Result<bool, PaymentError> {
+    let result = self
+      .client
+      .get_item()
+      .table_name(&self.table)
+      .key(
+        PAYMENT_METHOD_KEY,
+        AttributeValue::S(payment_id.value().to_string()),
+      )
+      .key(USER_ID, AttributeValue::S(user_id.value().to_string()))
+      .send()
+      .await
+      .map_err(|e| {
+        let msg = match e.message() {
+          Some(s) => s.to_string(),
+          None => e.to_string(),
+        };
+        PaymentError::FindByIdError(msg)
+      })?;
+
+    match result.item {
+      Some(_) => Ok(true),
+      None => {
+        error!(
+          "{:?}, {:?}",
+          PaymentError::NotExists.to_string(),
+          &payment_id
+        );
+        Ok(false)
+      }
     }
   }
 }

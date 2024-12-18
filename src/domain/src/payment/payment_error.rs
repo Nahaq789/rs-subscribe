@@ -30,6 +30,12 @@ pub enum PaymentError {
 
   #[error("Invalid method combination")]
   InvalidMethodCombination,
+
+  #[error("Payment method not exist")]
+  NotExists,
+
+  #[error("Invaled format datetime to utc: {0}")]
+  InvalidFormatDatetime(String),
 }
 
 impl From<AggregateIdError> for PaymentError {
