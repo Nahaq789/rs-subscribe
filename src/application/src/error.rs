@@ -1,4 +1,6 @@
+use domain::{payment::payment_error::PaymentError, AggregateIdError};
 use thiserror::Error;
+use tracing::error;
 
 #[derive(Debug, Error, Clone, PartialEq)]
 pub enum ApplicationError {
@@ -7,6 +9,19 @@ pub enum ApplicationError {
 
   #[error("Payment method error: '{0}'")]
   PaymentMethodError(String),
+}
+impl From<PaymentError> for ApplicationError {
+  fn from(value: PaymentError) -> Self {
+    let error = Self::PaymentMethodError(value.to_string());
+    error
+  }
+}
+
+impl From<AggregateIdError> for ApplicationError {
+  fn from(value: AggregateIdError) -> Self {
+    let error = Self::InvalidAggregateIdFormatError(value.to_string());
+    error
+  }
 }
 
 #[cfg(test)]

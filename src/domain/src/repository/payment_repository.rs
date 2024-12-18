@@ -66,4 +66,19 @@ pub trait PaymentRepository: Send + Sync {
     payment_id: &PaymentMethodId,
     user_id: &UserId,
   ) -> Result<(), PaymentError>;
+
+  /// データが存在するかチェック
+  ///
+  /// # Arguments
+  /// * `payment_id` - 削除する支払い方法のID
+  /// * `user_id` - ユーザーID
+  ///
+  /// # Returns
+  /// * `Ok(true)` -
+  /// * `Err(PaymentError)` - データを取得できなかった場合のエラー
+  async fn exists(
+    &self,
+    payment_id: &PaymentMethodId,
+    user_id: &UserId,
+  ) -> Result<bool, PaymentError>;
 }

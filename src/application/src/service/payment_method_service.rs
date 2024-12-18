@@ -3,6 +3,7 @@ use crate::dtos::DTO;
 use crate::error::ApplicationError;
 use crate::service::PaymentMethodService;
 use domain::payment::payment_method_id::PaymentMethodId;
+use domain::payment::PaymentMethod;
 use domain::repository::payment_repository::PaymentRepository;
 use domain::user::user_id::UserId;
 use std::str::FromStr;
@@ -21,28 +22,22 @@ impl<T: PaymentRepository> PaymentMethodServiceImpl<T> {
 impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> {
   async fn create_payment_method(&self, payment: PaymentMethodDTO) -> Result<(), ApplicationError> {
     let payment_method = PaymentMethodDTO::map_to_domain_model(payment)?;
-    match self.repository.create(&payment_method).await {
-      Ok(_) => Ok(()),
-      Err(e) => Err(ApplicationError::PaymentMethodError(e.to_string())),
-    }
+
+    self.repository.create(&payment_method).await?;
+    Ok(())
   }
 
   async fn find_payment_method_all(
     &self,
     user_id: &str,
   ) -> Result<Vec<PaymentMethodDTO>, ApplicationError> {
-    let user_id = UserId::from_str(user_id)
-      .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
-    match self.repository.find_all(&user_id).await {
-      Ok(v) => {
-        let result = v
-          .iter()
-          .map(|item| PaymentMethodDTO::map_to_dto(item))
-          .collect();
-        Ok(result)
-      }
-      Err(e) => Err(ApplicationError::PaymentMethodError(e.to_string())),
-    }
+    let user_id = UserId::from_str(user_id)?;
+    let v = self.repository.find_all(&user_id).await?;
+    let result = v
+      .iter()
+      .map(|item| PaymentMethodDTO::map_to_dto(item))
+      .collect();
+    Ok(result)
   }
 
   async fn find_payment_method_by_id(
@@ -50,25 +45,23 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
     payment_id: &str,
     user_id: &str,
   ) -> Result<PaymentMethodDTO, ApplicationError> {
-    let payment_id = PaymentMethodId::from_str(payment_id)
-      .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
-    let user_id = UserId::from_str(user_id)
-      .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
-    match self.repository.find_by_id(&payment_id, &user_id).await {
-      Ok(v) => {
-        let result = PaymentMethodDTO::map_to_dto(&v);
-        Ok(result)
-      }
-      Err(e) => Err(ApplicationError::PaymentMethodError(e.to_string())),
-    }
+    let payment_id = PaymentMethodId::from_str(payment_id)?;
+    let user_id = UserId::from_str(user_id)?;
+    let v = self.repository.find_by_id(&payment_id, &user_id).await?;
+    let result = PaymentMethodDTO::map_to_dto(&v);
+    Ok(result)
   }
 
   async fn update_payment_method(&self, payment: PaymentMethodDTO) -> Result<(), ApplicationError> {
     let payment_method = PaymentMethodDTO::map_to_domain_model(payment)?;
-    match self.repository.update(&payment_method).await {
-      Ok(()) => Ok(()),
-      Err(e) => Err(ApplicationError::PaymentMethodError(e.to_string())),
-    }
+    let exist = self
+      .repository
+      .exists(payment_method.payment_method_id(), payment_method.user_id())
+      .await?;
+
+    PaymentMethod::exists(exist)?;
+    self.repository.update(&payment_method).await?;
+    Ok(())
   }
 
   async fn delete_payment_method(
@@ -76,15 +69,14 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
     payment_id: &str,
     user_id: &str,
   ) -> Result<(), ApplicationError> {
-    let payment_id = PaymentMethodId::from_str(&payment_id)
-      .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
-    let user_id = UserId::from_str(&user_id)
-      .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
+    let payment_id = PaymentMethodId::from_str(&payment_id)?;
+    let user_id = UserId::from_str(&user_id)?;
 
-    match self.repository.delete(&payment_id, &user_id).await {
-      Ok(()) => Ok(()),
-      Err(e) => Err(ApplicationError::PaymentMethodError(e.to_string())),
-    }
+    let exist = self.repository.exists(&payment_id, &user_id).await?;
+
+    PaymentMethod::exists(exist)?;
+    self.repository.delete(&payment_id, &user_id).await?;
+    Ok(())
   }
 }
 
@@ -109,17 +101,18 @@ mod tests {
       async fn find_by_id(&self, payment_id: &PaymentMethodId, user_id: &UserId) -> Result<PaymentMethod, PaymentError>;
       async fn update(&self, payment: &PaymentMethod) -> Result<(), PaymentError>;
       async fn delete(&self, payment_id: &PaymentMethodId, user_id: &UserId) -> Result<(), PaymentError>;
+      async fn exists(&self, payment_id: &PaymentMethodId, user_id: &UserId) -> Result<bool, PaymentError>;
     }
   }
 
   fn create_mock_dto() -> PaymentMethodDTO {
     let dto = PaymentMethodDTO {
-      payment_method_id: Some(PaymentMethodId::new().value().to_string()),
+      payment_method_id: PaymentMethodId::new().value().to_string(),
       user_id: UserId::new().value().to_string(),
       method_name: "Credit Card".to_string(),
       method_kind_name: "JCB".to_string(),
       additional_name: "test_card".to_string(),
-      created_at: Utc::now(),
+      created_at: Some(Utc::now()),
       updated_at: None,
     };
     dto
@@ -274,6 +267,11 @@ mod tests {
       .return_once(move |_| Ok(()))
       .times(1);
 
+    mock_repository
+      .expect_exists()
+      .return_once(move |_, _| Ok(true))
+      .times(1);
+
     let dto = create_mock_dto();
     let payment_service = PaymentMethodServiceImpl::new(mock_repository);
     let result = payment_service.update_payment_method(dto).await;
@@ -289,6 +287,10 @@ mod tests {
       .expect_update()
       .return_once(move |_| Err(PaymentError::UpdatePaymentMethodError("hoge".to_string())))
       .times(1);
+
+    mock_repository
+      .expect_exists()
+      .return_once(move |_, _| Ok(true));
 
     let dto = create_mock_dto();
     let payment_service = PaymentMethodServiceImpl::new(mock_repository);
@@ -309,6 +311,10 @@ mod tests {
       .return_once(move |_, _| Ok(()))
       .times(1);
 
+    mock_repository
+      .expect_exists()
+      .return_once(move |_, _| Ok(true))
+      .times(1);
     let payment_service = PaymentMethodServiceImpl::new(mock_repository);
     let user_id = UserId::new();
     let payment_id = PaymentMethodId::new();
@@ -329,6 +335,10 @@ mod tests {
       .return_once(move |_, _| Err(PaymentError::DeletePaymentMethodFailed("hoge".to_string())))
       .times(1);
 
+    mock_repository
+      .expect_exists()
+      .return_once(move |_, _| Ok(true))
+      .times(1);
     let payment_service = PaymentMethodServiceImpl::new(mock_repository);
     let user_id = UserId::new();
     let payment_id = PaymentMethodId::new();
