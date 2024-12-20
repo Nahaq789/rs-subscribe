@@ -1,9 +1,17 @@
 use std::str::FromStr;
 
+use thiserror::Error;
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum PaymentCycle {
   Monthly,
   Yearly,
+}
+
+#[derive(Error, Debug, PartialEq, Eq)]
+pub enum PaymentCycleError {
+  #[error("Invalid variant from str: {0}")]
+  InvalidVariantStr(String),
 }
 
 impl PaymentCycle {
@@ -20,7 +28,7 @@ impl PaymentCycle {
 }
 
 impl FromStr for PaymentCycle {
-  type Err = ();
+  type Err = PaymentCycleError;
 
   /// 文字列から支払いサイクルを生成する
   ///

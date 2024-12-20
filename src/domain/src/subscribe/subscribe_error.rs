@@ -1,5 +1,10 @@
-use crate::{value_object::amount::AmountError, AggregateIdError};
+use crate::{
+  payment_cycle::PaymentCycleError, value_object::amount::AmountError, AggregateIdError,
+};
+use serde_json::error;
 use thiserror::Error;
+
+use super::subscribe_name::SubscribeNameError;
 
 /// サブスクリプション操作に関するエラー
 ///
@@ -40,10 +45,28 @@ pub enum SubscribeError {
 
   #[error("{0}")]
   SubscribeIdFailed(String),
+
+  #[error("{0}")]
+  InvalidPaymentCycle(String),
+
+  #[error("{0}")]
+  InvalidSubscribeName(String),
 }
 
 impl From<AggregateIdError> for SubscribeError {
   fn from(value: AggregateIdError) -> Self {
     SubscribeError::SubscribeIdFailed(value.to_string())
+  }
+}
+
+impl From<PaymentCycleError> for SubscribeError {
+  fn from(value: PaymentCycleError) -> Self {
+    SubscribeError::InvalidPaymentCycle(value.to_string())
+  }
+}
+
+impl From<SubscribeNameError> for SubscribeError {
+  fn from(value: SubscribeNameError) -> Self {
+    SubscribeError::InvalidSubscribeName(value.to_string())
   }
 }
