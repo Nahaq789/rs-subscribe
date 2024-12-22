@@ -3,6 +3,7 @@ use std::str::FromStr;
 use aws_sdk_dynamodb::error::ProvideErrorMetadata;
 use aws_sdk_dynamodb::types::AttributeValue;
 use domain::{
+  payment_cycle::PaymentCycle,
   repository::subscribe_repository::SubscribeRepository,
   subscribe::{
     subscribe_error::SubscribeError, subscribe_id::SubscribeId, subscribe_name::SubscribeName,
@@ -258,5 +259,7 @@ impl Mapper<Subscribe, SubscribeError> for SubscribeRepositoryImpl {
     let subscribe_id = SubscribeId::from_str(&as_string(v.get(SUBSCRIBE_KEY), ""))?;
     let user_id = UserId::from_str(&as_string(v.get(USER_ID), ""))?;
     let name = SubscribeName::from_str(&as_string(v.get(NAME), ""))?;
+
+    let payment_cycke = PaymentCycle::from_str(&as_string(v.get(PAYMENT_CYCLE), ""))?;
   }
 }
