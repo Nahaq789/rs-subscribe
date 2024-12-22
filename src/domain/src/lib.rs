@@ -10,7 +10,7 @@ pub mod payment_cycle;
 pub mod repository;
 pub mod subscribe;
 pub mod user;
-mod value_object;
+pub mod value_object;
 
 /// 集約ID用のトレイトです
 ///

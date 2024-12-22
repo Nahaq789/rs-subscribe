@@ -1,5 +1,10 @@
-use crate::value_object::amount::AmountError;
+use crate::{
+  payment_cycle::PaymentCycleError, value_object::amount::AmountError, AggregateIdError,
+};
+use serde_json::error;
 use thiserror::Error;
+
+use super::subscribe_name::SubscribeNameError;
 
 /// サブスクリプション操作に関するエラー
 ///
@@ -16,4 +21,52 @@ pub enum SubscribeError {
 
   #[error("Not match Subscribe Status: {0}")]
   InvalidSubscribeStatus(String),
+
+  #[error("Failed to delete subscribe: {0}")]
+  DeleteSubscribeFailed(String),
+
+  #[error("Failed to query subscribe: {0}")]
+  QueryError(String),
+
+  #[error("Failed to find by id subscribe: {0}")]
+  FindByIdError(String),
+
+  #[error("Failed to update subscribe: {0}")]
+  UpdateSubscribeError(String),
+
+  #[error("Required subscribe field '{0}' was missing")]
+  MissingField(String),
+
+  #[error("Failed to create subscribe: {0}")]
+  CreateSubscribeFailed(String),
+
+  #[error("Subscribe not exist")]
+  NotExists,
+
+  #[error("{0}")]
+  SubscribeIdFailed(String),
+
+  #[error("{0}")]
+  InvalidPaymentCycle(String),
+
+  #[error("{0}")]
+  InvalidSubscribeName(String),
+}
+
+impl From<AggregateIdError> for SubscribeError {
+  fn from(value: AggregateIdError) -> Self {
+    SubscribeError::SubscribeIdFailed(value.to_string())
+  }
+}
+
+impl From<PaymentCycleError> for SubscribeError {
+  fn from(value: PaymentCycleError) -> Self {
+    SubscribeError::InvalidPaymentCycle(value.to_string())
+  }
+}
+
+impl From<SubscribeNameError> for SubscribeError {
+  fn from(value: SubscribeNameError) -> Self {
+    SubscribeError::InvalidSubscribeName(value.to_string())
+  }
 }
