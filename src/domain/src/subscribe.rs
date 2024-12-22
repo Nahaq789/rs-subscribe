@@ -10,8 +10,8 @@ use uuid::Uuid;
 
 pub mod subscribe_error;
 pub mod subscribe_id;
-mod subscribe_name;
-mod subscribe_status;
+pub mod subscribe_name;
+pub mod subscribe_status;
 
 /// サブスク情報を管理する構造体
 #[derive(Debug)]
@@ -92,7 +92,7 @@ impl Subscribe {
     next_payment_date: DateTime<Utc>,
     auto_renewal: bool,
     status: SubscribeStatus,
-    memo: String,
+    memo: &str,
   ) -> Self {
     let id = SubscribeId::new();
     let amount = Self::yearly_amount_per_monthly(amount, &payment_cycle);
@@ -110,7 +110,7 @@ impl Subscribe {
       next_payment_date,
       auto_renewal,
       status,
-      memo,
+      memo: memo.to_owned(),
     }
   }
 
@@ -148,7 +148,7 @@ impl Subscribe {
     next_payment_date: DateTime<Utc>,
     auto_renewal: bool,
     status: SubscribeStatus,
-    memo: String,
+    memo: &str,
   ) -> Self {
     let amount = Self::yearly_amount_per_monthly(amount, &payment_cycle);
     Self {
@@ -165,7 +165,7 @@ impl Subscribe {
       next_payment_date,
       auto_renewal,
       status,
-      memo,
+      memo: memo.to_owned(),
     }
   }
 
@@ -321,7 +321,7 @@ mod tests {
       now,
       true,
       SubscribeStatus::ACTIVE,
-      String::from("テストメモ"),
+      "テストメモ",
     );
 
     assert!(!result.subscribe_id.to_string().is_empty());
@@ -350,7 +350,7 @@ mod tests {
       now,
       true,
       SubscribeStatus::ACTIVE,
-      String::from("テストメモ"),
+      "テストメモ",
     );
 
     assert!(!result.subscribe_id.to_string().is_empty());
@@ -374,7 +374,7 @@ mod tests {
     let notification = true;
     let auto_renewal = true;
     let status = SubscribeStatus::ACTIVE;
-    let memo = String::from("テストメモ");
+    let memo = "テストメモ";
 
     let subscribe = Subscribe::from(
       subscribe_id.clone(),
@@ -390,7 +390,7 @@ mod tests {
       now,
       auto_renewal,
       status.clone(),
-      memo.clone(),
+      memo,
     );
 
     assert_eq!(
