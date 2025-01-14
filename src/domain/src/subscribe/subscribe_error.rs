@@ -40,6 +40,9 @@ pub enum SubscribeError {
   #[error("Failed to create subscribe: {0}")]
   CreateSubscribeFailed(String),
 
+  #[error("Failed to parse field '{0}'")]
+  ParseFailed(String),
+
   #[error("Subscribe not exist")]
   NotExists,
 

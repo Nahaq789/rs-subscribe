@@ -1,3 +1,4 @@
+use crate::category::category_id;
 use crate::subscribe::subscribe_id::SubscribeId;
 use crate::subscribe::subscribe_name::SubscribeName;
 use crate::subscribe::subscribe_status::SubscribeStatus;
@@ -35,7 +36,7 @@ pub struct Subscribe {
   payment_cycle: PaymentCycle,
 
   /// カテゴリID
-  category_id: i32,
+  category_id: category_id::CategoryId,
 
   /// アイコンのローカルパス
   icon_local_path: String,
@@ -85,7 +86,7 @@ impl Subscribe {
     payment_method_id: PaymentMethodId,
     amount: Amount,
     payment_cycle: PaymentCycle,
-    category_id: i32,
+    category_id: category_id::CategoryId,
     icon_local_path: String,
     notification: bool,
     first_payment_date: DateTime<Utc>,
@@ -141,7 +142,7 @@ impl Subscribe {
     payment_method_id: PaymentMethodId,
     amount: Amount,
     payment_cycle: PaymentCycle,
-    category_id: i32,
+    category_id: category_id::CategoryId,
     icon_local_path: String,
     notification: bool,
     first_payment_date: DateTime<Utc>,
@@ -231,8 +232,8 @@ impl Subscribe {
   ///
   /// # 戻り値
   /// - [i32] カテゴリIDへの参照
-  pub fn category_id(&self) -> i32 {
-    self.category_id
+  pub fn category_id(&self) -> &category_id::CategoryId {
+    &self.category_id
   }
 
   /// アイコンのローカルパスを取得する
@@ -305,6 +306,7 @@ mod tests {
     let user_id = UserId::new();
     let name = SubscribeName::new("hoge").unwrap();
     let payment_method_id = PaymentMethodId::new();
+    let category_id = category_id::CategoryId::new();
     let amount = Amount::try_from(Decimal::ONE_HUNDRED).unwrap();
     let now = Utc::now();
 
@@ -314,7 +316,7 @@ mod tests {
       payment_method_id,
       amount,
       PaymentCycle::Monthly,
-      1,
+      category_id,
       String::from("/path/to/icon"),
       true,
       now,
@@ -333,6 +335,7 @@ mod tests {
     let user_id = UserId::new();
     let name = SubscribeName::new("hoge").unwrap();
     let payment_method_id = PaymentMethodId::new();
+    let category_id = category_id::CategoryId::new();
     let amount = Amount::try_from(Decimal::ONE_HUNDRED).unwrap();
     let now = Utc::now();
 
@@ -343,7 +346,7 @@ mod tests {
       payment_method_id,
       amount,
       PaymentCycle::Yearly,
-      1,
+      category_id,
       String::from("/path/to/icon"),
       true,
       now,
@@ -369,7 +372,7 @@ mod tests {
     let amount = Amount::try_from(Decimal::ONE_HUNDRED).unwrap();
     let payment_cycle = PaymentCycle::Monthly;
     let now = Utc::now();
-    let category_id = 1;
+    let category_id = category_id::CategoryId::new();
     let icon_path = String::from("/path/to/icon");
     let notification = true;
     let auto_renewal = true;
@@ -383,7 +386,7 @@ mod tests {
       payment_method_id.clone(),
       amount.clone(),
       payment_cycle.clone(),
-      category_id,
+      category_id.clone(),
       icon_path.clone(),
       notification,
       now,
@@ -402,7 +405,7 @@ mod tests {
     assert_eq!(subscribe.amount(), &amount);
     assert_eq!(subscribe.payment_method_id(), &payment_method_id);
     assert_eq!(subscribe.payment_cycle(), &payment_cycle);
-    assert_eq!(subscribe.category_id(), category_id);
+    assert_eq!(subscribe.category_id(), &category_id);
     assert_eq!(subscribe.icon_local_path(), &icon_path);
     assert_eq!(subscribe.notification(), notification);
     assert_eq!(subscribe.first_payment_date(), &now);
