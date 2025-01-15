@@ -1,3 +1,4 @@
+use crate::dtos;
 use crate::dtos::payment_method_dto::PaymentMethodDTO;
 use crate::error::ApplicationError;
 
@@ -24,9 +25,9 @@ pub trait PaymentMethodService: Send + Sync {
   ) -> Result<(), ApplicationError>;
 }
 
-// pub trait SubscribeService: Send + Sync {
-//   fn create_subscribe(
-//     &self,
-//     subscribe: ,
-//   ) -> std::pin::Pin<Box<dyn std::future::Future<Output = anyhow::Result<()>> + Send + '_>>;
-// }
+pub trait SubscribeService: Send + Sync {
+  fn create_subscribe(
+    &self,
+    subscribe: dtos::subscribe_dto::SubscribeDto,
+  ) -> std::pin::Pin<Box<dyn std::future::Future<Output = anyhow::Result<()>> + Send + '_>>;
+}
