@@ -5,7 +5,7 @@ use crate::user::user_id::UserId;
 use async_trait::async_trait;
 
 #[async_trait]
-pub trait SubscribeRepository {
+pub trait SubscribeRepository: Send + Sync {
   /// 新しいサブスクを作成する
   ///
   /// # 引数
