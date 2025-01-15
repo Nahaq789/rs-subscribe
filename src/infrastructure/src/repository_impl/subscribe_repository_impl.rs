@@ -106,14 +106,32 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
       )
       .item(USER_ID, AttributeValue::S(subscribe.user_id().to_string()))
       .item(NAME, AttributeValue::S(subscribe.name().to_string()))
-      .item(PAYMENT_METHOD_ID, AttributeValue::S(subscribe.payment_method_id().to_string()))
+      .item(
+        PAYMENT_METHOD_ID,
+        AttributeValue::S(subscribe.payment_method_id().to_string()),
+      )
       .item(AMOUNT, AttributeValue::S(subscribe.amount().to_string()))
-      .item(PAYMENT_CYCLE, AttributeValue::S(subscribe.payment_cycle().to_string()))
-      .item(CATEGORY_ID, AttributeValue::S(subscribe.category_id().to_string()))
-      .item(ICON_LOCAL_PATH, AttributeValue::S(subscribe.icon_local_path().to_string()))
+      .item(
+        PAYMENT_CYCLE,
+        AttributeValue::S(subscribe.payment_cycle().to_string()),
+      )
+      .item(
+        CATEGORY_ID,
+        AttributeValue::S(subscribe.category_id().to_string()),
+      )
+      .item(
+        ICON_LOCAL_PATH,
+        AttributeValue::S(subscribe.icon_local_path().to_string()),
+      )
       .item(NOTIFICATION, AttributeValue::Bool(subscribe.notification()))
-      .item(FIRST_PAYMENT_DATE, AttributeValue::S(subscribe.first_payment_date().to_string()))
-      .item(NEXT_PAYMENT_DATE, AttributeValue::S(subscribe.next_payment_date().to_string()))
+      .item(
+        FIRST_PAYMENT_DATE,
+        AttributeValue::S(subscribe.first_payment_date().to_string()),
+      )
+      .item(
+        NEXT_PAYMENT_DATE,
+        AttributeValue::S(subscribe.next_payment_date().to_string()),
+      )
       .item(AUTO_RENEWAL, AttributeValue::Bool(subscribe.auto_renewal()))
       .item(STATUS, AttributeValue::S(subscribe.status().to_string()))
       .item(MEMO, AttributeValue::S(subscribe.memo().to_string()));
@@ -131,7 +149,8 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
   }
 
   async fn find_all(&self, user_id: &UserId) -> Result<Vec<Subscribe>, SubscribeError> {
-    let result = self.client
+    let result = self
+      .client
       .query()
       .table_name(&self.table)
       .key_condition_expression(USER_ID_CONDITION)
@@ -142,23 +161,21 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
       .map_err(|e| {
         let msg = match e.message() {
           Some(s) => s.to_string(),
-          None => e.to_string()
+          None => e.to_string(),
         };
         SubscribeError::QueryError(msg)
       })?;
-    
+
     match result.items {
-        Some(items) => {
-          info!("{:?}", items);
-          let result = items
-            .into_iter()
-            .map(|item| SubscribeRepositoryImpl::map_to_domain_model(item))
-            .collect();
-          result
-        },
-        None => {
-          Ok(vec![])
-        }
+      Some(items) => {
+        info!("{:?}", items);
+        let result = items
+          .into_iter()
+          .map(|item| SubscribeRepositoryImpl::map_to_domain_model(item))
+          .collect();
+        result
+      }
+      None => Ok(vec![]),
     }
   }
 
