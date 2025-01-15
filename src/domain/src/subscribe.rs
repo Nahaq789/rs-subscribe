@@ -1,3 +1,4 @@
+use crate::category::category_id;
 use crate::subscribe::subscribe_id::SubscribeId;
 use crate::subscribe::subscribe_name::SubscribeName;
 use crate::subscribe::subscribe_status::SubscribeStatus;
@@ -6,7 +7,6 @@ use crate::value_object::amount::Amount;
 use crate::{payment::payment_method_id::PaymentMethodId, payment_cycle::PaymentCycle};
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
-use uuid::Uuid;
 
 pub mod subscribe_error;
 pub mod subscribe_id;
@@ -35,7 +35,7 @@ pub struct Subscribe {
   payment_cycle: PaymentCycle,
 
   /// カテゴリID
-  category_id: i32,
+  category_id: category_id::CategoryId,
 
   /// アイコンのローカルパス
   icon_local_path: String,
@@ -85,7 +85,7 @@ impl Subscribe {
     payment_method_id: PaymentMethodId,
     amount: Amount,
     payment_cycle: PaymentCycle,
-    category_id: i32,
+    category_id: category_id::CategoryId,
     icon_local_path: String,
     notification: bool,
     first_payment_date: DateTime<Utc>,
@@ -135,13 +135,13 @@ impl Subscribe {
   /// # 戻り値
   /// - [Subscribe] 作成されたサブスク情報
   pub fn from(
-    subscribe_id: Uuid,
+    subscribe_id: SubscribeId,
     user_id: UserId,
     name: SubscribeName,
     payment_method_id: PaymentMethodId,
     amount: Amount,
     payment_cycle: PaymentCycle,
-    category_id: i32,
+    category_id: category_id::CategoryId,
     icon_local_path: String,
     notification: bool,
     first_payment_date: DateTime<Utc>,
@@ -152,7 +152,7 @@ impl Subscribe {
   ) -> Self {
     let amount = Self::yearly_amount_per_monthly(amount, &payment_cycle);
     Self {
-      subscribe_id: SubscribeId::from(subscribe_id),
+      subscribe_id,
       user_id,
       name,
       payment_method_id,
@@ -231,8 +231,8 @@ impl Subscribe {
   ///
   /// # 戻り値
   /// - [i32] カテゴリIDへの参照
-  pub fn category_id(&self) -> i32 {
-    self.category_id
+  pub fn category_id(&self) -> &category_id::CategoryId {
+    &self.category_id
   }
 
   /// アイコンのローカルパスを取得する
@@ -305,6 +305,7 @@ mod tests {
     let user_id = UserId::new();
     let name = SubscribeName::new("hoge").unwrap();
     let payment_method_id = PaymentMethodId::new();
+    let category_id = category_id::CategoryId::new();
     let amount = Amount::try_from(Decimal::ONE_HUNDRED).unwrap();
     let now = Utc::now();
 
@@ -314,7 +315,7 @@ mod tests {
       payment_method_id,
       amount,
       PaymentCycle::Monthly,
-      1,
+      category_id,
       String::from("/path/to/icon"),
       true,
       now,
@@ -329,21 +330,22 @@ mod tests {
 
   #[test]
   fn test_subscribe_from_success() {
-    let id = Uuid::new_v4();
+    let id = SubscribeId::new();
     let user_id = UserId::new();
     let name = SubscribeName::new("hoge").unwrap();
     let payment_method_id = PaymentMethodId::new();
+    let category_id = category_id::CategoryId::new();
     let amount = Amount::try_from(Decimal::ONE_HUNDRED).unwrap();
     let now = Utc::now();
 
     let result = Subscribe::from(
-      id,
+      id.clone(),
       user_id,
       name,
       payment_method_id,
       amount,
       PaymentCycle::Yearly,
-      1,
+      category_id,
       String::from("/path/to/icon"),
       true,
       now,
@@ -354,22 +356,19 @@ mod tests {
     );
 
     assert!(!result.subscribe_id.to_string().is_empty());
-    assert_eq!(
-      format!("sub_{}", id.to_string()),
-      result.subscribe_id.to_string()
-    )
+    assert_eq!(id.to_string(), result.subscribe_id.to_string())
   }
 
   #[test]
   fn test_getters() {
-    let subscribe_id = Uuid::new_v4();
+    let subscribe_id = SubscribeId::new();
     let user_id = UserId::new();
     let name = SubscribeName::new("hoge").unwrap();
     let payment_method_id = PaymentMethodId::new();
     let amount = Amount::try_from(Decimal::ONE_HUNDRED).unwrap();
     let payment_cycle = PaymentCycle::Monthly;
     let now = Utc::now();
-    let category_id = 1;
+    let category_id = category_id::CategoryId::new();
     let icon_path = String::from("/path/to/icon");
     let notification = true;
     let auto_renewal = true;
@@ -383,7 +382,7 @@ mod tests {
       payment_method_id.clone(),
       amount.clone(),
       payment_cycle.clone(),
-      category_id,
+      category_id.clone(),
       icon_path.clone(),
       notification,
       now,
@@ -395,14 +394,14 @@ mod tests {
 
     assert_eq!(
       subscribe.subscribe_id().value().as_str(),
-      format!("sub_{}", &subscribe_id.to_string())
+      &subscribe_id.to_string()
     );
     assert_eq!(subscribe.user_id(), &user_id);
     assert_eq!(subscribe.name(), &name);
     assert_eq!(subscribe.amount(), &amount);
     assert_eq!(subscribe.payment_method_id(), &payment_method_id);
     assert_eq!(subscribe.payment_cycle(), &payment_cycle);
-    assert_eq!(subscribe.category_id(), category_id);
+    assert_eq!(subscribe.category_id(), &category_id);
     assert_eq!(subscribe.icon_local_path(), &icon_path);
     assert_eq!(subscribe.notification(), notification);
     assert_eq!(subscribe.first_payment_date(), &now);
