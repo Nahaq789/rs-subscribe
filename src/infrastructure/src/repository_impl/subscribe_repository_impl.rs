@@ -314,9 +314,9 @@ impl Mapper<Subscribe, SubscribeError> for SubscribeRepositoryImpl {
 
 #[cfg(test)]
 mod tests {
-  use std::collections::HashMap;
   use chrono::Utc;
   use domain::category::category_id;
+  use std::collections::HashMap;
 
   use super::*;
 
