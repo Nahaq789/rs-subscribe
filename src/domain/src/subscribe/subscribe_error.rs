@@ -1,7 +1,6 @@
 use crate::{
   payment_cycle::PaymentCycleError, value_object::amount::AmountError, AggregateIdError,
 };
-use serde_json::error;
 use thiserror::Error;
 
 use super::subscribe_name::SubscribeNameError;

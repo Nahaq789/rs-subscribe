@@ -7,7 +7,6 @@ use crate::value_object::amount::Amount;
 use crate::{payment::payment_method_id::PaymentMethodId, payment_cycle::PaymentCycle};
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
-use uuid::Uuid;
 
 pub mod subscribe_error;
 pub mod subscribe_id;
@@ -136,7 +135,7 @@ impl Subscribe {
   /// # 戻り値
   /// - [Subscribe] 作成されたサブスク情報
   pub fn from(
-    subscribe_id: Uuid,
+    subscribe_id: SubscribeId,
     user_id: UserId,
     name: SubscribeName,
     payment_method_id: PaymentMethodId,
@@ -153,7 +152,7 @@ impl Subscribe {
   ) -> Self {
     let amount = Self::yearly_amount_per_monthly(amount, &payment_cycle);
     Self {
-      subscribe_id: SubscribeId::from(subscribe_id),
+      subscribe_id,
       user_id,
       name,
       payment_method_id,
@@ -331,7 +330,7 @@ mod tests {
 
   #[test]
   fn test_subscribe_from_success() {
-    let id = Uuid::new_v4();
+    let id = SubscribeId::new();
     let user_id = UserId::new();
     let name = SubscribeName::new("hoge").unwrap();
     let payment_method_id = PaymentMethodId::new();
@@ -340,7 +339,7 @@ mod tests {
     let now = Utc::now();
 
     let result = Subscribe::from(
-      id,
+      id.clone(),
       user_id,
       name,
       payment_method_id,
@@ -357,15 +356,12 @@ mod tests {
     );
 
     assert!(!result.subscribe_id.to_string().is_empty());
-    assert_eq!(
-      format!("sub_{}", id.to_string()),
-      result.subscribe_id.to_string()
-    )
+    assert_eq!(id.to_string(), result.subscribe_id.to_string())
   }
 
   #[test]
   fn test_getters() {
-    let subscribe_id = Uuid::new_v4();
+    let subscribe_id = SubscribeId::new();
     let user_id = UserId::new();
     let name = SubscribeName::new("hoge").unwrap();
     let payment_method_id = PaymentMethodId::new();
@@ -398,7 +394,7 @@ mod tests {
 
     assert_eq!(
       subscribe.subscribe_id().value().as_str(),
-      format!("sub_{}", &subscribe_id.to_string())
+      &subscribe_id.to_string()
     );
     assert_eq!(subscribe.user_id(), &user_id);
     assert_eq!(subscribe.name(), &name);

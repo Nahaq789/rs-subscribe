@@ -46,6 +46,11 @@ impl FromStr for PaymentCycle {
   }
 }
 
+impl std::fmt::Display for PaymentCycle {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(f, "{}", self.as_str())
+  }
+}
 #[cfg(test)]
 mod tests {
   use super::*;

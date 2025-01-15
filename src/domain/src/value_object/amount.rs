@@ -1,5 +1,8 @@
 use rust_decimal::Decimal;
-use std::{fmt::{Display, Formatter}, str::FromStr};
+use std::{
+  fmt::{Display, Formatter},
+  str::FromStr,
+};
 use thiserror::Error;
 
 /// 金額を表す値オブジェクト
@@ -16,7 +19,7 @@ pub enum AmountError {
   ZeroOrLess,
 
   #[error("Amount can not parse into Decimal")]
-  ParseError
+  ParseError,
 }
 
 impl Display for Amount {
@@ -54,22 +57,22 @@ impl TryFrom<Decimal> for Amount {
 }
 
 impl FromStr for Amount {
-    type Err = AmountError;
+  type Err = AmountError;
 
-    /// str型から金額を生成する
-    ///
-    /// # 引数
-    /// * `value` - [&str] 金額値
-    ///
-    /// # 戻り値
-    /// - [Result<Amount, AmountError>] 生成結果
-    ///
-    /// # エラー
-    /// - [AmountError] パースエラー
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let value = s.parse::<Decimal>().map_err(|_| AmountError::ParseError)?;
-        Ok(Self::try_from(value)?)
-    }
+  /// str型から金額を生成する
+  ///
+  /// # 引数
+  /// * `value` - [&str] 金額値
+  ///
+  /// # 戻り値
+  /// - [Result<Amount, AmountError>] 生成結果
+  ///
+  /// # エラー
+  /// - [AmountError] パースエラー
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    let value = s.parse::<Decimal>().map_err(|_| AmountError::ParseError)?;
+    Ok(Self::try_from(value)?)
+  }
 }
 
 impl Amount {
@@ -144,6 +147,9 @@ mod tests {
 
     //assert
     assert!(result.is_ok());
-    assert_eq!(result.unwrap().value(), &Decimal::from(i32::from_str(value).unwrap()))
+    assert_eq!(
+      result.unwrap().value(),
+      &Decimal::from(i32::from_str(value).unwrap())
+    )
   }
 }
