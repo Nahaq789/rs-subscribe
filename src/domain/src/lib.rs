@@ -5,6 +5,7 @@ use std::str;
 use thiserror::Error;
 use uuid::Uuid;
 
+pub mod category;
 pub mod payment;
 pub mod payment_cycle;
 pub mod repository;

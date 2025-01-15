@@ -1,7 +1,6 @@
 use crate::{
   payment_cycle::PaymentCycleError, value_object::amount::AmountError, AggregateIdError,
 };
-use serde_json::error;
 use thiserror::Error;
 
 use super::subscribe_name::SubscribeNameError;
@@ -39,6 +38,9 @@ pub enum SubscribeError {
 
   #[error("Failed to create subscribe: {0}")]
   CreateSubscribeFailed(String),
+
+  #[error("Failed to parse field '{0}'")]
+  ParseFailed(String),
 
   #[error("Subscribe not exist")]
   NotExists,
