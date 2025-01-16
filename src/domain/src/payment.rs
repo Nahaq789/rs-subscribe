@@ -2,8 +2,6 @@ pub mod payment_error;
 pub mod payment_method_id;
 pub mod payment_method_name;
 
-use std::str::FromStr;
-
 use crate::payment::payment_error::PaymentError;
 use crate::payment::payment_method_name::PaymentMethodCategoryName;
 use crate::user::user_id::UserId;
@@ -146,21 +144,18 @@ impl PaymentMethod {
     }
   }
 
-  pub fn make_created_at(
-    payment_id: &str,
-    created_at: Option<DateTime<Utc>>,
-  ) -> Result<DateTime<Utc>, PaymentError> {
-    if "".eq(payment_id) || created_at.is_none() {
-      return Ok(Utc::now());
+  pub fn make_created_at(payment_id: &str, created_at: Option<DateTime<Utc>>) -> DateTime<Utc> {
+    if payment_id.is_empty() || created_at.is_none() {
+      return Utc::now();
     }
-    match DateTime::from_str(&created_at.unwrap_or_default().to_string()) {
-      Ok(v) => Ok(v),
-      Err(e) => Err(PaymentError::InvalidFormatDatetime(e.to_string())),
-    }
+
+    created_at.unwrap_or_else(|| Utc::now())
   }
 }
 #[cfg(test)]
 mod tests {
+  use chrono::Datelike;
+
   use super::*;
   use crate::{
     payment::payment_method_name::{
@@ -326,18 +321,23 @@ mod tests {
   }
 
   #[test]
-  fn test_make_created_at() {
-    let payment_id = PaymentMethodId::new();
+  fn test_make_created_at_some_datetime() {
+    let datetime = Utc::now();
+    let id = PaymentMethodId::new();
+    let result = PaymentMethod::make_created_at(id.value(), Some(datetime));
 
-    let test_case = vec![
-      (payment_id.value().as_ref(), None),
-      ("", Some(Utc::now())),
-      ("", None),
-    ];
+    assert_eq!(datetime, result)
+  }
 
-    for (id, date) in test_case {
-      let result = PaymentMethod::make_created_at(id, date);
-      assert!(result.is_ok());
-    }
+  #[test]
+  fn test_make_created_at_none_datetime() {
+    let id = PaymentMethodId::new();
+    let result = PaymentMethod::make_created_at(id.value(), None);
+    let datetime = Utc::now();
+
+    assert!(!result.to_rfc3339().is_empty());
+    assert_eq!(result.year(), datetime.year());
+    assert_eq!(result.month(), datetime.month());
+    assert_eq!(result.day(), datetime.day())
   }
 }

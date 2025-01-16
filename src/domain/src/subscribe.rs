@@ -56,7 +56,7 @@ pub struct Subscribe {
   status: SubscribeStatus,
 
   /// メモ欄
-  memo: String,
+  memo: Option<String>,
 }
 
 impl Subscribe {
@@ -92,7 +92,7 @@ impl Subscribe {
     next_payment_date: DateTime<Utc>,
     auto_renewal: bool,
     status: SubscribeStatus,
-    memo: &str,
+    memo: Option<String>,
   ) -> Self {
     let id = SubscribeId::new();
     let amount = Self::yearly_amount_per_monthly(amount, &payment_cycle);
@@ -110,7 +110,7 @@ impl Subscribe {
       next_payment_date,
       auto_renewal,
       status,
-      memo: memo.to_owned(),
+      memo,
     }
   }
 
@@ -148,7 +148,7 @@ impl Subscribe {
     next_payment_date: DateTime<Utc>,
     auto_renewal: bool,
     status: SubscribeStatus,
-    memo: &str,
+    memo: Option<String>,
   ) -> Self {
     let amount = Self::yearly_amount_per_monthly(amount, &payment_cycle);
     Self {
@@ -165,7 +165,7 @@ impl Subscribe {
       next_payment_date,
       auto_renewal,
       status,
-      memo: memo.to_owned(),
+      memo,
     }
   }
 
@@ -287,7 +287,7 @@ impl Subscribe {
   ///
   /// # 戻り値
   /// - [String] メモへの参照
-  pub fn memo(&self) -> &String {
+  pub fn memo(&self) -> &Option<String> {
     &self.memo
   }
 }
@@ -322,7 +322,7 @@ mod tests {
       now,
       true,
       SubscribeStatus::ACTIVE,
-      "テストメモ",
+      Some("テストメモ".to_owned()),
     );
 
     assert!(!result.subscribe_id.to_string().is_empty());
@@ -352,7 +352,7 @@ mod tests {
       now,
       true,
       SubscribeStatus::ACTIVE,
-      "テストメモ",
+      Some("テストメモ".to_owned()),
     );
 
     assert!(!result.subscribe_id.to_string().is_empty());
@@ -373,7 +373,7 @@ mod tests {
     let notification = true;
     let auto_renewal = true;
     let status = SubscribeStatus::ACTIVE;
-    let memo = "テストメモ";
+    let memo = Some("テストメモ".to_owned());
 
     let subscribe = Subscribe::from(
       subscribe_id.clone(),
@@ -389,7 +389,7 @@ mod tests {
       now,
       auto_renewal,
       status.clone(),
-      memo,
+      memo.clone(),
     );
 
     assert_eq!(

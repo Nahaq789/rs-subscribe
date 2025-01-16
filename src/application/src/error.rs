@@ -1,4 +1,7 @@
-use domain::{payment::payment_error::PaymentError, AggregateIdError};
+use domain::{
+  payment::payment_error::PaymentError, subscribe::subscribe_error::SubscribeError,
+  AggregateIdError,
+};
 use thiserror::Error;
 use tracing::error;
 
@@ -9,6 +12,9 @@ pub enum ApplicationError {
 
   #[error("Payment method error: '{0}'")]
   PaymentMethodError(String),
+
+  #[error("Subscribe error: '{0}")]
+  SubscribeError(String),
 }
 impl From<PaymentError> for ApplicationError {
   fn from(value: PaymentError) -> Self {
@@ -22,6 +28,25 @@ impl From<AggregateIdError> for ApplicationError {
     let error = Self::InvalidAggregateIdFormatError(value.to_string());
     error
   }
+}
+
+impl From<SubscribeError> for ApplicationError {
+  fn from(value: SubscribeError) -> Self {
+    let error = Self::SubscribeError(value.to_string());
+    error
+  }
+}
+
+pub fn to_aggregate_id_error<E: ToString>(e: E) -> ApplicationError {
+  ApplicationError::InvalidAggregateIdFormatError(e.to_string())
+}
+
+pub fn to_payment_method_error<E: ToString>(e: E) -> ApplicationError {
+  ApplicationError::PaymentMethodError(e.to_string())
+}
+
+pub fn to_subscribe_error<E: ToString>(e: E) -> ApplicationError {
+  ApplicationError::SubscribeError(e.to_string())
 }
 
 #[cfg(test)]

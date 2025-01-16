@@ -134,7 +134,13 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
       )
       .item(AUTO_RENEWAL, AttributeValue::Bool(subscribe.auto_renewal()))
       .item(STATUS, AttributeValue::S(subscribe.status().to_string()))
-      .item(MEMO, AttributeValue::S(subscribe.memo().to_string()));
+      .item(MEMO, {
+        if let Some(memo) = subscribe.memo() {
+          AttributeValue::S(memo.to_owned())
+        } else {
+          AttributeValue::Null(true)
+        }
+      });
 
     match request.send().await {
       Ok(p) => {
@@ -280,7 +286,13 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
         AttributeValue::S(subscribe.auto_renewal().to_string()),
       )
       .expression_attribute_values(STATUS, AttributeValue::S(subscribe.status().to_string()))
-      .expression_attribute_values(MEMO, AttributeValue::S(subscribe.memo().to_owned()))
+      .expression_attribute_values(MEMO, {
+        if let Some(memo) = subscribe.memo() {
+          AttributeValue::S(memo.to_owned())
+        } else {
+          AttributeValue::Null(true)
+        }
+      })
       .send()
       .await
       .map_err(|e| {
@@ -367,7 +379,7 @@ impl Mapper<Subscribe, SubscribeError> for SubscribeRepositoryImpl {
       .as_bool()
       .map_err(|_| SubscribeError::ParseFailed(AUTO_RENEWAL.into()))?;
     let status = SubscribeStatus::from_str(&as_string(v.get(STATUS), ""))?;
-    let memo = as_string(v.get(MEMO), "");
+    let memo = Some(as_string(v.get(MEMO), ""));
 
     Ok(Subscribe::from(
       subscribe_id,
@@ -383,7 +395,7 @@ impl Mapper<Subscribe, SubscribeError> for SubscribeRepositoryImpl {
       next_payment_date,
       *auto_renewal,
       status,
-      &memo,
+      memo,
     ))
   }
 }
@@ -475,7 +487,7 @@ mod tests {
               *test.get(AUTO_RENEWAL).unwrap().as_bool().unwrap()
             );
             assert_eq!(v.status().to_string(), as_string(test.get(STATUS), ""));
-            assert_eq!(v.memo().to_string(), as_string(test.get(MEMO), ""));
+            assert_eq!(v.memo().as_ref(), Some(&as_string(test.get(MEMO), "")));
           }
           Err(e) => {
             println!("{:?}", e.to_string());

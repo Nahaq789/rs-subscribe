@@ -1,5 +1,5 @@
 use crate::dtos::DTO;
-use crate::error::ApplicationError;
+use crate::error::{self, ApplicationError};
 use chrono::{DateTime, Utc};
 use domain::payment::payment_method_id::PaymentMethodId;
 use domain::payment::payment_method_name::{PaymentMethodCategoryName, PaymentMethodKindName};
@@ -44,27 +44,25 @@ impl PaymentMethodDTO {
 
 impl DTO<PaymentMethodDTO, PaymentMethod, ApplicationError> for PaymentMethodDTO {
   fn map_to_domain_model(v: PaymentMethodDTO) -> Result<PaymentMethod, ApplicationError> {
-    let payment_method_id = match &*v.payment_method_id {
-      "" => PaymentMethodId::new(),
+    let payment_method_id = match &v.payment_method_id {
+      s if s.is_empty() => PaymentMethodId::new(),
       _ => PaymentMethodId::from_str(&v.payment_method_id)
-        .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?,
+        .map_err(|e| error::to_aggregate_id_error(e))?,
     };
-    let user_id = UserId::from_str(&v.user_id)
-      .map_err(|e| ApplicationError::InvalidAggregateIdFormatError(e.to_string()))?;
+    let user_id = UserId::from_str(&v.user_id).map_err(|e| error::to_aggregate_id_error(e))?;
     let method_name = PaymentMethodCategoryName::from_str(&v.method_name)
-      .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
+      .map_err(|e| error::to_payment_method_error(e))?;
     let method_kind_name = PaymentMethodKindName::from_str(&v.method_kind_name)
-      .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
+      .map_err(|e| error::to_payment_method_error(e))?;
 
-    let created_at = PaymentMethod::make_created_at(&v.payment_method_id, v.created_at)
-      .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
+    let created_at = PaymentMethod::make_created_at(&v.payment_method_id, v.created_at);
 
     let updated_at = PaymentMethod::make_updated_at(&v.created_at);
 
     PaymentMethod::is_valid_method_combination(&method_name, &method_kind_name)
-      .map_err(|e| ApplicationError::PaymentMethodError(e.to_string()))?;
+      .map_err(|e| error::to_payment_method_error(e))?;
 
-    let payment_method = PaymentMethod::new(
+    Ok(PaymentMethod::new(
       payment_method_id,
       user_id,
       method_name,
@@ -72,9 +70,7 @@ impl DTO<PaymentMethodDTO, PaymentMethod, ApplicationError> for PaymentMethodDTO
       &v.additional_name,
       created_at,
       updated_at,
-    );
-
-    Ok(payment_method)
+    ))
   }
 
   fn map_to_dto(v: &PaymentMethod) -> PaymentMethodDTO {
@@ -144,8 +140,7 @@ mod tests {
     // Setup test data
     let payment_method_id = PaymentMethodId::new();
     let user_id = UserId::new();
-    let created_at =
-      PaymentMethod::make_created_at(payment_method_id.value(), Some(Utc::now())).unwrap();
+    let created_at = PaymentMethod::make_created_at(payment_method_id.value(), Some(Utc::now()));
     let updated_at = PaymentMethod::make_updated_at(&Some(Utc::now()));
 
     let dto = PaymentMethodDTO {
