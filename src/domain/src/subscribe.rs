@@ -392,10 +392,7 @@ mod tests {
       memo.clone(),
     );
 
-    assert_eq!(
-      subscribe.subscribe_id().value().as_str(),
-      &subscribe_id.to_string()
-    );
+    assert_eq!(subscribe.subscribe_id().value().as_str(), &subscribe_id.to_string());
     assert_eq!(subscribe.user_id(), &user_id);
     assert_eq!(subscribe.name(), &name);
     assert_eq!(subscribe.amount(), &amount);

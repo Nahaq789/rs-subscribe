@@ -26,9 +26,7 @@ impl AggregateId for CategoryId {
 
 impl From<uuid::Uuid> for CategoryId {
   fn from(value: uuid::Uuid) -> Self {
-    Self {
-      value: generate_id(CATEGORY_PREFIX, Some(value)),
-    }
+    Self { value: generate_id(CATEGORY_PREFIX, Some(value)) }
   }
 }
 

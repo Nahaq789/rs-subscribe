@@ -33,11 +33,7 @@ pub trait SubscribeRepository: Send + Sync {
   ///
   /// # 戻り値
   /// - [Subscribe] サブスク情報（存在しない場合はNone）
-  async fn find_by_id(
-    &self,
-    subscribe_id: &SubscribeId,
-    user_id: &UserId,
-  ) -> Result<Subscribe, SubscribeError>;
+  async fn find_by_id(&self, subscribe_id: &SubscribeId, user_id: &UserId) -> Result<Subscribe, SubscribeError>;
 
   /// サブスク情報を更新する
   ///
@@ -58,9 +54,5 @@ pub trait SubscribeRepository: Send + Sync {
   /// # 戻り値                                                 
   /// * `Ok(())` - void                                        
   /// * `Err(SubscribeError)` - 更新処理が失敗した場合のエラー
-  async fn delete(
-    &self,
-    subscribe_id: &SubscribeId,
-    user_id: &UserId,
-  ) -> Result<(), SubscribeError>;
+  async fn delete(&self, subscribe_id: &SubscribeId, user_id: &UserId) -> Result<(), SubscribeError>;
 }

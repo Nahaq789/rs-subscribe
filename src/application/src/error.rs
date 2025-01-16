@@ -1,7 +1,4 @@
-use domain::{
-  payment::payment_error::PaymentError, subscribe::subscribe_error::SubscribeError,
-  AggregateIdError,
-};
+use domain::{payment::payment_error::PaymentError, subscribe::subscribe_error::SubscribeError, AggregateIdError};
 use thiserror::Error;
 use tracing::error;
 

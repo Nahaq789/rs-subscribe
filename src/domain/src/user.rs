@@ -29,12 +29,7 @@ impl User {
   /// - [User] 作成されたユーザー
   pub fn new(country_id: i32) -> Self {
     let now = Utc::now();
-    Self {
-      user_id: UserId::new(),
-      country_id,
-      created_at: now,
-      updated_at: now,
-    }
+    Self { user_id: UserId::new(), country_id, created_at: now, updated_at: now }
   }
 
   /// 既存のデータからユーザーを生成する
@@ -47,18 +42,8 @@ impl User {
   ///
   /// # 戻り値
   /// - [User] 生成されたユーザー
-  pub fn from(
-    user_id: UserId,
-    country_id: i32,
-    created_at: DateTime<Utc>,
-    updated_at: DateTime<Utc>,
-  ) -> Self {
-    Self {
-      user_id,
-      country_id,
-      created_at,
-      updated_at,
-    }
+  pub fn from(user_id: UserId, country_id: i32, created_at: DateTime<Utc>, updated_at: DateTime<Utc>) -> Self {
+    Self { user_id, country_id, created_at, updated_at }
   }
 
   /// ユーザーIDを取得する

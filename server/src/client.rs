@@ -51,9 +51,6 @@ mod tests {
     let client = result.unwrap().client;
     let region = client.config();
 
-    assert_eq!(
-      &aws_config::Region::new("ap-northeast-1"),
-      region.region().unwrap()
-    );
+    assert_eq!(&aws_config::Region::new("ap-northeast-1"), region.region().unwrap());
   }
 }

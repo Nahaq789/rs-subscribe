@@ -86,10 +86,7 @@ pub struct SubscribeRepositoryImpl {
 
 impl SubscribeRepositoryImpl {
   pub fn new(client: aws_sdk_dynamodb::Client, table: &str) -> Self {
-    Self {
-      client,
-      table: table.to_owned(),
-    }
+    Self { client, table: table.to_owned() }
   }
 }
 
@@ -100,38 +97,17 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
       .client
       .put_item()
       .table_name(&self.table)
-      .item(
-        SUBSCRIBE_KEY,
-        AttributeValue::S(subscribe.subscribe_id().to_string()),
-      )
+      .item(SUBSCRIBE_KEY, AttributeValue::S(subscribe.subscribe_id().to_string()))
       .item(USER_ID, AttributeValue::S(subscribe.user_id().to_string()))
       .item(NAME, AttributeValue::S(subscribe.name().to_string()))
-      .item(
-        PAYMENT_METHOD_ID,
-        AttributeValue::S(subscribe.payment_method_id().to_string()),
-      )
+      .item(PAYMENT_METHOD_ID, AttributeValue::S(subscribe.payment_method_id().to_string()))
       .item(AMOUNT, AttributeValue::S(subscribe.amount().to_string()))
-      .item(
-        PAYMENT_CYCLE,
-        AttributeValue::S(subscribe.payment_cycle().to_string()),
-      )
-      .item(
-        CATEGORY_ID,
-        AttributeValue::S(subscribe.category_id().to_string()),
-      )
-      .item(
-        ICON_LOCAL_PATH,
-        AttributeValue::S(subscribe.icon_local_path().to_string()),
-      )
+      .item(PAYMENT_CYCLE, AttributeValue::S(subscribe.payment_cycle().to_string()))
+      .item(CATEGORY_ID, AttributeValue::S(subscribe.category_id().to_string()))
+      .item(ICON_LOCAL_PATH, AttributeValue::S(subscribe.icon_local_path().to_string()))
       .item(NOTIFICATION, AttributeValue::Bool(subscribe.notification()))
-      .item(
-        FIRST_PAYMENT_DATE,
-        AttributeValue::S(subscribe.first_payment_date().to_string()),
-      )
-      .item(
-        NEXT_PAYMENT_DATE,
-        AttributeValue::S(subscribe.next_payment_date().to_string()),
-      )
+      .item(FIRST_PAYMENT_DATE, AttributeValue::S(subscribe.first_payment_date().to_string()))
+      .item(NEXT_PAYMENT_DATE, AttributeValue::S(subscribe.next_payment_date().to_string()))
       .item(AUTO_RENEWAL, AttributeValue::Bool(subscribe.auto_renewal()))
       .item(STATUS, AttributeValue::S(subscribe.status().to_string()))
       .item(MEMO, {
@@ -175,29 +151,19 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
     match result.items {
       Some(items) => {
         info!("{:?}", items);
-        let result = items
-          .into_iter()
-          .map(|item| SubscribeRepositoryImpl::map_to_domain_model(item))
-          .collect();
+        let result = items.into_iter().map(|item| SubscribeRepositoryImpl::map_to_domain_model(item)).collect();
         result
       }
       None => Ok(vec![]),
     }
   }
 
-  async fn find_by_id(
-    &self,
-    subscribe_id: &SubscribeId,
-    user_id: &UserId,
-  ) -> Result<Subscribe, SubscribeError> {
+  async fn find_by_id(&self, subscribe_id: &SubscribeId, user_id: &UserId) -> Result<Subscribe, SubscribeError> {
     let result = self
       .client
       .get_item()
       .table_name(&self.table)
-      .key(
-        SUBSCRIBE_KEY,
-        AttributeValue::S(subscribe_id.value().to_owned()),
-      )
+      .key(SUBSCRIBE_KEY, AttributeValue::S(subscribe_id.value().to_owned()))
       .key(USER_ID, AttributeValue::S(user_id.value().to_owned()))
       .send()
       .await
@@ -215,10 +181,7 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
         SubscribeRepositoryImpl::map_to_domain_model(item)
       }
       None => {
-        let error = SubscribeError::FindByIdError(format!(
-          "subscribe_id: {:?}, user_id: {:?}",
-          subscribe_id, user_id
-        ));
+        let error = SubscribeError::FindByIdError(format!("subscribe_id: {:?}, user_id: {:?}", subscribe_id, user_id));
         error!("{:?}", error);
         Err(error)
       }
@@ -230,14 +193,8 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
       .client
       .update_item()
       .table_name(&self.table)
-      .key(
-        SUBSCRIBE_KEY,
-        AttributeValue::S(subscribe.subscribe_id().value().to_owned()),
-      )
-      .key(
-        USER_ID,
-        AttributeValue::S(subscribe.user_id().value().to_owned()),
-      )
+      .key(SUBSCRIBE_KEY, AttributeValue::S(subscribe.subscribe_id().value().to_owned()))
+      .key(USER_ID, AttributeValue::S(subscribe.user_id().value().to_owned()))
       .update_expression(UPDATE_EXPRESSION)
       .expression_attribute_names(NAME_ATTR, NAME_VALUE)
       .expression_attribute_names(PAYMENT_METHOD_ID_ATTR, PAYMENT_METHOD_ID_VALUE)
@@ -252,39 +209,15 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
       .expression_attribute_names(STATUS_ATTR, STATUS_VALUE)
       .expression_attribute_names(MEMO_ATTR, MEMO_VALUE)
       .expression_attribute_values(NAME, AttributeValue::S(subscribe.name().to_string()))
-      .expression_attribute_values(
-        PAYMENT_METHOD_ID,
-        AttributeValue::S(subscribe.payment_method_id().to_string()),
-      )
+      .expression_attribute_values(PAYMENT_METHOD_ID, AttributeValue::S(subscribe.payment_method_id().to_string()))
       .expression_attribute_values(AMOUNT, AttributeValue::S(subscribe.amount().to_string()))
-      .expression_attribute_values(
-        PAYMENT_CYCLE,
-        AttributeValue::S(subscribe.payment_cycle().as_str().to_owned()),
-      )
-      .expression_attribute_values(
-        CATEGORY_ID,
-        AttributeValue::S(subscribe.category_id().to_string()),
-      )
-      .expression_attribute_values(
-        ICON_LOCAL_PATH,
-        AttributeValue::S(subscribe.icon_local_path().to_string()),
-      )
-      .expression_attribute_values(
-        NOTIFICATION,
-        AttributeValue::S(subscribe.notification().to_string()),
-      )
-      .expression_attribute_values(
-        FIRST_PAYMENT_DATE,
-        AttributeValue::S(subscribe.first_payment_date().to_rfc3339()),
-      )
-      .expression_attribute_values(
-        NEXT_PAYMENT_DATE,
-        AttributeValue::S(subscribe.next_payment_date().to_rfc3339()),
-      )
-      .expression_attribute_values(
-        AUTO_RENEWAL,
-        AttributeValue::S(subscribe.auto_renewal().to_string()),
-      )
+      .expression_attribute_values(PAYMENT_CYCLE, AttributeValue::S(subscribe.payment_cycle().as_str().to_owned()))
+      .expression_attribute_values(CATEGORY_ID, AttributeValue::S(subscribe.category_id().to_string()))
+      .expression_attribute_values(ICON_LOCAL_PATH, AttributeValue::S(subscribe.icon_local_path().to_string()))
+      .expression_attribute_values(NOTIFICATION, AttributeValue::S(subscribe.notification().to_string()))
+      .expression_attribute_values(FIRST_PAYMENT_DATE, AttributeValue::S(subscribe.first_payment_date().to_rfc3339()))
+      .expression_attribute_values(NEXT_PAYMENT_DATE, AttributeValue::S(subscribe.next_payment_date().to_rfc3339()))
+      .expression_attribute_values(AUTO_RENEWAL, AttributeValue::S(subscribe.auto_renewal().to_string()))
       .expression_attribute_values(STATUS, AttributeValue::S(subscribe.status().to_string()))
       .expression_attribute_values(MEMO, {
         if let Some(memo) = subscribe.memo() {
@@ -315,19 +248,12 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
     }
   }
 
-  async fn delete(
-    &self,
-    subscribe_id: &SubscribeId,
-    user_id: &UserId,
-  ) -> Result<(), SubscribeError> {
+  async fn delete(&self, subscribe_id: &SubscribeId, user_id: &UserId) -> Result<(), SubscribeError> {
     let result = self
       .client
       .delete_item()
       .table_name(&self.table)
-      .key(
-        SUBSCRIBE_KEY,
-        AttributeValue::S(subscribe_id.value().to_owned()),
-      )
+      .key(SUBSCRIBE_KEY, AttributeValue::S(subscribe_id.value().to_owned()))
       .key(USER_ID, AttributeValue::S(user_id.value().to_owned()))
       .send()
       .await
@@ -353,9 +279,7 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
 }
 
 impl Mapper<Subscribe, SubscribeError> for SubscribeRepositoryImpl {
-  fn map_to_domain_model(
-    v: std::collections::HashMap<String, AttributeValue>,
-  ) -> Result<Subscribe, SubscribeError> {
+  fn map_to_domain_model(v: std::collections::HashMap<String, AttributeValue>) -> Result<Subscribe, SubscribeError> {
     let subscribe_id = SubscribeId::from_str(&as_string(v.get(SUBSCRIBE_KEY), ""))?;
     let user_id = UserId::from_str(&as_string(v.get(USER_ID), ""))?;
     let name = SubscribeName::from_str(&as_string(v.get(NAME), ""))?;
@@ -369,10 +293,10 @@ impl Mapper<Subscribe, SubscribeError> for SubscribeRepositoryImpl {
       .ok_or(SubscribeError::MissingField(NOTIFICATION.into()))?
       .as_bool()
       .map_err(|_| SubscribeError::ParseFailed(NOTIFICATION.into()))?;
-    let first_payment_date = as_datetime(v.get(FIRST_PAYMENT_DATE))
-      .ok_or(SubscribeError::MissingField(FIRST_PAYMENT_DATE.to_string()))?;
-    let next_payment_date = as_datetime(v.get(NEXT_PAYMENT_DATE))
-      .ok_or(SubscribeError::MissingField(NEXT_PAYMENT_DATE.to_string()))?;
+    let first_payment_date =
+      as_datetime(v.get(FIRST_PAYMENT_DATE)).ok_or(SubscribeError::MissingField(FIRST_PAYMENT_DATE.to_string()))?;
+    let next_payment_date =
+      as_datetime(v.get(NEXT_PAYMENT_DATE)).ok_or(SubscribeError::MissingField(NEXT_PAYMENT_DATE.to_string()))?;
     let auto_renewal = v
       .get(AUTO_RENEWAL)
       .ok_or(SubscribeError::MissingField(AUTO_RENEWAL.into()))?
@@ -410,91 +334,49 @@ mod tests {
 
   #[test]
   fn test_map_to_domain_model_success() {
-    let test_case = vec![HashMap::from([
-      (
-        SUBSCRIBE_KEY.into(),
-        AttributeValue::S(SubscribeId::new().to_string()),
-      ),
-      (USER_ID.into(), AttributeValue::S(UserId::new().to_string())),
-      (NAME.to_string(), AttributeValue::S("hoge".into())),
-      (
-        PAYMENT_METHOD_ID.into(),
-        AttributeValue::S(PaymentMethodId::new().to_string()),
-      ),
-      (AMOUNT.into(), AttributeValue::S("5000".into())),
-      (PAYMENT_CYCLE.into(), AttributeValue::S("monthly".into())),
-      (
-        CATEGORY_ID.into(),
-        AttributeValue::S(category_id::CategoryId::new().to_string()),
-      ),
-      (ICON_LOCAL_PATH.into(), AttributeValue::S("../../".into())),
-      (NOTIFICATION.into(), AttributeValue::Bool(true)),
-      (
-        FIRST_PAYMENT_DATE.into(),
-        AttributeValue::S(Utc::now().to_rfc3339()),
-      ),
-      (
-        NEXT_PAYMENT_DATE.into(),
-        AttributeValue::S(Utc::now().to_rfc3339()),
-      ),
-      (AUTO_RENEWAL.into(), AttributeValue::Bool(false)),
-      (STATUS.into(), AttributeValue::S("ACTIVE".into())),
-      (MEMO.into(), AttributeValue::S("hoge".into())),
-    ])];
+    let test_case = vec![
+      HashMap::from([
+        (SUBSCRIBE_KEY.into(), AttributeValue::S(SubscribeId::new().to_string())),
+        (USER_ID.into(), AttributeValue::S(UserId::new().to_string())),
+        (NAME.to_string(), AttributeValue::S("hoge".into())),
+        (PAYMENT_METHOD_ID.into(), AttributeValue::S(PaymentMethodId::new().to_string())),
+        (AMOUNT.into(), AttributeValue::S("5000".into())),
+        (PAYMENT_CYCLE.into(), AttributeValue::S("monthly".into())),
+        (CATEGORY_ID.into(), AttributeValue::S(category_id::CategoryId::new().to_string())),
+        (ICON_LOCAL_PATH.into(), AttributeValue::S("../../".into())),
+        (NOTIFICATION.into(), AttributeValue::Bool(true)),
+        (FIRST_PAYMENT_DATE.into(), AttributeValue::S(Utc::now().to_rfc3339())),
+        (NEXT_PAYMENT_DATE.into(), AttributeValue::S(Utc::now().to_rfc3339())),
+        (AUTO_RENEWAL.into(), AttributeValue::Bool(false)),
+        (STATUS.into(), AttributeValue::S("ACTIVE".into())),
+        (MEMO.into(), AttributeValue::S("hoge".into())),
+      ]),
+    ];
 
     let _test = test_case
       .into_iter()
-      .map(
-        |test| match SubscribeRepositoryImpl::map_to_domain_model(test.clone()) {
-          Ok(v) => {
-            assert_eq!(
-              v.subscribe_id().to_string(),
-              as_string(test.get(SUBSCRIBE_KEY), "")
-            );
-            assert_eq!(v.user_id().to_string(), as_string(test.get(USER_ID), ""));
-            assert_eq!(v.name().to_string(), as_string(test.get(NAME), ""));
-            assert_eq!(
-              v.payment_method_id().to_string(),
-              as_string(test.get(PAYMENT_METHOD_ID), "")
-            );
-            assert_eq!(v.amount().to_string(), as_string(test.get(AMOUNT), ""));
-            assert_eq!(
-              v.payment_cycle().to_string(),
-              as_string(test.get(PAYMENT_CYCLE), "")
-            );
-            assert_eq!(
-              v.category_id().to_string(),
-              as_string(test.get(CATEGORY_ID), "")
-            );
-            assert_eq!(
-              v.icon_local_path().to_string(),
-              as_string(test.get(ICON_LOCAL_PATH), "")
-            );
-            assert_eq!(
-              v.notification(),
-              *test.get(NOTIFICATION).unwrap().as_bool().unwrap()
-            );
-            assert_eq!(
-              v.first_payment_date().to_rfc3339(),
-              as_string(test.get(FIRST_PAYMENT_DATE), "")
-            );
-            assert_eq!(
-              v.next_payment_date().to_rfc3339(),
-              as_string(test.get(NEXT_PAYMENT_DATE), "")
-            );
-            assert_eq!(
-              v.auto_renewal(),
-              *test.get(AUTO_RENEWAL).unwrap().as_bool().unwrap()
-            );
-            assert_eq!(v.status().to_string(), as_string(test.get(STATUS), ""));
-            assert_eq!(v.memo().as_ref(), Some(&as_string(test.get(MEMO), "")));
-          }
-          Err(e) => {
-            println!("{:?}", e.to_string());
-            assert!(false)
-          }
-        },
-      )
+      .map(|test| match SubscribeRepositoryImpl::map_to_domain_model(test.clone()) {
+        Ok(v) => {
+          assert_eq!(v.subscribe_id().to_string(), as_string(test.get(SUBSCRIBE_KEY), ""));
+          assert_eq!(v.user_id().to_string(), as_string(test.get(USER_ID), ""));
+          assert_eq!(v.name().to_string(), as_string(test.get(NAME), ""));
+          assert_eq!(v.payment_method_id().to_string(), as_string(test.get(PAYMENT_METHOD_ID), ""));
+          assert_eq!(v.amount().to_string(), as_string(test.get(AMOUNT), ""));
+          assert_eq!(v.payment_cycle().to_string(), as_string(test.get(PAYMENT_CYCLE), ""));
+          assert_eq!(v.category_id().to_string(), as_string(test.get(CATEGORY_ID), ""));
+          assert_eq!(v.icon_local_path().to_string(), as_string(test.get(ICON_LOCAL_PATH), ""));
+          assert_eq!(v.notification(), *test.get(NOTIFICATION).unwrap().as_bool().unwrap());
+          assert_eq!(v.first_payment_date().to_rfc3339(), as_string(test.get(FIRST_PAYMENT_DATE), ""));
+          assert_eq!(v.next_payment_date().to_rfc3339(), as_string(test.get(NEXT_PAYMENT_DATE), ""));
+          assert_eq!(v.auto_renewal(), *test.get(AUTO_RENEWAL).unwrap().as_bool().unwrap());
+          assert_eq!(v.status().to_string(), as_string(test.get(STATUS), ""));
+          assert_eq!(v.memo().as_ref(), Some(&as_string(test.get(MEMO), "")));
+        }
+        Err(e) => {
+          println!("{:?}", e.to_string());
+          assert!(false)
+        }
+      })
       .collect::<()>();
   }
 }

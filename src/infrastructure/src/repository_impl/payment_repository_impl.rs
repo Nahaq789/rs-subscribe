@@ -49,10 +49,7 @@ pub struct PaymentRepositoryImpl {
 
 impl PaymentRepositoryImpl {
   pub fn new(client: aws_sdk_dynamodb::Client, table: &str) -> Self {
-    Self {
-      client,
-      table: table.to_string(),
-    }
+    Self { client, table: table.to_string() }
   }
 }
 
@@ -63,30 +60,12 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .client
       .put_item()
       .table_name(&self.table)
-      .item(
-        PAYMENT_METHOD_KEY,
-        AttributeValue::S(payment.payment_method_id().value().to_string()),
-      )
-      .item(
-        USER_ID,
-        AttributeValue::S(payment.user_id().value().to_string()),
-      )
-      .item(
-        METHOD_NAME,
-        AttributeValue::S(payment.method_name().to_string()),
-      )
-      .item(
-        METHOD_KIND_NAME,
-        AttributeValue::S(payment.method_kind_name().to_string()),
-      )
-      .item(
-        ADDITIONAL_NAME,
-        AttributeValue::S(payment.additional_name().to_string()),
-      )
-      .item(
-        CREATED_AT,
-        AttributeValue::S(payment.created_at().to_rfc3339()),
-      )
+      .item(PAYMENT_METHOD_KEY, AttributeValue::S(payment.payment_method_id().value().to_string()))
+      .item(USER_ID, AttributeValue::S(payment.user_id().value().to_string()))
+      .item(METHOD_NAME, AttributeValue::S(payment.method_name().to_string()))
+      .item(METHOD_KIND_NAME, AttributeValue::S(payment.method_kind_name().to_string()))
+      .item(ADDITIONAL_NAME, AttributeValue::S(payment.additional_name().to_string()))
+      .item(CREATED_AT, AttributeValue::S(payment.created_at().to_rfc3339()))
       .item(
         UPDATED_AT,
         match payment.updated_at() {
@@ -114,10 +93,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .table_name(&self.table)
       .key_condition_expression(USER_ID_CONDITION)
       .expression_attribute_names(USER_ID_ATTR, USER_ID)
-      .expression_attribute_values(
-        USER_ID_VALUE,
-        AttributeValue::S(user_id.value().to_string()),
-      )
+      .expression_attribute_values(USER_ID_VALUE, AttributeValue::S(user_id.value().to_string()))
       .send()
       .await
       .map_err(|e| {
@@ -131,29 +107,19 @@ impl PaymentRepository for PaymentRepositoryImpl {
     match result.items {
       Some(items) => {
         info!("{:?}", items);
-        let result = items
-          .into_iter()
-          .map(|item| PaymentRepositoryImpl::map_to_domain_model(item))
-          .collect();
+        let result = items.into_iter().map(|item| PaymentRepositoryImpl::map_to_domain_model(item)).collect();
         result
       }
       None => Ok(vec![]),
     }
   }
 
-  async fn find_by_id(
-    &self,
-    payment_id: &PaymentMethodId,
-    user_id: &UserId,
-  ) -> Result<PaymentMethod, PaymentError> {
+  async fn find_by_id(&self, payment_id: &PaymentMethodId, user_id: &UserId) -> Result<PaymentMethod, PaymentError> {
     let result = self
       .client
       .get_item()
       .table_name(&self.table)
-      .key(
-        PAYMENT_METHOD_KEY,
-        AttributeValue::S(payment_id.value().to_string()),
-      )
+      .key(PAYMENT_METHOD_KEY, AttributeValue::S(payment_id.value().to_string()))
       .key(USER_ID, AttributeValue::S(user_id.value().to_string()))
       .send()
       .await
@@ -183,31 +149,16 @@ impl PaymentRepository for PaymentRepositoryImpl {
       .client
       .update_item()
       .table_name(&self.table)
-      .key(
-        PAYMENT_METHOD_KEY,
-        AttributeValue::S(payment.payment_method_id().value().to_string()),
-      )
-      .key(
-        USER_ID,
-        AttributeValue::S(payment.user_id().value().to_string()),
-      )
+      .key(PAYMENT_METHOD_KEY, AttributeValue::S(payment.payment_method_id().value().to_string()))
+      .key(USER_ID, AttributeValue::S(payment.user_id().value().to_string()))
       .update_expression(UPDATE_EXPRESSION)
       .expression_attribute_names(METHOD_NAME_ATTR, METHOD_NAME)
       .expression_attribute_names(METHOD_KIND_NAME_ATTR, METHOD_KIND_NAME)
       .expression_attribute_names(ADDITIONAL_NAME_ATTR, ADDITIONAL_NAME)
       .expression_attribute_names(UPDATED_AT_ATTR, UPDATED_AT)
-      .expression_attribute_values(
-        METHOD_NAME_VALUE,
-        AttributeValue::S(payment.method_name().to_string()),
-      )
-      .expression_attribute_values(
-        METHOD_KIND_NAME_VALUE,
-        AttributeValue::S(payment.method_kind_name().to_string()),
-      )
-      .expression_attribute_values(
-        ADDITIONAL_NAME_VALUE,
-        AttributeValue::S(payment.additional_name().to_string()),
-      )
+      .expression_attribute_values(METHOD_NAME_VALUE, AttributeValue::S(payment.method_name().to_string()))
+      .expression_attribute_values(METHOD_KIND_NAME_VALUE, AttributeValue::S(payment.method_kind_name().to_string()))
+      .expression_attribute_values(ADDITIONAL_NAME_VALUE, AttributeValue::S(payment.additional_name().to_string()))
       .expression_attribute_values(
         UPDATED_AT_VALUE,
         match payment.updated_at() {
@@ -237,19 +188,12 @@ impl PaymentRepository for PaymentRepositoryImpl {
     }
   }
 
-  async fn delete(
-    &self,
-    payment_id: &PaymentMethodId,
-    user_id: &UserId,
-  ) -> Result<(), PaymentError> {
+  async fn delete(&self, payment_id: &PaymentMethodId, user_id: &UserId) -> Result<(), PaymentError> {
     let result = self
       .client
       .delete_item()
       .table_name(&self.table)
-      .key(
-        PAYMENT_METHOD_KEY,
-        AttributeValue::S(payment_id.value().to_owned()),
-      )
+      .key(PAYMENT_METHOD_KEY, AttributeValue::S(payment_id.value().to_owned()))
       .key(USER_ID, AttributeValue::S(user_id.value().to_owned()))
       .send()
       .await
@@ -273,19 +217,12 @@ impl PaymentRepository for PaymentRepositoryImpl {
     }
   }
 
-  async fn exists(
-    &self,
-    payment_id: &PaymentMethodId,
-    user_id: &UserId,
-  ) -> Result<bool, PaymentError> {
+  async fn exists(&self, payment_id: &PaymentMethodId, user_id: &UserId) -> Result<bool, PaymentError> {
     let result = self
       .client
       .get_item()
       .table_name(&self.table)
-      .key(
-        PAYMENT_METHOD_KEY,
-        AttributeValue::S(payment_id.value().to_string()),
-      )
+      .key(PAYMENT_METHOD_KEY, AttributeValue::S(payment_id.value().to_string()))
       .key(USER_ID, AttributeValue::S(user_id.value().to_string()))
       .send()
       .await
@@ -300,11 +237,7 @@ impl PaymentRepository for PaymentRepositoryImpl {
     match result.item {
       Some(_) => Ok(true),
       None => {
-        error!(
-          "{:?}, {:?}",
-          PaymentError::NotExists.to_string(),
-          &payment_id
-        );
+        error!("{:?}, {:?}", PaymentError::NotExists.to_string(), &payment_id);
         Ok(false)
       }
     }
@@ -312,17 +245,13 @@ impl PaymentRepository for PaymentRepositoryImpl {
 }
 
 impl Mapper<PaymentMethod, PaymentError> for PaymentRepositoryImpl {
-  fn map_to_domain_model(
-    v: HashMap<String, AttributeValue>,
-  ) -> Result<PaymentMethod, PaymentError> {
+  fn map_to_domain_model(v: HashMap<String, AttributeValue>) -> Result<PaymentMethod, PaymentError> {
     let payment_method_id = PaymentMethodId::from_str(&as_string(v.get(PAYMENT_METHOD_KEY), ""))?;
     let user_id = UserId::from_str(&as_string(v.get(USER_ID), ""))?;
     let method_name = PaymentMethodCategoryName::from_str(&as_string(v.get(METHOD_NAME), ""))?;
-    let method_kind_name =
-      PaymentMethodKindName::from_str(&as_string(v.get(METHOD_KIND_NAME), ""))?;
+    let method_kind_name = PaymentMethodKindName::from_str(&as_string(v.get(METHOD_KIND_NAME), ""))?;
     let additional_name = &as_string(v.get(ADDITIONAL_NAME), "");
-    let created_at =
-      as_datetime(v.get(CREATED_AT)).ok_or(PaymentError::MissingField("created_at".to_string()))?;
+    let created_at = as_datetime(v.get(CREATED_AT)).ok_or(PaymentError::MissingField("created_at".to_string()))?;
     let updated_at = as_datetime(v.get(UPDATED_AT));
 
     let payment = PaymentMethod::new(
@@ -344,61 +273,31 @@ mod tests {
   use super::*;
   #[test]
   fn test_to_domain_model() {
-    let test_case = vec![HashMap::from([
-      (
-        PAYMENT_METHOD_KEY.to_string(),
-        AttributeValue::S("pay_550e8400-e29b-41d4-a716-446655440000".to_string()),
-      ),
-      (
-        USER_ID.to_string(),
-        AttributeValue::S("usr_550e8400-e29b-41d4-a716-446655440000".to_string()),
-      ),
-      (
-        METHOD_NAME.to_string(),
-        AttributeValue::S("Credit Card".to_string()),
-      ),
-      (
-        METHOD_KIND_NAME.to_string(),
-        AttributeValue::S("JCB".to_string()),
-      ),
-      (
-        CREATED_AT.to_string(),
-        AttributeValue::S("2024-01-01T00:00:00Z".to_string()),
-      ),
-      (
-        UPDATED_AT.to_string(),
-        AttributeValue::S("2077-02-02T00:00:00Z".to_string()),
-      ),
-    ])];
+    let test_case = vec![
+      HashMap::from([
+        (PAYMENT_METHOD_KEY.to_string(), AttributeValue::S("pay_550e8400-e29b-41d4-a716-446655440000".to_string())),
+        (USER_ID.to_string(), AttributeValue::S("usr_550e8400-e29b-41d4-a716-446655440000".to_string())),
+        (METHOD_NAME.to_string(), AttributeValue::S("Credit Card".to_string())),
+        (METHOD_KIND_NAME.to_string(), AttributeValue::S("JCB".to_string())),
+        (CREATED_AT.to_string(), AttributeValue::S("2024-01-01T00:00:00Z".to_string())),
+        (UPDATED_AT.to_string(), AttributeValue::S("2077-02-02T00:00:00Z".to_string())),
+      ]),
+    ];
 
     let _ = test_case
       .into_iter()
-      .map(
-        |test| match PaymentRepositoryImpl::map_to_domain_model(test.clone()) {
-          Ok(v) => {
-            assert_eq!(
-              v.payment_method_id().value().to_string(),
-              as_string(test.get(PAYMENT_METHOD_KEY), "")
-            );
-            assert_eq!(
-              v.user_id().value().to_string(),
-              as_string(test.get(USER_ID), "")
-            );
-            assert_eq!(
-              v.method_name().to_string(),
-              as_string(test.get(METHOD_NAME), "")
-            );
-            assert_eq!(
-              v.method_kind_name().to_string(),
-              as_string(test.get(METHOD_KIND_NAME), "")
-            )
-          }
-          Err(e) => {
-            println!("{:?}", e.to_string());
-            assert!(false)
-          }
-        },
-      )
+      .map(|test| match PaymentRepositoryImpl::map_to_domain_model(test.clone()) {
+        Ok(v) => {
+          assert_eq!(v.payment_method_id().value().to_string(), as_string(test.get(PAYMENT_METHOD_KEY), ""));
+          assert_eq!(v.user_id().value().to_string(), as_string(test.get(USER_ID), ""));
+          assert_eq!(v.method_name().to_string(), as_string(test.get(METHOD_NAME), ""));
+          assert_eq!(v.method_kind_name().to_string(), as_string(test.get(METHOD_KIND_NAME), ""))
+        }
+        Err(e) => {
+          println!("{:?}", e.to_string());
+          assert!(false)
+        }
+      })
       .collect::<()>();
   }
 }

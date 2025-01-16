@@ -27,16 +27,10 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
     Ok(())
   }
 
-  async fn find_payment_method_all(
-    &self,
-    user_id: &str,
-  ) -> Result<Vec<PaymentMethodDTO>, ApplicationError> {
+  async fn find_payment_method_all(&self, user_id: &str) -> Result<Vec<PaymentMethodDTO>, ApplicationError> {
     let user_id = UserId::from_str(user_id)?;
     let v = self.repository.find_all(&user_id).await?;
-    let result = v
-      .iter()
-      .map(|item| PaymentMethodDTO::map_to_dto(item))
-      .collect();
+    let result = v.iter().map(|item| PaymentMethodDTO::map_to_dto(item)).collect();
     Ok(result)
   }
 
@@ -54,21 +48,14 @@ impl<T: PaymentRepository> PaymentMethodService for PaymentMethodServiceImpl<T> 
 
   async fn update_payment_method(&self, payment: PaymentMethodDTO) -> Result<(), ApplicationError> {
     let payment_method = PaymentMethodDTO::map_to_domain_model(payment)?;
-    let exist = self
-      .repository
-      .exists(payment_method.payment_method_id(), payment_method.user_id())
-      .await?;
+    let exist = self.repository.exists(payment_method.payment_method_id(), payment_method.user_id()).await?;
 
     PaymentMethod::exists(exist)?;
     self.repository.update(&payment_method).await?;
     Ok(())
   }
 
-  async fn delete_payment_method(
-    &self,
-    payment_id: &str,
-    user_id: &str,
-  ) -> Result<(), ApplicationError> {
+  async fn delete_payment_method(&self, payment_id: &str, user_id: &str) -> Result<(), ApplicationError> {
     let payment_id = PaymentMethodId::from_str(&payment_id)?;
     let user_id = UserId::from_str(&user_id)?;
 
@@ -85,9 +72,7 @@ mod tests {
   use super::*;
   use chrono::Utc;
   use domain::payment::payment_error::PaymentError;
-  use domain::payment::payment_method_name::{
-    CreditCard, PaymentMethodCategoryName, PaymentMethodKindName,
-  };
+  use domain::payment::payment_method_name::{CreditCard, PaymentMethodCategoryName, PaymentMethodKindName};
   use domain::payment::PaymentMethod;
   use domain::AggregateId;
   use mockall::mock;
@@ -134,10 +119,7 @@ mod tests {
   async fn test_create_payment_method() {
     let mut mock_repository = MockPaymentRepository::new();
 
-    mock_repository
-      .expect_create()
-      .return_once(move |_| Ok(()))
-      .times(1);
+    mock_repository.expect_create().return_once(move |_| Ok(())).times(1);
 
     let dto = create_mock_dto();
 
@@ -184,9 +166,7 @@ mod tests {
 
     let payment_service = PaymentMethodServiceImpl::new(mock_repository);
     let user_id = UserId::new();
-    let result = payment_service
-      .find_payment_method_all(user_id.value())
-      .await;
+    let result = payment_service.find_payment_method_all(user_id.value()).await;
 
     assert!(result.is_ok());
     assert_eq!(result.unwrap().len(), 1);
@@ -195,16 +175,11 @@ mod tests {
   #[tokio::test]
   async fn test_find_payment_method_all_failed() {
     let mut mock_repository = MockPaymentRepository::new();
-    mock_repository
-      .expect_find_all()
-      .return_once(move |_| Err(PaymentError::QueryError("hoge".to_string())))
-      .times(1);
+    mock_repository.expect_find_all().return_once(move |_| Err(PaymentError::QueryError("hoge".to_string()))).times(1);
 
     let payment_service = PaymentMethodServiceImpl::new(mock_repository);
     let user_id = UserId::new();
-    let result = payment_service
-      .find_payment_method_all(user_id.value())
-      .await;
+    let result = payment_service.find_payment_method_all(user_id.value()).await;
 
     assert!(result.is_err());
     assert_eq!(
@@ -228,9 +203,7 @@ mod tests {
     let user_id = UserId::new();
     let payment_id = PaymentMethodId::new();
 
-    let result = payment_service
-      .find_payment_method_by_id(payment_id.value(), user_id.value())
-      .await;
+    let result = payment_service.find_payment_method_by_id(payment_id.value(), user_id.value()).await;
     assert!(result.is_ok());
   }
 
@@ -246,31 +219,21 @@ mod tests {
     let user_id = UserId::new();
     let payment_id = PaymentMethodId::new();
 
-    let result = payment_service
-      .find_payment_method_by_id(payment_id.value(), user_id.value())
-      .await;
+    let result = payment_service.find_payment_method_by_id(payment_id.value(), user_id.value()).await;
 
     assert!(result.is_err());
     assert_eq!(
       result.unwrap_err(),
-      ApplicationError::PaymentMethodError(
-        "Failed to find by id payment methods: hoge".to_string()
-      )
+      ApplicationError::PaymentMethodError("Failed to find by id payment methods: hoge".to_string())
     )
   }
 
   #[tokio::test]
   async fn test_update_payment_method() {
     let mut mock_repository = MockPaymentRepository::new();
-    mock_repository
-      .expect_update()
-      .return_once(move |_| Ok(()))
-      .times(1);
+    mock_repository.expect_update().return_once(move |_| Ok(())).times(1);
 
-    mock_repository
-      .expect_exists()
-      .return_once(move |_, _| Ok(true))
-      .times(1);
+    mock_repository.expect_exists().return_once(move |_, _| Ok(true)).times(1);
 
     let dto = create_mock_dto();
     let payment_service = PaymentMethodServiceImpl::new(mock_repository);
@@ -288,9 +251,7 @@ mod tests {
       .return_once(move |_| Err(PaymentError::UpdatePaymentMethodError("hoge".to_string())))
       .times(1);
 
-    mock_repository
-      .expect_exists()
-      .return_once(move |_, _| Ok(true));
+    mock_repository.expect_exists().return_once(move |_, _| Ok(true));
 
     let dto = create_mock_dto();
     let payment_service = PaymentMethodServiceImpl::new(mock_repository);
@@ -306,22 +267,14 @@ mod tests {
   #[tokio::test]
   async fn test_delete_payment_method() {
     let mut mock_repository = MockPaymentRepository::new();
-    mock_repository
-      .expect_delete()
-      .return_once(move |_, _| Ok(()))
-      .times(1);
+    mock_repository.expect_delete().return_once(move |_, _| Ok(())).times(1);
 
-    mock_repository
-      .expect_exists()
-      .return_once(move |_, _| Ok(true))
-      .times(1);
+    mock_repository.expect_exists().return_once(move |_, _| Ok(true)).times(1);
     let payment_service = PaymentMethodServiceImpl::new(mock_repository);
     let user_id = UserId::new();
     let payment_id = PaymentMethodId::new();
 
-    let result = payment_service
-      .delete_payment_method(payment_id.value(), user_id.value())
-      .await;
+    let result = payment_service.delete_payment_method(payment_id.value(), user_id.value()).await;
 
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), ());
@@ -335,17 +288,12 @@ mod tests {
       .return_once(move |_, _| Err(PaymentError::DeletePaymentMethodFailed("hoge".to_string())))
       .times(1);
 
-    mock_repository
-      .expect_exists()
-      .return_once(move |_, _| Ok(true))
-      .times(1);
+    mock_repository.expect_exists().return_once(move |_, _| Ok(true)).times(1);
     let payment_service = PaymentMethodServiceImpl::new(mock_repository);
     let user_id = UserId::new();
     let payment_id = PaymentMethodId::new();
 
-    let result = payment_service
-      .delete_payment_method(payment_id.value(), user_id.value())
-      .await;
+    let result = payment_service.delete_payment_method(payment_id.value(), user_id.value()).await;
 
     assert!(result.is_err());
     assert_eq!(

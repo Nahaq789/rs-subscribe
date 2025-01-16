@@ -66,7 +66,11 @@ mod tests {
 
   #[test]
   fn test_subscribe_status_from_str_failed() {
-    let test_case = vec!["ACT IVE", "PAU SED", "CAN CELLED"];
+    let test_case = vec![
+      "ACT IVE",
+      "PAU SED",
+      "CAN CELLED",
+    ];
 
     for input in test_case {
       let result = SubscribeStatus::from_str(input);

@@ -155,52 +155,34 @@ impl SubscribeDtoBuilder {
     use domain::subscribe::subscribe_error::SubscribeError;
 
     Ok(SubscribeDto {
-      subscribe_id: self
-        .subscribe_id
-        .ok_or_else(|| SubscribeError::MissingField("subscribe_id".to_string()))?,
-      user_id: self
-        .user_id
-        .ok_or_else(|| SubscribeError::MissingField("user_id".to_string()))?,
-      name: self
-        .name
-        .ok_or_else(|| SubscribeError::MissingField("name".to_string()))?,
+      subscribe_id: self.subscribe_id.ok_or_else(|| SubscribeError::MissingField("subscribe_id".to_string()))?,
+      user_id: self.user_id.ok_or_else(|| SubscribeError::MissingField("user_id".to_string()))?,
+      name: self.name.ok_or_else(|| SubscribeError::MissingField("name".to_string()))?,
       payment_method_id: self
         .payment_method_id
         .ok_or_else(|| SubscribeError::MissingField("payment_method_id".to_string()))?,
-      amount: self
-        .amount
-        .ok_or_else(|| SubscribeError::MissingField("amount".to_string()))?,
-      payment_cycle: self
-        .payment_cycle
-        .ok_or_else(|| SubscribeError::MissingField("payment_cycle".to_string()))?,
-      category_id: self
-        .category_id
-        .ok_or_else(|| SubscribeError::MissingField("category_id".to_string()))?,
+      amount: self.amount.ok_or_else(|| SubscribeError::MissingField("amount".to_string()))?,
+      payment_cycle: self.payment_cycle.ok_or_else(|| SubscribeError::MissingField("payment_cycle".to_string()))?,
+      category_id: self.category_id.ok_or_else(|| SubscribeError::MissingField("category_id".to_string()))?,
       icon_local_path: self
         .icon_local_path
         .ok_or_else(|| SubscribeError::MissingField("icon_local_path".to_string()))?,
-      notification: self.notification.unwrap_or(false), // デフォルト値を設定
+      notification: self.notification.unwrap_or(false),
       first_payment_date: self
         .first_payment_date
         .ok_or_else(|| SubscribeError::MissingField("first_payment_date".to_string()))?,
       next_payment_date: self
         .next_payment_date
         .ok_or_else(|| SubscribeError::MissingField("next_payment_date".to_string()))?,
-      auto_renewal: self.auto_renewal.unwrap_or(true), // デフォルト値を設定
-      status: self
-        .status
-        .ok_or_else(|| SubscribeError::MissingField("status".to_string()))?,
-      memo: self.memo, // Option<String>としてそのまま使用
+      auto_renewal: self.auto_renewal.unwrap_or(false),
+      status: self.status.ok_or_else(|| SubscribeError::MissingField("status".to_string()))?,
+      memo: self.memo,
     })
   }
 }
 
-impl crate::dtos::DTO<SubscribeDto, domain::subscribe::Subscribe, ApplicationError>
-  for SubscribeDto
-{
-  fn map_to_domain_model(
-    v: SubscribeDto,
-  ) -> Result<domain::subscribe::Subscribe, ApplicationError> {
+impl crate::dtos::DTO<SubscribeDto, domain::subscribe::Subscribe, ApplicationError> for SubscribeDto {
+  fn map_to_domain_model(v: SubscribeDto) -> Result<domain::subscribe::Subscribe, ApplicationError> {
     use domain::category::category_id::CategoryId;
     use domain::payment::payment_method_id::PaymentMethodId;
     use domain::payment_cycle::PaymentCycle;
@@ -212,25 +194,19 @@ impl crate::dtos::DTO<SubscribeDto, domain::subscribe::Subscribe, ApplicationErr
 
     let subscribe_id = match v.subscribe_id {
       s if s.is_empty() => SubscribeId::new(),
-      _ => SubscribeId::from_str(v.subscribe_id.as_str())
-        .map_err(|e| error::to_aggregate_id_error(e))?,
+      _ => SubscribeId::from_str(v.subscribe_id.as_str()).map_err(|e| error::to_aggregate_id_error(e))?,
     };
-    let user_id =
-      UserId::from_str(v.user_id.as_str()).map_err(|e| error::to_aggregate_id_error(e))?;
-    let name =
-      SubscribeName::from_str(v.name.as_str()).map_err(|e| error::to_subscribe_error(e))?;
-    let payment_method_id = PaymentMethodId::from_str(v.payment_method_id.as_str())
-      .map_err(|e| error::to_aggregate_id_error(e))?;
+    let user_id = UserId::from_str(v.user_id.as_str()).map_err(|e| error::to_aggregate_id_error(e))?;
+    let name = SubscribeName::from_str(v.name.as_str()).map_err(|e| error::to_subscribe_error(e))?;
+    let payment_method_id =
+      PaymentMethodId::from_str(v.payment_method_id.as_str()).map_err(|e| error::to_aggregate_id_error(e))?;
     let amount = Amount::from_str(v.amount.as_str()).map_err(|e| error::to_subscribe_error(e))?;
 
-    let payment_cycle =
-      PaymentCycle::from_str(v.payment_cycle.as_str()).map_err(|e| error::to_subscribe_error(e))?;
+    let payment_cycle = PaymentCycle::from_str(v.payment_cycle.as_str()).map_err(|e| error::to_subscribe_error(e))?;
 
-    let category_id =
-      CategoryId::from_str(v.category_id.as_str()).map_err(|e| error::to_subscribe_error(e))?;
+    let category_id = CategoryId::from_str(v.category_id.as_str()).map_err(|e| error::to_subscribe_error(e))?;
 
-    let status =
-      SubscribeStatus::from_str(v.status.as_str()).map_err(|e| error::to_subscribe_error(e))?;
+    let status = SubscribeStatus::from_str(v.status.as_str()).map_err(|e| error::to_subscribe_error(e))?;
 
     Ok(Subscribe::from(
       subscribe_id,

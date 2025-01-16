@@ -46,14 +46,13 @@ impl DTO<PaymentMethodDTO, PaymentMethod, ApplicationError> for PaymentMethodDTO
   fn map_to_domain_model(v: PaymentMethodDTO) -> Result<PaymentMethod, ApplicationError> {
     let payment_method_id = match &v.payment_method_id {
       s if s.is_empty() => PaymentMethodId::new(),
-      _ => PaymentMethodId::from_str(&v.payment_method_id)
-        .map_err(|e| error::to_aggregate_id_error(e))?,
+      _ => PaymentMethodId::from_str(&v.payment_method_id).map_err(|e| error::to_aggregate_id_error(e))?,
     };
     let user_id = UserId::from_str(&v.user_id).map_err(|e| error::to_aggregate_id_error(e))?;
-    let method_name = PaymentMethodCategoryName::from_str(&v.method_name)
-      .map_err(|e| error::to_payment_method_error(e))?;
-    let method_kind_name = PaymentMethodKindName::from_str(&v.method_kind_name)
-      .map_err(|e| error::to_payment_method_error(e))?;
+    let method_name =
+      PaymentMethodCategoryName::from_str(&v.method_name).map_err(|e| error::to_payment_method_error(e))?;
+    let method_kind_name =
+      PaymentMethodKindName::from_str(&v.method_kind_name).map_err(|e| error::to_payment_method_error(e))?;
 
     let created_at = PaymentMethod::make_created_at(&v.payment_method_id, v.created_at);
 
@@ -126,10 +125,7 @@ mod tests {
     assert_eq!(&result.payment_method_id, payment_method_id.value());
     assert_eq!(&result.user_id, user_id.value());
     assert_eq!(&result.method_name.to_string(), &method_name.to_string());
-    assert_eq!(
-      &result.method_kind_name.to_string(),
-      &method_kind_name.to_string()
-    );
+    assert_eq!(&result.method_kind_name.to_string(), &method_kind_name.to_string());
     assert_eq!(&result.additional_name, additional_name);
     assert_eq!(&result.created_at, &Some(created_at));
     assert_eq!(&result.updated_at, &updated_at)
@@ -158,19 +154,13 @@ mod tests {
     println!("{:?}", result.updated_at());
     println!("{:?}", updated_at);
     // Assert
-    assert_eq!(
-      result.payment_method_id().value(),
-      payment_method_id.value()
-    );
+    assert_eq!(result.payment_method_id().value(), payment_method_id.value());
     assert_eq!(result.user_id().value(), user_id.value());
     assert_eq!(result.method_name().to_string(), "Credit Card");
     assert_eq!(result.method_kind_name().to_string(), "JCB");
     assert_eq!(result.additional_name(), "test_card");
     assert_eq!(result.created_at(), &created_at);
-    assert_eq!(
-      result.updated_at().unwrap().timestamp(),
-      updated_at.unwrap().timestamp()
-    );
+    assert_eq!(result.updated_at().unwrap().timestamp(), updated_at.unwrap().timestamp());
   }
 
   #[test]
@@ -189,10 +179,7 @@ mod tests {
     // Execute and assert error
     let result = PaymentMethodDTO::map_to_domain_model(dto);
     assert!(result.is_err());
-    assert!(matches!(
-      result.unwrap_err(),
-      ApplicationError::InvalidAggregateIdFormatError(_)
-    ));
+    assert!(matches!(result.unwrap_err(), ApplicationError::InvalidAggregateIdFormatError(_)));
   }
 
   #[test]
@@ -211,9 +198,6 @@ mod tests {
     // Execute and assert error
     let result = PaymentMethodDTO::map_to_domain_model(dto);
     assert!(result.is_err());
-    assert!(matches!(
-      result.unwrap_err(),
-      ApplicationError::PaymentMethodError(_)
-    ));
+    assert!(matches!(result.unwrap_err(), ApplicationError::PaymentMethodError(_)));
   }
 }

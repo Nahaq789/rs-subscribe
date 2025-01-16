@@ -57,9 +57,7 @@ impl From<Uuid> for SubscribeId {
   /// # 戻り値
   /// - [SubscribeId] 生成されたサブスクID
   fn from(value: Uuid) -> Self {
-    Self {
-      value: generate_id(SUBSCRIBE_PREFIX, Some(value)),
-    }
+    Self { value: generate_id(SUBSCRIBE_PREFIX, Some(value)) }
   }
 }
 

@@ -1,6 +1,4 @@
-use crate::{
-  payment_cycle::PaymentCycleError, value_object::amount::AmountError, AggregateIdError,
-};
+use crate::{payment_cycle::PaymentCycleError, value_object::amount::AmountError, AggregateIdError};
 use thiserror::Error;
 
 use super::subscribe_name::SubscribeNameError;

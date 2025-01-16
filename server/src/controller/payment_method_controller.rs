@@ -65,15 +65,9 @@ pub async fn find_payment_method_all(
 
 pub async fn find_payment_method_by_id(
   Extension(module): Extension<PaymentMethodState>,
-  Query(FindByIdParams {
-    user_id,
-    payment_method_id,
-  }): Query<FindByIdParams>,
+  Query(FindByIdParams { user_id, payment_method_id }): Query<FindByIdParams>,
 ) -> Result<impl IntoResponse, ApplicationErrorWrapper> {
-  let result = module
-    .state
-    .find_payment_method_by_id(&payment_method_id, &user_id)
-    .await;
+  let result = module.state.find_payment_method_by_id(&payment_method_id, &user_id).await;
 
   match result {
     Ok(v) => Ok((StatusCode::OK, Json(v))),
@@ -99,15 +93,9 @@ pub async fn update_payment_method(
 
 pub async fn delete_payment_method(
   Extension(module): Extension<PaymentMethodState>,
-  Query(FindByIdParams {
-    user_id,
-    payment_method_id,
-  }): Query<FindByIdParams>,
+  Query(FindByIdParams { user_id, payment_method_id }): Query<FindByIdParams>,
 ) -> Result<impl IntoResponse, ApplicationErrorWrapper> {
-  let result = module
-    .state
-    .delete_payment_method(&payment_method_id, &user_id)
-    .await;
+  let result = module.state.delete_payment_method(&payment_method_id, &user_id).await;
 
   let response = json!({
       "message": "payment method deleted",

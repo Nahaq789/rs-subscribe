@@ -57,9 +57,7 @@ impl From<Uuid> for UserId {
   /// # 戻り値
   /// - [UserId] 生成されたユーザーID
   fn from(value: Uuid) -> Self {
-    Self {
-      value: generate_id(USER_PREFIX, Some(value)),
-    }
+    Self { value: generate_id(USER_PREFIX, Some(value)) }
   }
 }
 

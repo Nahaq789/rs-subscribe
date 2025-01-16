@@ -147,9 +147,6 @@ mod tests {
 
     //assert
     assert!(result.is_ok());
-    assert_eq!(
-      result.unwrap().value(),
-      &Decimal::from(i32::from_str(value).unwrap())
-    )
+    assert_eq!(result.unwrap().value(), &Decimal::from(i32::from_str(value).unwrap()))
   }
 }

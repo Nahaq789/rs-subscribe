@@ -30,8 +30,6 @@ impl PaymentMethodState {
     let repository = PaymentRepositoryImpl::new(client.client(), table);
     let service = PaymentMethodServiceImpl::new(repository);
 
-    Ok(Self {
-      state: Arc::new(service),
-    })
+    Ok(Self { state: Arc::new(service) })
   }
 }

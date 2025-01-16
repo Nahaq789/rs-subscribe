@@ -94,29 +94,16 @@ impl PaymentMethod {
     &self.updated_at
   }
 
-  fn _is_valid_method_combination(
-    method_name: &PaymentMethodCategoryName,
-    kind_name: &PaymentMethodKindName,
-  ) -> bool {
+  fn _is_valid_method_combination(method_name: &PaymentMethodCategoryName, kind_name: &PaymentMethodKindName) -> bool {
     match kind_name {
       PaymentMethodKindName::CreditCard(_) => method_name == &PaymentMethodCategoryName::CreditCard,
-      PaymentMethodKindName::DigitalMoney(_) => {
-        method_name == &PaymentMethodCategoryName::DigitalMoney
-      }
-      PaymentMethodKindName::MobilePayment(_) => {
-        method_name == &PaymentMethodCategoryName::MobilePayment
-      }
-      PaymentMethodKindName::DigitalWallet(_) => {
-        method_name == &PaymentMethodCategoryName::DigitalWallet
-      }
-      PaymentMethodKindName::BankTransfer(_) => {
-        method_name == &PaymentMethodCategoryName::BankTransfer
-      }
+      PaymentMethodKindName::DigitalMoney(_) => method_name == &PaymentMethodCategoryName::DigitalMoney,
+      PaymentMethodKindName::MobilePayment(_) => method_name == &PaymentMethodCategoryName::MobilePayment,
+      PaymentMethodKindName::DigitalWallet(_) => method_name == &PaymentMethodCategoryName::DigitalWallet,
+      PaymentMethodKindName::BankTransfer(_) => method_name == &PaymentMethodCategoryName::BankTransfer,
       PaymentMethodKindName::BNPL(_) => method_name == &PaymentMethodCategoryName::BNPL,
       PaymentMethodKindName::DebitCard => method_name == &PaymentMethodCategoryName::DebitCard,
-      PaymentMethodKindName::CarrierBilling => {
-        method_name == &PaymentMethodCategoryName::CarrierBilling
-      }
+      PaymentMethodKindName::CarrierBilling => method_name == &PaymentMethodCategoryName::CarrierBilling,
     }
   }
 
@@ -158,9 +145,7 @@ mod tests {
 
   use super::*;
   use crate::{
-    payment::payment_method_name::{
-      BankTransfer, CreditCard, DigitalMoney, DigitalWallet, MobilePayment, BNPL,
-    },
+    payment::payment_method_name::{BankTransfer, CreditCard, DigitalMoney, DigitalWallet, MobilePayment, BNPL},
     AggregateId,
   };
 
@@ -197,38 +182,17 @@ mod tests {
   #[test]
   fn test_is_valid_method_combination_return_true() {
     let test_case = vec![
-      (
-        PaymentMethodCategoryName::CreditCard,
-        PaymentMethodKindName::CreditCard(CreditCard::JCB),
-      ),
-      (
-        PaymentMethodCategoryName::DigitalMoney,
-        PaymentMethodKindName::DigitalMoney(DigitalMoney::Nanaco),
-      ),
-      (
-        PaymentMethodCategoryName::MobilePayment,
-        PaymentMethodKindName::MobilePayment(MobilePayment::DBarai),
-      ),
-      (
-        PaymentMethodCategoryName::DigitalWallet,
-        PaymentMethodKindName::DigitalWallet(DigitalWallet::ApplePay),
-      ),
+      (PaymentMethodCategoryName::CreditCard, PaymentMethodKindName::CreditCard(CreditCard::JCB)),
+      (PaymentMethodCategoryName::DigitalMoney, PaymentMethodKindName::DigitalMoney(DigitalMoney::Nanaco)),
+      (PaymentMethodCategoryName::MobilePayment, PaymentMethodKindName::MobilePayment(MobilePayment::DBarai)),
+      (PaymentMethodCategoryName::DigitalWallet, PaymentMethodKindName::DigitalWallet(DigitalWallet::ApplePay)),
       (
         PaymentMethodCategoryName::BankTransfer,
         PaymentMethodKindName::BankTransfer(BankTransfer::JapaneseBankTransfer),
       ),
-      (
-        PaymentMethodCategoryName::BNPL,
-        PaymentMethodKindName::BNPL(BNPL::Affirm),
-      ),
-      (
-        PaymentMethodCategoryName::DebitCard,
-        PaymentMethodKindName::DebitCard,
-      ),
-      (
-        PaymentMethodCategoryName::CarrierBilling,
-        PaymentMethodKindName::CarrierBilling,
-      ),
+      (PaymentMethodCategoryName::BNPL, PaymentMethodKindName::BNPL(BNPL::Affirm)),
+      (PaymentMethodCategoryName::DebitCard, PaymentMethodKindName::DebitCard),
+      (PaymentMethodCategoryName::CarrierBilling, PaymentMethodKindName::CarrierBilling),
     ];
 
     for (a, b) in test_case {
@@ -239,38 +203,17 @@ mod tests {
   #[test]
   fn test_is_valid_method_combination_return_false() {
     let test_case = vec![
-      (
-        PaymentMethodCategoryName::CreditCard,
-        PaymentMethodKindName::DigitalMoney(DigitalMoney::Nanaco),
-      ),
-      (
-        PaymentMethodCategoryName::DigitalMoney,
-        PaymentMethodKindName::MobilePayment(MobilePayment::DBarai),
-      ),
-      (
-        PaymentMethodCategoryName::MobilePayment,
-        PaymentMethodKindName::DigitalWallet(DigitalWallet::ApplePay),
-      ),
+      (PaymentMethodCategoryName::CreditCard, PaymentMethodKindName::DigitalMoney(DigitalMoney::Nanaco)),
+      (PaymentMethodCategoryName::DigitalMoney, PaymentMethodKindName::MobilePayment(MobilePayment::DBarai)),
+      (PaymentMethodCategoryName::MobilePayment, PaymentMethodKindName::DigitalWallet(DigitalWallet::ApplePay)),
       (
         PaymentMethodCategoryName::DigitalWallet,
         PaymentMethodKindName::BankTransfer(BankTransfer::JapaneseBankTransfer),
       ),
-      (
-        PaymentMethodCategoryName::BankTransfer,
-        PaymentMethodKindName::BNPL(BNPL::Affirm),
-      ),
-      (
-        PaymentMethodCategoryName::BNPL,
-        PaymentMethodKindName::DebitCard,
-      ),
-      (
-        PaymentMethodCategoryName::DebitCard,
-        PaymentMethodKindName::CarrierBilling,
-      ),
-      (
-        PaymentMethodCategoryName::CarrierBilling,
-        PaymentMethodKindName::CreditCard(CreditCard::JCB),
-      ),
+      (PaymentMethodCategoryName::BankTransfer, PaymentMethodKindName::BNPL(BNPL::Affirm)),
+      (PaymentMethodCategoryName::BNPL, PaymentMethodKindName::DebitCard),
+      (PaymentMethodCategoryName::DebitCard, PaymentMethodKindName::CarrierBilling),
+      (PaymentMethodCategoryName::CarrierBilling, PaymentMethodKindName::CreditCard(CreditCard::JCB)),
     ];
 
     for (a, b) in test_case {

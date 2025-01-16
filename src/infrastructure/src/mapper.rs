@@ -28,10 +28,7 @@ pub trait Mapper<T, E> {
 /// # Returns
 /// AttributeValueから取得した文字列、または指定されたデフォルト値
 pub fn as_string(val: Option<&AttributeValue>, default: &str) -> String {
-  val
-    .and_then(|v| v.as_s().ok())
-    .map(ToString::to_string)
-    .unwrap_or_else(|| default.to_string())
+  val.and_then(|v| v.as_s().ok()).map(ToString::to_string).unwrap_or_else(|| default.to_string())
 }
 
 /// DynamoDBのAttributeValueからUTC日時を取得します
@@ -43,9 +40,7 @@ pub fn as_string(val: Option<&AttributeValue>, default: &str) -> String {
 /// * `Some(DateTime<Utc>)` - 日時の解析に成功した場合
 /// * `None` - 値が存在しない、または解析に失敗した場合
 pub fn as_datetime(val: Option<&AttributeValue>) -> Option<DateTime<Utc>> {
-  val
-    .and_then(|v| v.as_s().ok())
-    .and_then(|s| DateTime::<Utc>::from_str(s).ok())
+  val.and_then(|v| v.as_s().ok()).and_then(|s| DateTime::<Utc>::from_str(s).ok())
 }
 
 #[cfg(test)]
@@ -71,7 +66,10 @@ mod tests {
   fn test_as_string_default_value() {
     let binding1 = None;
     let binding2 = None;
-    let test_case = vec![(binding1, ""), (binding2, "")];
+    let test_case = vec![
+      (binding1, ""),
+      (binding2, ""),
+    ];
 
     for (found, expected) in test_case {
       let result = as_string(found, "");

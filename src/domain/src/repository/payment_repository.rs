@@ -36,11 +36,7 @@ pub trait PaymentRepository: Send + Sync {
   /// # Returns
   /// * `Ok(PaymentMethod)` - 取得された支払い方法の情報
   /// * `Err(PaymentError)` - 取得処理が失敗した場合のエラー
-  async fn find_by_id(
-    &self,
-    payment_id: &PaymentMethodId,
-    user_id: &UserId,
-  ) -> Result<PaymentMethod, PaymentError>;
+  async fn find_by_id(&self, payment_id: &PaymentMethodId, user_id: &UserId) -> Result<PaymentMethod, PaymentError>;
 
   /// 支払い方法の情報を更新する
   ///
@@ -61,11 +57,7 @@ pub trait PaymentRepository: Send + Sync {
   /// # Returns
   /// * `Ok(())` - 削除処理が成功した場合
   /// * `Err(PaymentError)` - 削除処理が失敗した場合のエラー
-  async fn delete(
-    &self,
-    payment_id: &PaymentMethodId,
-    user_id: &UserId,
-  ) -> Result<(), PaymentError>;
+  async fn delete(&self, payment_id: &PaymentMethodId, user_id: &UserId) -> Result<(), PaymentError>;
 
   /// データが存在するかチェック
   ///
@@ -76,9 +68,5 @@ pub trait PaymentRepository: Send + Sync {
   /// # Returns
   /// * `Ok(true)` -
   /// * `Err(PaymentError)` - データを取得できなかった場合のエラー
-  async fn exists(
-    &self,
-    payment_id: &PaymentMethodId,
-    user_id: &UserId,
-  ) -> Result<bool, PaymentError>;
+  async fn exists(&self, payment_id: &PaymentMethodId, user_id: &UserId) -> Result<bool, PaymentError>;
 }

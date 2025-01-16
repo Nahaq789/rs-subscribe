@@ -58,9 +58,7 @@ impl From<Uuid> for PaymentMethodId {
   /// # 戻り値
   /// - [PaymentMethodId] 生成された支払方法ID
   fn from(value: Uuid) -> Self {
-    Self {
-      value: generate_id(PAYMENT_PREFIX, Some(value)),
-    }
+    Self { value: generate_id(PAYMENT_PREFIX, Some(value)) }
   }
 }
 

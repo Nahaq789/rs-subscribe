@@ -37,10 +37,8 @@ pub enum SettingsError {
 
 impl ApiSettings {
   pub fn build() -> Result<Self, SettingsError> {
-    let host =
-      std::env::var("HOST").map_err(|_| SettingsError::InvalidLoadConfig("HOST".to_string()))?;
-    let port =
-      std::env::var("PORT").map_err(|_| SettingsError::InvalidLoadConfig("PORT".to_string()))?;
+    let host = std::env::var("HOST").map_err(|_| SettingsError::InvalidLoadConfig("HOST".to_string()))?;
+    let port = std::env::var("PORT").map_err(|_| SettingsError::InvalidLoadConfig("PORT".to_string()))?;
 
     Ok(Self { host, port })
   }
@@ -48,8 +46,8 @@ impl ApiSettings {
 
 impl AwsSettings {
   pub fn build() -> Result<Self, SettingsError> {
-    let payment = std::env::var("PAYMENT_TABLE")
-      .map_err(|_| SettingsError::InvalidLoadConfig("PAYMENT_TABLE".to_string()))?;
+    let payment =
+      std::env::var("PAYMENT_TABLE").map_err(|_| SettingsError::InvalidLoadConfig("PAYMENT_TABLE".to_string()))?;
 
     Ok(Self { payment })
   }
@@ -66,22 +64,14 @@ pub fn set_up_tracing_subscriber() {
         .with_target(true)
         .with_ansi(false)
         .with_filter(filter)
-        .with_filter(filter::filter_fn(|metadata| {
-          if metadata.target().contains(CREDENTIALS) {
-            false
-          } else {
-            true
-          }
-        })),
+        .with_filter(filter::filter_fn(|metadata| if metadata.target().contains(CREDENTIALS) { false } else { true })),
     )
     .init();
 }
 
 pub async fn create_payment_router() -> Result<Router, SettingsError> {
   let aws = AwsSettings::build()?;
-  let state = PaymentMethodState::new(&aws.payment)
-    .await
-    .map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
+  let state = PaymentMethodState::new(&aws.payment).await.map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
   Ok(
     Router::new()
       .route("/payment/create", post(create_payment_method))
@@ -127,10 +117,7 @@ mod tests {
     let result = ApiSettings::build();
 
     assert!(result.is_err());
-    assert_eq!(
-      SettingsError::InvalidLoadConfig("HOST".to_string()),
-      result.unwrap_err()
-    )
+    assert_eq!(SettingsError::InvalidLoadConfig("HOST".to_string()), result.unwrap_err())
   }
 
   #[test]
@@ -140,10 +127,7 @@ mod tests {
     let result = ApiSettings::build();
 
     assert!(result.is_err());
-    assert_eq!(
-      SettingsError::InvalidLoadConfig("PORT".to_string()),
-      result.unwrap_err()
-    )
+    assert_eq!(SettingsError::InvalidLoadConfig("PORT".to_string()), result.unwrap_err())
   }
 
   #[test]
@@ -163,10 +147,7 @@ mod tests {
     let result = AwsSettings::build();
 
     assert!(result.is_err());
-    assert_eq!(
-      SettingsError::InvalidLoadConfig("PAYMENT_TABLE".to_string()),
-      result.unwrap_err()
-    )
+    assert_eq!(SettingsError::InvalidLoadConfig("PAYMENT_TABLE".to_string()), result.unwrap_err())
   }
 
   #[tokio::test]
