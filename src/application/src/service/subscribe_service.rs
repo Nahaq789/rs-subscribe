@@ -89,3 +89,23 @@ impl<T: domain::repository::subscribe_repository::SubscribeRepository> crate::se
     result
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use domain::repository::subscribe_repository::SubscribeRepository;
+  use domain::subscribe::{subscribe_error::SubscribeError, subscribe_id::SubscribeId, Subscribe};
+  use domain::user::user_id::UserId;
+  use mockall::mock;
+
+  mock! {
+    SubscribeRepository {}
+    #[async_trait::async_trait]
+    impl SubscribeRepository for SubscribeRepository {
+      async fn create(&self, subscribe: &Subscribe) -> Result<(), SubscribeError>;
+      async fn find_all(&self, user_id: &UserId) -> Result<Vec<Subscribe>, SubscribeError>;
+      async fn find_by_id(&self, subscribe_id: &SubscribeId, user_id: &UserId) -> Result<Subscribe, SubscribeError>;
+      async fn update(&self, subscribe: &Subscribe) -> Result<(), SubscribeError>;
+      async fn delete(&self, subscribe_id: &SubscribeId, user_id: &UserId) -> Result<(), SubscribeError>;
+    }
+  }
+}
