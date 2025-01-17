@@ -73,6 +73,7 @@ dependencies = [
  "chrono",
  "domain",
  "mockall",
+ "rust_decimal",
  "serde",
  "serde_json",
  "thiserror",

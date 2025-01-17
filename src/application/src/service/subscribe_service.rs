@@ -92,10 +92,17 @@ impl<T: domain::repository::subscribe_repository::SubscribeRepository> crate::se
 
 #[cfg(test)]
 mod tests {
+  use crate::dtos::subscribe_dto::SubscribeDto;
+  use chrono::Utc;
+  use domain::category::category_id::CategoryId;
+  use domain::payment::payment_method_id::PaymentMethodId;
   use domain::repository::subscribe_repository::SubscribeRepository;
-  use domain::subscribe::{subscribe_error::SubscribeError, subscribe_id::SubscribeId, Subscribe};
+  use domain::subscribe::{subscribe_error::SubscribeError, subscribe_id::SubscribeId, Subscribe, subscribe_name::SubscribeName, subscribe_status::SubscribeStatus};
+  use domain::payment_cycle::PaymentCycle;
+  use domain::value_object::amount::Amount;
   use domain::user::user_id::UserId;
   use mockall::mock;
+  use rust_decimal::Decimal;
 
   mock! {
     SubscribeRepository {}
@@ -107,5 +114,59 @@ mod tests {
       async fn update(&self, subscribe: &Subscribe) -> Result<(), SubscribeError>;
       async fn delete(&self, subscribe_id: &SubscribeId, user_id: &UserId) -> Result<(), SubscribeError>;
     }
+  }
+
+  fn create_mock_dto() -> SubscribeDto {
+    let now = Utc::now();
+    SubscribeDto::new(
+      SubscribeId::new().to_string(),
+      UserId::new().to_string(),
+      "Netflix".to_string(),
+      PaymentMethodId::new().to_string(),
+      "1980".to_string(),
+      "MONTHLY".to_string(),
+      CategoryId::new().to_string(),
+      "/path/to/netflix-icon.png".to_string(),
+      true,
+      now,
+      now + chrono::Duration::days(30),
+      true,
+      "ACTIVE".to_string(),
+      Some("Test subscription".to_string()),
+    )
+  }
+
+  fn create_mock_domain() -> Subscribe {
+        let subscribe_id = SubscribeId::new();
+    let user_id = UserId::new();
+    let name = SubscribeName::new("hoge").unwrap();
+    let payment_method_id = PaymentMethodId::new();
+    let amount = Amount::try_from(Decimal::ONE_HUNDRED).unwrap();
+    let payment_cycle = PaymentCycle::Monthly;
+    let now = Utc::now();
+    let category_id = CategoryId::new();
+    let icon_path = String::from("/path/to/icon");
+    let notification = true;
+    let auto_renewal = true;
+    let status = SubscribeStatus::ACTIVE;
+    let memo = Some("テストメモ".to_owned());
+
+    let subscribe = Subscribe::from(
+      subscribe_id.clone(),
+      user_id.clone(),
+      name.clone(),
+      payment_method_id.clone(),
+      amount.clone(),
+      payment_cycle.clone(),
+      category_id.clone(),
+      icon_path.clone(),
+      notification,
+      now,
+      now,
+      auto_renewal,
+      status.clone(),
+      memo.clone(),
+    );
+    subscribe
   }
 }
