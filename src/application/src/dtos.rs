@@ -15,8 +15,8 @@ pub mod subscribe_dto;
 /// * `map_to_dto` - ドメインモデルからDTOへの変換
 pub trait DTO<T, D, E>
 where
-  T: Sized,
+    T: Sized,
 {
-  fn map_to_domain_model(v: T) -> Result<D, E>;
-  fn map_to_dto(v: &D) -> T;
+    fn map_to_domain_model(v: T) -> Result<D, E>;
+    fn map_to_dto(v: &D) -> T;
 }

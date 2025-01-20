@@ -6,8 +6,8 @@ use app_state::PaymentMethodState;
 use axum::routing::{delete, get, patch, post};
 use axum::{Extension, Router};
 use controller::payment_method_controller::{
-  create_payment_method, delete_payment_method, find_payment_method_all, find_payment_method_by_id,
-  update_payment_method,
+    create_payment_method, delete_payment_method, find_payment_method_all, find_payment_method_by_id,
+    update_payment_method,
 };
 use thiserror::Error;
 use tracing::error;
@@ -17,144 +17,140 @@ use tracing_subscriber::{filter, EnvFilter, Layer};
 
 #[derive(Debug)]
 pub struct ApiSettings {
-  pub host: String,
-  pub port: String,
+    pub host: String,
+    pub port: String,
 }
 
 #[derive(Debug)]
 pub struct AwsSettings {
-  payment: String,
+    payment: String,
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum SettingsError {
-  #[error("Cannot load env. key: {0}")]
-  InvalidLoadConfig(String),
+    #[error("Cannot load env. key: {0}")]
+    InvalidLoadConfig(String),
 
-  #[error("State build error: {0}")]
-  StateBuildError(String),
+    #[error("State build error: {0}")]
+    StateBuildError(String),
 }
 
 impl ApiSettings {
-  pub fn build() -> Result<Self, SettingsError> {
-    let host = std::env::var("HOST").map_err(|_| SettingsError::InvalidLoadConfig("HOST".to_string()))?;
-    let port = std::env::var("PORT").map_err(|_| SettingsError::InvalidLoadConfig("PORT".to_string()))?;
+    pub fn build() -> Result<Self, SettingsError> {
+        let host = std::env::var("HOST").map_err(|_| SettingsError::InvalidLoadConfig("HOST".to_string()))?;
+        let port = std::env::var("PORT").map_err(|_| SettingsError::InvalidLoadConfig("PORT".to_string()))?;
 
-    Ok(Self { host, port })
-  }
+        Ok(Self { host, port })
+    }
 }
 
 impl AwsSettings {
-  pub fn build() -> Result<Self, SettingsError> {
-    let payment =
-      std::env::var("PAYMENT_TABLE").map_err(|_| SettingsError::InvalidLoadConfig("PAYMENT_TABLE".to_string()))?;
+    pub fn build() -> Result<Self, SettingsError> {
+        let payment = std::env::var("PAYMENT_TABLE")
+            .map_err(|_| SettingsError::InvalidLoadConfig("PAYMENT_TABLE".to_string()))?;
 
-    Ok(Self { payment })
-  }
+        Ok(Self { payment })
+    }
 }
 
 pub fn set_up_tracing_subscriber() {
-  const CREDENTIALS: &str = "credentials";
-  let filter = EnvFilter::from_default_env();
+    const CREDENTIALS: &str = "credentials";
+    let filter = EnvFilter::from_default_env();
 
-  tracing_subscriber::registry()
-    .with(
-      tracing_subscriber::fmt::layer()
-        .json()
-        .with_target(true)
-        .with_ansi(false)
-        .with_filter(filter)
-        .with_filter(filter::filter_fn(|metadata| if metadata.target().contains(CREDENTIALS) { false } else { true })),
-    )
-    .init();
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::fmt::layer().json().with_target(true).with_ansi(false).with_filter(filter).with_filter(
+                filter::filter_fn(|metadata| if metadata.target().contains(CREDENTIALS) { false } else { true }),
+            ),
+        )
+        .init();
 }
 
 pub async fn create_payment_router() -> Result<Router, SettingsError> {
-  let aws = AwsSettings::build()?;
-  let state = PaymentMethodState::new(&aws.payment).await.map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
-  Ok(
-    Router::new()
-      .route("/payment/create", post(create_payment_method))
-      .route("/payment", get(find_payment_method_all))
-      .route("/payment/id", get(find_payment_method_by_id))
-      .route("/payment/update", patch(update_payment_method))
-      .route("/payment/delete", delete(delete_payment_method))
-      .layer(Extension(state)),
-  )
+    let aws = AwsSettings::build()?;
+    let state =
+        PaymentMethodState::new(&aws.payment).await.map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
+    Ok(Router::new()
+        .route("/payment/create", post(create_payment_method))
+        .route("/payment", get(find_payment_method_all))
+        .route("/payment/id", get(find_payment_method_by_id))
+        .route("/payment/update", patch(update_payment_method))
+        .route("/payment/delete", delete(delete_payment_method))
+        .layer(Extension(state)))
 }
 
 #[cfg(test)]
 mod tests {
-  use super::*;
+    use super::*;
 
-  const HOST: &str = "1.1.1.1";
-  const PORT: &str = "7878";
-  const PAYMENT_TABLE: &str = "payment";
+    const HOST: &str = "1.1.1.1";
+    const PORT: &str = "7878";
+    const PAYMENT_TABLE: &str = "payment";
 
-  fn clear_env() {
-    std::env::remove_var("HOST");
-    std::env::remove_var("PORT");
-    std::env::remove_var("PAYMENT_TABLE");
-  }
+    fn clear_env() {
+        std::env::remove_var("HOST");
+        std::env::remove_var("PORT");
+        std::env::remove_var("PAYMENT_TABLE");
+    }
 
-  #[test]
-  fn test_api_settings_build_success() {
-    clear_env();
-    std::env::set_var("HOST", HOST);
-    std::env::set_var("PORT", PORT);
+    #[test]
+    fn test_api_settings_build_success() {
+        clear_env();
+        std::env::set_var("HOST", HOST);
+        std::env::set_var("PORT", PORT);
 
-    let result = ApiSettings::build();
+        let result = ApiSettings::build();
 
-    assert!(&result.is_ok());
-    let result = result.unwrap();
-    assert_eq!(&result.host, HOST);
-    assert_eq!(&result.port, PORT)
-  }
+        assert!(&result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(&result.host, HOST);
+        assert_eq!(&result.port, PORT)
+    }
 
-  #[test]
-  fn test_api_settings_build_host_failed() {
-    clear_env();
-    let result = ApiSettings::build();
+    #[test]
+    fn test_api_settings_build_host_failed() {
+        clear_env();
+        let result = ApiSettings::build();
 
-    assert!(result.is_err());
-    assert_eq!(SettingsError::InvalidLoadConfig("HOST".to_string()), result.unwrap_err())
-  }
+        assert!(result.is_err());
+        assert_eq!(SettingsError::InvalidLoadConfig("HOST".to_string()), result.unwrap_err())
+    }
 
-  #[test]
-  fn test_api_settings_build_port_failed() {
-    clear_env();
-    std::env::set_var("HOST", HOST);
-    let result = ApiSettings::build();
+    #[test]
+    fn test_api_settings_build_port_failed() {
+        clear_env();
+        std::env::set_var("HOST", HOST);
+        let result = ApiSettings::build();
 
-    assert!(result.is_err());
-    assert_eq!(SettingsError::InvalidLoadConfig("PORT".to_string()), result.unwrap_err())
-  }
+        assert!(result.is_err());
+        assert_eq!(SettingsError::InvalidLoadConfig("PORT".to_string()), result.unwrap_err())
+    }
 
-  #[test]
-  fn aws_settings_build_payment_success() {
-    clear_env();
-    std::env::set_var("PAYMENT_TABLE", PAYMENT_TABLE);
-    let result = AwsSettings::build();
+    #[test]
+    fn aws_settings_build_payment_success() {
+        clear_env();
+        std::env::set_var("PAYMENT_TABLE", PAYMENT_TABLE);
+        let result = AwsSettings::build();
 
-    assert!(result.is_ok());
-    let result = result.unwrap();
-    assert_eq!(&result.payment, PAYMENT_TABLE)
-  }
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(&result.payment, PAYMENT_TABLE)
+    }
 
-  #[test]
-  fn aws_settings_build_payment_failed() {
-    clear_env();
-    let result = AwsSettings::build();
+    #[test]
+    fn aws_settings_build_payment_failed() {
+        clear_env();
+        let result = AwsSettings::build();
 
-    assert!(result.is_err());
-    assert_eq!(SettingsError::InvalidLoadConfig("PAYMENT_TABLE".to_string()), result.unwrap_err())
-  }
+        assert!(result.is_err());
+        assert_eq!(SettingsError::InvalidLoadConfig("PAYMENT_TABLE".to_string()), result.unwrap_err())
+    }
 
-  #[tokio::test]
-  async fn test_create_payment_router() {
-    clear_env();
-    std::env::set_var("PAYMENT_TABLE", PAYMENT_TABLE);
-    let result = create_payment_router().await;
-    assert!(result.is_ok())
-  }
+    #[tokio::test]
+    async fn test_create_payment_router() {
+        clear_env();
+        std::env::set_var("PAYMENT_TABLE", PAYMENT_TABLE);
+        let result = create_payment_router().await;
+        assert!(result.is_ok())
+    }
 }
