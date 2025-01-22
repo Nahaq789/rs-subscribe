@@ -1,39 +1,13 @@
 use crate::app_state::PaymentMethodState;
 use application::dtos::payment_method_dto::PaymentMethodDTO;
-use application::error::ApplicationError;
 use axum::extract::Query;
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::response::IntoResponse;
 use axum::{Extension, Json};
 use serde_json::json;
-use std::fmt;
-use std::fmt::Formatter;
 
 use super::params::payment_method_params::{FindAllParam, FindByIdParams};
-
-pub struct ApplicationErrorWrapper(ApplicationError);
-
-impl fmt::Display for ApplicationErrorWrapper {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0.to_string())
-    }
-}
-
-impl IntoResponse for ApplicationErrorWrapper {
-    fn into_response(self) -> Response {
-        let (status, message) = match self {
-            ApplicationErrorWrapper(ApplicationError::PaymentMethodError(..)) => {
-                (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
-            }
-            _ => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
-        };
-        let res = json!({
-            "message": message,
-            "status code": status.as_u16()
-        });
-        (status, Json(res)).into_response()
-    }
-}
+use super::ApplicationErrorWrapper;
 
 pub async fn create_payment_method(
     Extension(module): Extension<PaymentMethodState>,
