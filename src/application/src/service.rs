@@ -22,14 +22,16 @@ pub trait SubscribeService: Send + Sync {
     fn create_subscribe(
         &self,
         subscribe: dtos::subscribe_dto::SubscribeDto,
-    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = anyhow::Result<()>> + Send + '_>>;
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ApplicationError>> + Send + '_>>;
 
     fn find_subscribe_all<'a>(
         &'a self,
         user_id: &'a str,
     ) -> std::pin::Pin<
         Box<
-            dyn std::future::Future<Output = anyhow::Result<Vec<crate::dtos::subscribe_dto::SubscribeDto>>> + Send + '_,
+            dyn std::future::Future<Output = Result<Vec<crate::dtos::subscribe_dto::SubscribeDto>, ApplicationError>>
+                + Send
+                + '_,
         >,
     >;
 
@@ -38,17 +40,21 @@ pub trait SubscribeService: Send + Sync {
         user_id: &'a str,
         subscribe_id: &'a str,
     ) -> std::pin::Pin<
-        Box<dyn std::future::Future<Output = anyhow::Result<crate::dtos::subscribe_dto::SubscribeDto>> + Send + '_>,
+        Box<
+            dyn std::future::Future<Output = Result<crate::dtos::subscribe_dto::SubscribeDto, ApplicationError>>
+                + Send
+                + '_,
+        >,
     >;
 
     fn update_subscribe(
         &self,
         subscribe: dtos::subscribe_dto::SubscribeDto,
-    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = anyhow::Result<()>> + Send + '_>>;
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ApplicationError>> + Send + '_>>;
 
     fn delete_subscribe<'a>(
         &'a self,
         user_id: &'a str,
         subscribe_id: &'a str,
-    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = anyhow::Result<()>> + Send + '_>>;
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ApplicationError>> + Send + '_>>;
 }

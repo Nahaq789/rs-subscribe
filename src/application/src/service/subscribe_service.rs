@@ -1,7 +1,9 @@
 use std::str::FromStr;
 
-use crate::dtos::{self, DTO};
-use anyhow::Ok;
+use crate::{
+    dtos::{self, DTO},
+    error::ApplicationError,
+};
 
 pub struct SubscribeServiceImpl<T: domain::repository::subscribe_repository::SubscribeRepository> {
     repository: T,
@@ -19,7 +21,7 @@ impl<T: domain::repository::subscribe_repository::SubscribeRepository> crate::se
     fn create_subscribe(
         &self,
         subscribe: crate::dtos::subscribe_dto::SubscribeDto,
-    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = anyhow::Result<()>> + Send + '_>> {
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ApplicationError>> + Send + '_>> {
         let result = Box::pin(async move {
             let subscribe = crate::dtos::subscribe_dto::SubscribeDto::map_to_domain_model(subscribe)?;
             let result = self.repository.create(&subscribe).await?;
@@ -33,7 +35,9 @@ impl<T: domain::repository::subscribe_repository::SubscribeRepository> crate::se
         user_id: &'a str,
     ) -> std::pin::Pin<
         Box<
-            dyn std::future::Future<Output = anyhow::Result<Vec<crate::dtos::subscribe_dto::SubscribeDto>>> + Send + '_,
+            dyn std::future::Future<Output = Result<Vec<crate::dtos::subscribe_dto::SubscribeDto>, ApplicationError>>
+                + Send
+                + '_,
         >,
     > {
         let result = Box::pin(async move {
@@ -52,7 +56,11 @@ impl<T: domain::repository::subscribe_repository::SubscribeRepository> crate::se
         user_id: &'a str,
         subscribe_id: &'a str,
     ) -> std::pin::Pin<
-        Box<dyn std::future::Future<Output = anyhow::Result<crate::dtos::subscribe_dto::SubscribeDto>> + Send + '_>,
+        Box<
+            dyn std::future::Future<Output = Result<crate::dtos::subscribe_dto::SubscribeDto, ApplicationError>>
+                + Send
+                + '_,
+        >,
     > {
         let result = Box::pin(async move {
             let user_id = domain::user::user_id::UserId::from_str(user_id)?;
@@ -68,7 +76,7 @@ impl<T: domain::repository::subscribe_repository::SubscribeRepository> crate::se
     fn update_subscribe(
         &self,
         subscribe: crate::dtos::subscribe_dto::SubscribeDto,
-    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = anyhow::Result<()>> + Send + '_>> {
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ApplicationError>> + Send + '_>> {
         let result = Box::pin(async move {
             let subscribe = dtos::subscribe_dto::SubscribeDto::map_to_domain_model(subscribe)?;
             let result = self.repository.update(&subscribe).await?;
@@ -81,7 +89,7 @@ impl<T: domain::repository::subscribe_repository::SubscribeRepository> crate::se
         &'a self,
         user_id: &'a str,
         subscribe_id: &'a str,
-    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = anyhow::Result<()>> + Send + '_>> {
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ApplicationError>> + Send + '_>> {
         let result = Box::pin(async move {
             let user_id = domain::user::user_id::UserId::from_str(user_id)?;
             let subscribe_id = domain::subscribe::subscribe_id::SubscribeId::from_str(subscribe_id)?;
@@ -96,6 +104,7 @@ impl<T: domain::repository::subscribe_repository::SubscribeRepository> crate::se
 #[cfg(test)]
 mod tests {
     use crate::dtos::subscribe_dto::SubscribeDto;
+    use crate::error::ApplicationError;
     use crate::service::SubscribeService;
     use chrono::Utc;
     use domain::category::category_id::CategoryId;
@@ -218,8 +227,8 @@ mod tests {
 
         assert!(result.is_err());
         assert_eq!(
-            result.unwrap_err().to_string(),
-            anyhow::anyhow!(SubscribeError::FindByIdError("hoge".to_string())).to_string()
+            result.unwrap_err(),
+            ApplicationError::SubscribeError(SubscribeError::FindByIdError("hoge".to_string()).to_string())
         );
     }
 
