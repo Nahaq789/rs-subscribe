@@ -11,12 +11,10 @@ pub async fn create_subscribe(
     Json(payload): Json<SubscribeDto>,
 ) -> Result<impl IntoResponse, ApplicationErrorWrapper> {
     let result = module.state.create_subscribe(payload).await;
-    let response = json!(
-       {
-    "message": "subscribe created",
-        "status code": StatusCode::OK.as_u16()
-       }
-    );
+    let response = json!({
+     "message": "subscribe created",
+     "status code": StatusCode::OK.as_u16()
+    });
 
     match result {
         Ok(_) => Ok((StatusCode::OK, Json(response))),
