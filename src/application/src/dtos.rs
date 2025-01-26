@@ -1,3 +1,4 @@
+pub mod category_dto;
 pub mod payment_method_dto;
 pub mod subscribe_dto;
 /// DTOとドメインモデル間の相互変換を行うトレイト
