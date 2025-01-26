@@ -14,33 +14,24 @@ pub struct Category {
 
 impl Category {
     /// idなしコンストラクタ
-    pub fn new(
-        user_id: UserId,
-        category_name: CategoryName,
-    ) -> Self {
+    pub fn new(user_id: UserId, category_name: CategoryName) -> Self {
         let category_id = CategoryId::new();
-        Self {
-            category_id,
-            user_id,
-            category_name,
-        }
+        Self { category_id, user_id, category_name }
     }
 
-    pub fn from(
-        category_id: CategoryId,
-        user_id: UserId,
-        category_name: CategoryName,
-    ) -> Self {
-        Self {
-            category_id,
-            user_id,
-            category_name,
-        }
+    pub fn from(category_id: CategoryId, user_id: UserId, category_name: CategoryName) -> Self {
+        Self { category_id, user_id, category_name }
     }
 
-    pub fn category_id(&self) -> &CategoryId { &self.category_id }
-    pub fn user_id(&self) -> &UserId { &self.user_id }
-    pub fn category_name(&self) -> &CategoryName { &self.category_name }
+    pub fn category_id(&self) -> &CategoryId {
+        &self.category_id
+    }
+    pub fn user_id(&self) -> &UserId {
+        &self.user_id
+    }
+    pub fn category_name(&self) -> &CategoryName {
+        &self.category_name
+    }
 }
 
 #[cfg(test)]
@@ -54,10 +45,7 @@ mod tests {
         let user_id = UserId::new();
         let category_name = CategoryName::from_str("hoge").unwrap();
 
-        let result = Category::new(
-            user_id,
-            category_name,
-        );
+        let result = Category::new(user_id, category_name);
         assert!(!result.category_id.to_string().is_empty())
     }
 
@@ -67,11 +55,7 @@ mod tests {
         let user_id = UserId::new();
         let category_name = CategoryName::from_str("hoge").unwrap();
 
-        let result = Category::from(
-            category_id.clone(),
-            user_id,
-            category_name,
-        );
+        let result = Category::from(category_id.clone(), user_id, category_name);
 
         assert_eq!(category_id.value(), result.category_id.value())
     }
