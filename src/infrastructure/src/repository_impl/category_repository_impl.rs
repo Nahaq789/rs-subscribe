@@ -19,11 +19,9 @@ const USER_ID_CONDITION: &str = "#user_id = :user_id";
 const USER_ID_ATTR: &str = "#user_id";
 const USER_ID_VALUE: &str = ":user_id";
 
-const CATEGORY_NAME_CONDITION: &str = "#category_name = :category_name";
 const CATEGORY_NAME_ATTR: &str = "#category_name";
 const CATEGORY_NAME_VALUE: &str = ":category_name";
 
-const CATEGORY_ID_CONDITION: &str = "#category_id = :category_id";
 const CATEGORY_ID_ATTR: &str = "#category_id";
 const CATEGORY_ID_VALUE: &str = ":category_id";
 
@@ -170,9 +168,9 @@ impl CategoryRepository for CategoryRepositoryImpl {
                 .key(USER_ID, AttributeValue::S(category.user_id().to_string()))
                 .key(CATEGORY_KEY, AttributeValue::S(category.category_id().to_string()))
                 .update_expression(UPDATE_EXPRESSION)
-                .expression_attribute_names(USER_ID_ATTR, USER_ID)
-                .expression_attribute_names(CATEGORY_ID_ATTR, CATEGORY_KEY)
-                .expression_attribute_names(CATEGORY_NAME_ATTR, CATEGORY_NAME)
+                .expression_attribute_names(USER_ID_ATTR, USER_ID_VALUE)
+                .expression_attribute_names(CATEGORY_ID_ATTR, CATEGORY_ID_VALUE)
+                .expression_attribute_names(CATEGORY_NAME_ATTR, CATEGORY_NAME_VALUE)
                 .expression_attribute_values(USER_ID, AttributeValue::S(category.user_id().to_string()))
                 .expression_attribute_values(CATEGORY_KEY, AttributeValue::S(category.category_id().to_string()))
                 .expression_attribute_values(CATEGORY_NAME, AttributeValue::S(category.category_name().to_string()));
