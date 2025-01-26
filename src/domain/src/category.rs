@@ -2,6 +2,7 @@ use crate::category::category_id::CategoryId;
 use crate::category::category_name::CategoryName;
 use crate::user::user_id::UserId;
 
+pub mod category_error;
 pub mod category_id;
 pub mod category_name;
 
