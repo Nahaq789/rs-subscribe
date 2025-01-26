@@ -1,8 +1,7 @@
 use std::str::FromStr;
 
 use domain::{
-    category::category_id::CategoryId, repository::category_repository::CategoryRepository, subscribe::subscribe_id,
-    user::user_id::UserId,
+    category::category_id::CategoryId, repository::category_repository::CategoryRepository, user::user_id::UserId,
 };
 
 use crate::dtos::{category_dto::CategoryDto, DTO};
