@@ -2,6 +2,7 @@ use crate::dtos;
 use crate::dtos::payment_method_dto::PaymentMethodDTO;
 use crate::error::ApplicationError;
 
+pub mod category_service;
 pub mod payment_method_service;
 pub mod subscribe_service;
 
@@ -56,5 +57,42 @@ pub trait SubscribeService: Send + Sync {
         &'a self,
         user_id: &'a str,
         subscribe_id: &'a str,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ApplicationError>> + Send + '_>>;
+}
+
+pub trait CategoryService: Send + Sync {
+    fn create_category<'a>(
+        &'a self,
+        category: dtos::category_dto::CategoryDto,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ApplicationError>> + Send + '_>>;
+
+    fn find_category_all<'a>(
+        &'a self,
+        user_id: &'a str,
+    ) -> std::pin::Pin<
+        Box<
+            dyn std::future::Future<Output = Result<Vec<dtos::category_dto::CategoryDto>, ApplicationError>>
+                + Send
+                + '_,
+        >,
+    >;
+
+    fn find_category_by_id<'a>(
+        &'a self,
+        user_id: &'a str,
+        category_id: &'a str,
+    ) -> std::pin::Pin<
+        Box<dyn std::future::Future<Output = Result<dtos::category_dto::CategoryDto, ApplicationError>> + Send + '_>,
+    >;
+
+    fn update_category(
+        &self,
+        category: dtos::category_dto::CategoryDto,
+    ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ApplicationError>> + Send + '_>>;
+
+    fn delete_category<'a>(
+        &'a self,
+        user_id: &'a str,
+        category_id: &'a str,
     ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<(), ApplicationError>> + Send + '_>>;
 }
