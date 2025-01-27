@@ -15,6 +15,19 @@ resource "aws_dynamodb_table" "tables" {
     }
   }
 
+  dynamic "global_secondary_index" {
+    for_each = coalesce(each.value.gsis, {})
+
+    content {
+      hash_key        = global_secondary_index.value.hash_key
+      range_key       = global_secondary_index.value.range_key
+      name            = global_secondary_index.value.name
+      projection_type = global_secondary_index.value.projection_type
+      read_capacity   = 1
+      write_capacity  = 1
+    }
+  }
+
   tags = {
     Environment = var.environment
   }

@@ -1,5 +1,6 @@
+pub mod category_dto;
 pub mod payment_method_dto;
-
+pub mod subscribe_dto;
 /// DTOとドメインモデル間の相互変換を行うトレイト
 ///
 /// # 型パラメータ
@@ -15,8 +16,8 @@ pub mod payment_method_dto;
 /// * `map_to_dto` - ドメインモデルからDTOへの変換
 pub trait DTO<T, D, E>
 where
-  T: Sized,
+    T: Sized,
 {
-  fn map_to_domain_model(v: T) -> Result<D, E>;
-  fn map_to_dto(v: &D) -> T;
+    fn map_to_domain_model(v: T) -> Result<D, E>;
+    fn map_to_dto(v: &D) -> T;
 }
