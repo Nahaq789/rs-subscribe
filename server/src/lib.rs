@@ -2,7 +2,7 @@ pub mod app_state;
 pub mod client;
 pub mod controller;
 
-use app_state::PaymentMethodState;
+use app_state::{PaymentMethodState, SubscribeState};
 use axum::routing::{delete, get, patch, post};
 use axum::{Extension, Router};
 use controller::payment_method_controller::{
@@ -24,6 +24,8 @@ pub struct ApiSettings {
 #[derive(Debug)]
 pub struct AwsSettings {
     payment: String,
+    subscribe: String,
+    category: String,
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -48,8 +50,12 @@ impl AwsSettings {
     pub fn build() -> Result<Self, SettingsError> {
         let payment = std::env::var("PAYMENT_TABLE")
             .map_err(|_| SettingsError::InvalidLoadConfig("PAYMENT_TABLE".to_string()))?;
+        let subscribe = std::env::var("SUBSCRIBE_TABLE")
+            .map_err(|_| SettingsError::InvalidLoadConfig("SUBSCRIBE_TABLE".to_string()))?;
+        let category = std::env::var("CATEGORY_TABLE")
+            .map_err(|_| SettingsError::InvalidLoadConfig("CATEGORY_TABLE".to_string()))?;
 
-        Ok(Self { payment })
+        Ok(Self { payment, subscribe, category })
     }
 }
 
@@ -76,6 +82,18 @@ pub async fn create_payment_router() -> Result<Router, SettingsError> {
         .route("/payment/id", get(find_payment_method_by_id))
         .route("/payment/update", patch(update_payment_method))
         .route("/payment/delete", delete(delete_payment_method))
+        .layer(Extension(state)))
+}
+
+pub async fn create_subscribe_router() -> Result<Router, SettingsError> {
+    let aws = AwsSettings::build()?;
+    let state = SubscribeState::new(&aws.subscribe).await.map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
+    Ok(Router::new()
+        .route("/subscribe/create", post(create_subscribe))
+        .route("/subscribe", get(find_subscribe_all))
+        .route("/subscribe/id", get(find_subscribe_by_id))
+        .route("/subscribe/update", patch(update_subscribe))
+        .route("/subscribe/delete", delete(delete_subscribe))
         .layer(Extension(state)))
 }
 
