@@ -88,17 +88,17 @@ pub async fn create_payment_router() -> Result<Router, SettingsError> {
         .layer(Extension(state)))
 }
 
-pub async fn create_subscribe_router() -> Result<Router, SettingsError> {
-    let aws = AwsSettings::build()?;
-    let state = SubscribeState::new(&aws.subscribe).await.map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
-    Ok(Router::new()
-        .route("/subscribe/create", post(create_subscribe))
-        .route("/subscribe", get(find_subscribe_all))
-        .route("/subscribe/id", get(find_subscribe_by_id))
-        .route("/subscribe/update", patch(update_subscribe))
-        .route("/subscribe/delete", delete(delete_subscribe))
-        .layer(Extension(state)))
-}
+//pub async fn create_subscribe_router() -> Result<Router, SettingsError> {
+//    let aws = AwsSettings::build()?;
+//    let state = SubscribeState::new(&aws.subscribe).await.map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
+//    Ok(Router::new()
+//        .route("/subscribe/create", post(create_subscribe))
+//        .route("/subscribe", get(find_subscribe_all))
+//        .route("/subscribe/id", get(find_subscribe_by_id))
+//        .route("/subscribe/update", patch(update_subscribe))
+//        .route("/subscribe/delete", delete(delete_subscribe))
+//        .layer(Extension(state)))
+//}
 
 #[cfg(test)]
 mod tests {

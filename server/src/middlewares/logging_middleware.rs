@@ -1,37 +1,57 @@
+use std::usize;
+
 use axum::{
-    body::Body,
+    body::{to_bytes, Body},
     extract::Request,
     http::{Response, StatusCode},
     middleware::Next,
 };
 
-use crate::middlewares::process_response;
-
 pub fn logging_middleware(
     req: Request<Body>,
     next: Next,
 ) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<Response<Body>, StatusCode>> + Send>> {
-    let method = req.method().as_str();
-    let path = req.uri().path();
+    let method = req.method().as_str().to_string();
+    let path = req.uri().path().to_string();
 
     tracing::info!("Started Request: {}, {}", method, path);
 
-    let body = req.body();
-    tracing::info!("Request Body: {:?}", body);
+    Box::pin(async move {
+        let start_time = std::time::Instant::now();
+        let res = next.run(req).await;
 
-    let response = Box::pin(async move {
-        let r = next.run(req).await;
-        let (parts, body) = r.into_parts();
-
-        let (bytes, res_json) = process_response(body).await.unwrap_or_default();
-
-        //tracing::info!("res_json: {}", res_json);
+        let status = res.status();
         tracing::info!(
-            error.message = res_json["message"].as_str().unwrap_or_default(),
-            error.status_code = res_json["status code"].as_i64().unwrap_or_default(),
-            "Error response received"
+            method = method,
+            path = path,
+            status = status.as_u16(),
+            elapsed = start_time.elapsed().as_millis(),
+            "Request completed"
         );
-        Ok(Response::from_parts(parts, Body::from(bytes)))
-    });
-    response
+
+        if status.is_client_error() || status.is_server_error() {
+            let (parts, body) = res.into_parts();
+
+            if let Ok(bytes) = to_bytes(body, usize::MAX).await {
+                #[cfg(debug_assertions)]
+                {
+                    if let Ok(body_str) = String::from_utf8(bytes.to_vec()) {
+                        tracing::debug!(response_body = body_str, "Error response body")
+                    };
+                }
+                if let Ok(error_json) = serde_json::from_slice::<serde_json::Value>(&bytes) {
+                    tracing::error!(
+                        error.message = error_json["message"].as_str().unwrap_or_default(),
+                        error.status_code = error_json["status_code"].as_u64().unwrap_or_default(),
+                        "Error details"
+                    );
+                }
+                Ok(Response::from_parts(parts, Body::from(bytes)))
+            } else {
+                Ok(Response::from_parts(parts, Body::empty()))
+            }
+        } else {
+            Ok(res)
+        }
+    })
 }
