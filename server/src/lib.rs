@@ -1,6 +1,7 @@
 pub mod app_state;
 pub mod client;
 pub mod controller;
+pub mod middlewares;
 
 use app_state::{PaymentMethodState, SubscribeState};
 use axum::routing::{delete, get, patch, post};
@@ -9,6 +10,7 @@ use controller::payment_method_controller::{
     create_payment_method, delete_payment_method, find_payment_method_all, find_payment_method_by_id,
     update_payment_method,
 };
+use middlewares::logging_middleware::logging_middleware;
 use thiserror::Error;
 use tracing::error;
 use tracing_subscriber::layer::SubscriberExt;
@@ -82,6 +84,7 @@ pub async fn create_payment_router() -> Result<Router, SettingsError> {
         .route("/payment/id", get(find_payment_method_by_id))
         .route("/payment/update", patch(update_payment_method))
         .route("/payment/delete", delete(delete_payment_method))
+        .route_layer(axum::middleware::from_fn(logging_middleware))
         .layer(Extension(state)))
 }
 
