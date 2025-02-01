@@ -3,7 +3,7 @@ pub mod client;
 pub mod controller;
 pub mod middlewares;
 
-use app_state::{PaymentMethodState, SubscribeState};
+use app_state::PaymentMethodState;
 use axum::routing::{delete, get, patch, post};
 use axum::{Extension, Router};
 use controller::payment_method_controller::{
