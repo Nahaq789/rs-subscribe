@@ -66,14 +66,14 @@ pub struct CategoryState {
 }
 
 impl CategoryState {
-    pub async fn new() -> Result<Self, StateError> {
+    pub async fn new(table: &str) -> Result<Self, StateError> {
         let build = Database::build(None).await;
         let client = match build {
             Ok(b) => b,
             Err(e) => return Err(BuildError(e.to_string())),
         };
 
-        let repository = CategoryRepositoryImpl::new(client.client(), "categories");
+        let repository = CategoryRepositoryImpl::new(client.client(), table);
         let service = CategoryServiceImpl::new(repository);
 
         Ok(Self { state: Arc::new(service) })

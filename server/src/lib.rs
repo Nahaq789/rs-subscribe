@@ -3,12 +3,18 @@ pub mod client;
 pub mod controller;
 pub mod middlewares;
 
-use app_state::PaymentMethodState;
+use app_state::{CategoryState, PaymentMethodState, SubscribeState};
 use axum::routing::{delete, get, patch, post};
 use axum::{Extension, Router};
+use controller::category_controller::{
+    create_category, delete_category, find_category_all, find_category_by_id, update_category,
+};
 use controller::payment_method_controller::{
     create_payment_method, delete_payment_method, find_payment_method_all, find_payment_method_by_id,
     update_payment_method,
+};
+use controller::subscribe_controller::{
+    create_subscribe, delete_subscribe, find_subscribe_all, find_subscribe_by_id, update_subscribe,
 };
 use middlewares::logging_middleware::logging_middleware;
 use thiserror::Error;
@@ -88,17 +94,31 @@ pub async fn create_payment_router() -> Result<Router, SettingsError> {
         .layer(Extension(state)))
 }
 
-//pub async fn create_subscribe_router() -> Result<Router, SettingsError> {
-//    let aws = AwsSettings::build()?;
-//    let state = SubscribeState::new(&aws.subscribe).await.map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
-//    Ok(Router::new()
-//        .route("/subscribe/create", post(create_subscribe))
-//        .route("/subscribe", get(find_subscribe_all))
-//        .route("/subscribe/id", get(find_subscribe_by_id))
-//        .route("/subscribe/update", patch(update_subscribe))
-//        .route("/subscribe/delete", delete(delete_subscribe))
-//        .layer(Extension(state)))
-//}
+pub async fn create_subscribe_router() -> Result<Router, SettingsError> {
+    let aws = AwsSettings::build()?;
+    let state = SubscribeState::new(&aws.subscribe).await.map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
+    Ok(Router::new()
+        .route("/subscribe/create", post(create_subscribe))
+        .route("/subscribe", get(find_subscribe_all))
+        .route("/subscribe/id", get(find_subscribe_by_id))
+        .route("/subscribe/update", patch(update_subscribe))
+        .route("/subscribe/delete", delete(delete_subscribe))
+        .route_layer(axum::middleware::from_fn(logging_middleware))
+        .layer(Extension(state)))
+}
+
+pub async fn create_category_router() -> Result<Router, SettingsError> {
+    let aws = AwsSettings::build()?;
+    let state = CategoryState::new(&aws.category).await.map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
+    Ok(Router::new()
+        .route("/category/create", post(create_category))
+        .route("/category", get(find_category_all))
+        .route("/category/id", get(find_category_by_id))
+        .route("/category/update", patch(update_category))
+        .route("/category/delete", delete(delete_category))
+        .route_layer(axum::middleware::from_fn(logging_middleware))
+        .layer(Extension(state)))
+}
 
 #[cfg(test)]
 mod tests {
