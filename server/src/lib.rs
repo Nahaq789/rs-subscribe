@@ -126,7 +126,6 @@ mod tests {
 
     const HOST: &str = "1.1.1.1";
     const PORT: &str = "7878";
-    const PAYMENT_TABLE: &str = "payment";
 
     fn clear_env() {
         std::env::remove_var("HOST");
@@ -170,12 +169,14 @@ mod tests {
     #[test]
     fn aws_settings_build_payment_success() {
         clear_env();
-        std::env::set_var("PAYMENT_TABLE", PAYMENT_TABLE);
+        std::env::set_var("PAYMENT_TABLE", "payment");
+        std::env::set_var("CATEGORY_TABLE", "category");
+        std::env::set_var("SUBSCRIBE_TABLE", "subscribe");
         let result = AwsSettings::build();
 
         assert!(result.is_ok());
         let result = result.unwrap();
-        assert_eq!(&result.payment, PAYMENT_TABLE)
+        assert_eq!(&result.payment, "payment")
     }
 
     #[test]
@@ -190,8 +191,11 @@ mod tests {
     #[tokio::test]
     async fn test_create_payment_router() {
         clear_env();
-        std::env::set_var("PAYMENT_TABLE", PAYMENT_TABLE);
+        std::env::set_var("PAYMENT_TABLE", "payment");
+        std::env::set_var("CATEGORY_TABLE", "category");
+        std::env::set_var("SUBSCRIBE_TABLE", "subscribe");
         let result = create_payment_router().await;
+        println!("{:?}", result);
         assert!(result.is_ok())
     }
 }
