@@ -1,5 +1,5 @@
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
   profile = "dev"
 }
 
@@ -7,30 +7,32 @@ module "dynamodb" {
   source = "../../modules/dynamodb"
 
   environment = var.environment
-  tables     = var.dynamodb_tables
+  tables      = var.dynamodb_tables
 }
 
 module "ecr" {
   source = "../../modules/ecr"
 
-  environment      = var.environment
-  repository_name  = "rs-subscribe-saddy-repository"
+  environment     = var.environment
+  repository_name = "rs-subscribe-saddy-repository"
 }
 
 module "lambda" {
   source = "../../modules/lambda"
 
-  environment     = var.environment
-  function_name   = "rs-subscribe-saddy"
-  lambda_role_arn = aws_iam_role.lambda_iam_role.arn
+  environment        = var.environment
+  function_name      = "rs-subscribe-saddy"
+  lambda_role_arn    = aws_iam_role.lambda_iam_role.arn
   ecr_repository_url = module.ecr.repository_url
 
   environment_variables = {
-    PAYMENT_TABLE = module.dynamodb.table_names["payment"]
-    RUST_BACKTRACE = "1"
-    RUST_LOG       = "info"
-    HOST           = "0.0.0.0"
-    PORT           = "8080"
+    PAYMENT_TABLE   = module.dynamodb.table_names["payment"]
+    SUBSCRIBE_TABLE = module.dynamodb.table_names["subscribe"]
+    CATEGORY_TABLE  = module.dynamodb.table_names["category"]
+    RUST_BACKTRACE  = "1"
+    RUST_LOG        = "info"
+    HOST            = "0.0.0.0"
+    PORT            = "8080"
   }
 }
 
@@ -102,7 +104,7 @@ resource "aws_iam_role_policy" "lambda_access_policy" {
           "dynamodb:Query",
           "dynamodb:Scan"
         ]
-        Resource = values(module.dynamodb.table_arns)  # すべてのテーブルのARNを取得
+        Resource = values(module.dynamodb.table_arns) # すべてのテーブルのARNを取得
       }
     ]
   })
@@ -113,3 +115,4 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
   role       = aws_iam_role.lambda_iam_role.name
 }
+
