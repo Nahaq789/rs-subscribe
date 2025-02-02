@@ -1,14 +1,22 @@
 pub mod app_state;
 pub mod client;
 pub mod controller;
+pub mod middlewares;
 
-use app_state::PaymentMethodState;
-use axum::routing::{delete, get, patch, post};
+use app_state::{CategoryState, PaymentMethodState, SubscribeState};
+use axum::routing::{delete, get, post, put};
 use axum::{Extension, Router};
+use controller::category_controller::{
+    create_category, delete_category, find_category_all, find_category_by_id, update_category,
+};
 use controller::payment_method_controller::{
     create_payment_method, delete_payment_method, find_payment_method_all, find_payment_method_by_id,
     update_payment_method,
 };
+use controller::subscribe_controller::{
+    create_subscribe, delete_subscribe, find_subscribe_all, find_subscribe_by_id, update_subscribe,
+};
+use middlewares::logging_middleware::logging_middleware;
 use thiserror::Error;
 use tracing::error;
 use tracing_subscriber::layer::SubscriberExt;
@@ -24,6 +32,8 @@ pub struct ApiSettings {
 #[derive(Debug)]
 pub struct AwsSettings {
     payment: String,
+    subscribe: String,
+    category: String,
 }
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -48,8 +58,12 @@ impl AwsSettings {
     pub fn build() -> Result<Self, SettingsError> {
         let payment = std::env::var("PAYMENT_TABLE")
             .map_err(|_| SettingsError::InvalidLoadConfig("PAYMENT_TABLE".to_string()))?;
+        let subscribe = std::env::var("SUBSCRIBE_TABLE")
+            .map_err(|_| SettingsError::InvalidLoadConfig("SUBSCRIBE_TABLE".to_string()))?;
+        let category = std::env::var("CATEGORY_TABLE")
+            .map_err(|_| SettingsError::InvalidLoadConfig("CATEGORY_TABLE".to_string()))?;
 
-        Ok(Self { payment })
+        Ok(Self { payment, subscribe, category })
     }
 }
 
@@ -71,11 +85,38 @@ pub async fn create_payment_router() -> Result<Router, SettingsError> {
     let state =
         PaymentMethodState::new(&aws.payment).await.map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
     Ok(Router::new()
-        .route("/payment/create", post(create_payment_method))
-        .route("/payment", get(find_payment_method_all))
-        .route("/payment/id", get(find_payment_method_by_id))
-        .route("/payment/update", patch(update_payment_method))
-        .route("/payment/delete", delete(delete_payment_method))
+        .route("/create", post(create_payment_method))
+        .route("/", get(find_payment_method_all))
+        .route("/id", get(find_payment_method_by_id))
+        .route("/update", put(update_payment_method))
+        .route("/delete", delete(delete_payment_method))
+        .route_layer(axum::middleware::from_fn(logging_middleware))
+        .layer(Extension(state)))
+}
+
+pub async fn create_subscribe_router() -> Result<Router, SettingsError> {
+    let aws = AwsSettings::build()?;
+    let state = SubscribeState::new(&aws.subscribe).await.map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
+    Ok(Router::new()
+        .route("/create", post(create_subscribe))
+        .route("/", get(find_subscribe_all))
+        .route("/id", get(find_subscribe_by_id))
+        .route("/update", put(update_subscribe))
+        .route("/delete", delete(delete_subscribe))
+        .route_layer(axum::middleware::from_fn(logging_middleware))
+        .layer(Extension(state)))
+}
+
+pub async fn create_category_router() -> Result<Router, SettingsError> {
+    let aws = AwsSettings::build()?;
+    let state = CategoryState::new(&aws.category).await.map_err(|e| SettingsError::StateBuildError(e.to_string()))?;
+    Ok(Router::new()
+        .route("/create", post(create_category))
+        .route("/", get(find_category_all))
+        .route("/id", get(find_category_by_id))
+        .route("/update", put(update_category))
+        .route("/delete", delete(delete_category))
+        .route_layer(axum::middleware::from_fn(logging_middleware))
         .layer(Extension(state)))
 }
 
@@ -85,7 +126,6 @@ mod tests {
 
     const HOST: &str = "1.1.1.1";
     const PORT: &str = "7878";
-    const PAYMENT_TABLE: &str = "payment";
 
     fn clear_env() {
         std::env::remove_var("HOST");
@@ -129,12 +169,14 @@ mod tests {
     #[test]
     fn aws_settings_build_payment_success() {
         clear_env();
-        std::env::set_var("PAYMENT_TABLE", PAYMENT_TABLE);
+        std::env::set_var("PAYMENT_TABLE", "payment");
+        std::env::set_var("CATEGORY_TABLE", "category");
+        std::env::set_var("SUBSCRIBE_TABLE", "subscribe");
         let result = AwsSettings::build();
 
         assert!(result.is_ok());
         let result = result.unwrap();
-        assert_eq!(&result.payment, PAYMENT_TABLE)
+        assert_eq!(&result.payment, "payment")
     }
 
     #[test]
@@ -149,8 +191,11 @@ mod tests {
     #[tokio::test]
     async fn test_create_payment_router() {
         clear_env();
-        std::env::set_var("PAYMENT_TABLE", PAYMENT_TABLE);
+        std::env::set_var("PAYMENT_TABLE", "payment");
+        std::env::set_var("CATEGORY_TABLE", "category");
+        std::env::set_var("SUBSCRIBE_TABLE", "subscribe");
         let result = create_payment_router().await;
+        println!("{:?}", result);
         assert!(result.is_ok())
     }
 }

@@ -197,42 +197,45 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
             .key(SUBSCRIBE_KEY, AttributeValue::S(subscribe.subscribe_id().value().to_owned()))
             .key(USER_ID, AttributeValue::S(subscribe.user_id().value().to_owned()))
             .update_expression(UPDATE_EXPRESSION)
-            .expression_attribute_names(NAME_ATTR, NAME_VALUE)
-            .expression_attribute_names(PAYMENT_METHOD_ID_ATTR, PAYMENT_METHOD_ID_VALUE)
-            .expression_attribute_names(AMOUNT_ATTR, AMOUNT_VALUE)
-            .expression_attribute_names(PAYMENT_CYCLE_ATTR, PAYMENT_CYCLE_VALUE)
-            .expression_attribute_names(CATEGORY_ID_ATTR, CATEGORY_ID_VALUE)
-            .expression_attribute_names(ICON_LOCAL_PATH_ATTR, ICON_LOCAL_PATH_VALUE)
-            .expression_attribute_names(NOTIFICATION_ATTR, NOTIFICATION_VALUE)
-            .expression_attribute_names(FIRST_PAYMENT_DATE_ATTR, FIRST_PAYMENT_DATE_VALUE)
-            .expression_attribute_names(NEXT_PAYMENT_DATE_ATTR, NEXT_PAYMENT_DATE_VALUE)
-            .expression_attribute_names(AUTO_RENEWAL_ATTR, AUTO_RENEWAL_VALUE)
-            .expression_attribute_names(STATUS_ATTR, STATUS_VALUE)
-            .expression_attribute_names(MEMO_ATTR, MEMO_VALUE)
-            .expression_attribute_values(NAME, AttributeValue::S(subscribe.name().to_string()))
+            .expression_attribute_names(NAME_ATTR, NAME)
+            .expression_attribute_names(PAYMENT_METHOD_ID_ATTR, PAYMENT_METHOD_ID)
+            .expression_attribute_names(AMOUNT_ATTR, AMOUNT)
+            .expression_attribute_names(PAYMENT_CYCLE_ATTR, PAYMENT_CYCLE)
+            .expression_attribute_names(CATEGORY_ID_ATTR, CATEGORY_ID)
+            .expression_attribute_names(ICON_LOCAL_PATH_ATTR, ICON_LOCAL_PATH)
+            .expression_attribute_names(NOTIFICATION_ATTR, NOTIFICATION)
+            .expression_attribute_names(FIRST_PAYMENT_DATE_ATTR, FIRST_PAYMENT_DATE)
+            .expression_attribute_names(NEXT_PAYMENT_DATE_ATTR, NEXT_PAYMENT_DATE)
+            .expression_attribute_names(AUTO_RENEWAL_ATTR, AUTO_RENEWAL)
+            .expression_attribute_names(STATUS_ATTR, STATUS)
+            .expression_attribute_names(MEMO_ATTR, MEMO)
+            .expression_attribute_values(NAME_VALUE, AttributeValue::S(subscribe.name().to_string()))
             .expression_attribute_values(
-                PAYMENT_METHOD_ID,
+                PAYMENT_METHOD_ID_VALUE,
                 AttributeValue::S(subscribe.payment_method_id().to_string()),
             )
-            .expression_attribute_values(AMOUNT, AttributeValue::S(subscribe.amount().to_string()))
+            .expression_attribute_values(AMOUNT_VALUE, AttributeValue::S(subscribe.amount().to_string()))
             .expression_attribute_values(
-                PAYMENT_CYCLE,
+                PAYMENT_CYCLE_VALUE,
                 AttributeValue::S(subscribe.payment_cycle().as_str().to_owned()),
             )
-            .expression_attribute_values(CATEGORY_ID, AttributeValue::S(subscribe.category_id().to_string()))
-            .expression_attribute_values(ICON_LOCAL_PATH, AttributeValue::S(subscribe.icon_local_path().to_string()))
-            .expression_attribute_values(NOTIFICATION, AttributeValue::S(subscribe.notification().to_string()))
+            .expression_attribute_values(CATEGORY_ID_VALUE, AttributeValue::S(subscribe.category_id().to_string()))
             .expression_attribute_values(
-                FIRST_PAYMENT_DATE,
+                ICON_LOCAL_PATH_VALUE,
+                AttributeValue::S(subscribe.icon_local_path().to_string()),
+            )
+            .expression_attribute_values(NOTIFICATION_VALUE, AttributeValue::S(subscribe.notification().to_string()))
+            .expression_attribute_values(
+                FIRST_PAYMENT_DATE_VALUE,
                 AttributeValue::S(subscribe.first_payment_date().to_rfc3339()),
             )
             .expression_attribute_values(
-                NEXT_PAYMENT_DATE,
+                NEXT_PAYMENT_DATE_VALUE,
                 AttributeValue::S(subscribe.next_payment_date().to_rfc3339()),
             )
-            .expression_attribute_values(AUTO_RENEWAL, AttributeValue::S(subscribe.auto_renewal().to_string()))
-            .expression_attribute_values(STATUS, AttributeValue::S(subscribe.status().to_string()))
-            .expression_attribute_values(MEMO, {
+            .expression_attribute_values(AUTO_RENEWAL_VALUE, AttributeValue::S(subscribe.auto_renewal().to_string()))
+            .expression_attribute_values(STATUS_VALUE, AttributeValue::S(subscribe.status().to_string()))
+            .expression_attribute_values(MEMO_VALUE, {
                 if let Some(memo) = subscribe.memo() {
                     AttributeValue::S(memo.to_owned())
                 } else {
@@ -280,6 +283,11 @@ impl SubscribeRepository for SubscribeRepositoryImpl {
 
         match result {
             Ok(u) => {
+                if let None = u.attributes {
+                    let err = SubscribeError::NotExists;
+                    error!("{:?}", err);
+                    return Err(err);
+                }
                 info!("{:?}", u);
                 Ok(())
             }
