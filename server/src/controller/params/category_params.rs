@@ -8,5 +8,5 @@ pub struct FindAllParam {
 #[derive(Debug, Deserialize)]
 pub struct FindByIdParams {
     pub user_id: String,
-    pub subscribe_id: String,
+    pub category_id: String,
 }

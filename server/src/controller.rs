@@ -1,3 +1,4 @@
+pub mod category_controller;
 pub mod params;
 pub mod payment_method_controller;
 pub mod subscribe_controller;

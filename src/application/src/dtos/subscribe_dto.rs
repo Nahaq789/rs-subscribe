@@ -1,8 +1,7 @@
 use std::str::FromStr;
 
-use domain::subscribe::Subscribe;
-
 use crate::error::{self, ApplicationError};
+use domain::subscribe::Subscribe;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct SubscribeDto {
@@ -196,20 +195,19 @@ impl crate::dtos::DTO<SubscribeDto, domain::subscribe::Subscribe, ApplicationErr
 
         let subscribe_id = match v.subscribe_id {
             s if s.is_empty() => SubscribeId::new(),
-            _ => SubscribeId::from_str(v.subscribe_id.as_str()).map_err(|e| error::to_aggregate_id_error(e))?,
+            _ => SubscribeId::from_str(&v.subscribe_id).map_err(|e| error::to_aggregate_id_error(e))?,
         };
-        let user_id = UserId::from_str(v.user_id.as_str()).map_err(|e| error::to_aggregate_id_error(e))?;
-        let name = SubscribeName::from_str(v.name.as_str()).map_err(|e| error::to_subscribe_error(e))?;
+        let user_id = UserId::from_str(&v.user_id).map_err(|e| error::to_aggregate_id_error(e))?;
+        let name = SubscribeName::from_str(&v.name).map_err(|e| error::to_subscribe_error(e))?;
         let payment_method_id =
-            PaymentMethodId::from_str(v.payment_method_id.as_str()).map_err(|e| error::to_aggregate_id_error(e))?;
-        let amount = Amount::from_str(v.amount.as_str()).map_err(|e| error::to_subscribe_error(e))?;
+            PaymentMethodId::from_str(&v.payment_method_id).map_err(|e| error::to_aggregate_id_error(e))?;
+        let amount = Amount::from_str(&v.amount).map_err(|e| error::to_subscribe_error(e))?;
 
-        let payment_cycle =
-            PaymentCycle::from_str(v.payment_cycle.as_str()).map_err(|e| error::to_subscribe_error(e))?;
+        let payment_cycle = PaymentCycle::from_str(&v.payment_cycle).map_err(|e| error::to_subscribe_error(e))?;
 
-        let category_id = CategoryId::from_str(v.category_id.as_str()).map_err(|e| error::to_subscribe_error(e))?;
+        let category_id = CategoryId::from_str(&v.category_id).map_err(|e| error::to_subscribe_error(e))?;
 
-        let status = SubscribeStatus::from_str(v.status.as_str()).map_err(|e| error::to_subscribe_error(e))?;
+        let status = SubscribeStatus::from_str(&v.status).map_err(|e| error::to_subscribe_error(e))?;
 
         Ok(Subscribe::from(
             subscribe_id,

@@ -173,7 +173,7 @@ impl Subscribe {
         match cycle {
             PaymentCycle::Yearly => {
                 let value = amount.value() / Decimal::from(12);
-                Amount::try_from(value).unwrap()
+                Amount::try_from(value.floor()).unwrap()
             }
             _ => amount,
         }
@@ -411,6 +411,7 @@ mod tests {
     #[rstest]
     #[case(1000, PaymentCycle::Yearly)]
     #[case(1000, PaymentCycle::Monthly)]
+    #[case(5555, PaymentCycle::Yearly)]
     fn test_yearly_amount_per_monthly(#[case] a: i32, #[case] b: PaymentCycle) {
         let dec = Decimal::from(a);
         let amount = Amount::try_from(dec).unwrap();
@@ -422,7 +423,7 @@ mod tests {
             }
             PaymentCycle::Yearly => {
                 let u = dec / Decimal::from(12);
-                assert_eq!(result.value(), &u)
+                assert_eq!(result.value(), &u.floor())
             }
         }
     }

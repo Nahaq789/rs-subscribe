@@ -22,10 +22,7 @@ const USER_ID_VALUE: &str = ":user_id";
 const CATEGORY_NAME_ATTR: &str = "#category_name";
 const CATEGORY_NAME_VALUE: &str = ":category_name";
 
-const CATEGORY_ID_ATTR: &str = "#category_id";
-const CATEGORY_ID_VALUE: &str = ":category_id";
-
-const UPDATE_EXPRESSION: &str = "SET #user_id = :user_id, #category_name = :category_name";
+const UPDATE_EXPRESSION: &str = "SET #category_name = :category_name";
 
 #[derive(Debug)]
 pub struct CategoryRepositoryImpl {
@@ -161,21 +158,29 @@ impl CategoryRepository for CategoryRepositoryImpl {
         Box<dyn std::future::Future<Output = Result<(), domain::category::category_error::CategoryError>> + Send + '_>,
     > {
         let result = Box::pin(async move {
-            let request = self
+            let result = self
                 .client
                 .update_item()
                 .table_name(&self.table)
-                .key(USER_ID, AttributeValue::S(category.user_id().to_string()))
                 .key(CATEGORY_KEY, AttributeValue::S(category.category_id().to_string()))
+                .key(USER_ID, AttributeValue::S(category.user_id().to_string()))
                 .update_expression(UPDATE_EXPRESSION)
-                .expression_attribute_names(USER_ID_ATTR, USER_ID_VALUE)
-                .expression_attribute_names(CATEGORY_ID_ATTR, CATEGORY_ID_VALUE)
-                .expression_attribute_names(CATEGORY_NAME_ATTR, CATEGORY_NAME_VALUE)
-                .expression_attribute_values(USER_ID, AttributeValue::S(category.user_id().to_string()))
-                .expression_attribute_values(CATEGORY_KEY, AttributeValue::S(category.category_id().to_string()))
-                .expression_attribute_values(CATEGORY_NAME, AttributeValue::S(category.category_name().to_string()));
+                .expression_attribute_names(CATEGORY_NAME_ATTR, CATEGORY_NAME)
+                .expression_attribute_values(
+                    CATEGORY_NAME_VALUE,
+                    AttributeValue::S(category.category_name().to_string()),
+                )
+                .send()
+                .await
+                .map_err(|e| {
+                    let msg = match e.message() {
+                        Some(s) => s.to_string(),
+                        None => e.to_string(),
+                    };
+                    CategoryError::UpdateCategoryFailed(msg)
+                });
 
-            match request.send().await {
+            match result {
                 Ok(p) => {
                     info!("{:?}", p);
                     Ok(())
@@ -196,7 +201,7 @@ impl CategoryRepository for CategoryRepositoryImpl {
     ) -> std::pin::Pin<
         Box<dyn std::future::Future<Output = Result<(), domain::category::category_error::CategoryError>> + Send + '_>,
     > {
-        let result = Box::pin(async move {
+        Box::pin(async move {
             let result = self
                 .client
                 .delete_item()
@@ -215,6 +220,11 @@ impl CategoryRepository for CategoryRepositoryImpl {
 
             match result {
                 Ok(u) => {
+                    if let None = u.attributes {
+                        let err = CategoryError::NotExist;
+                        error!("{:?}", err);
+                        return Err(err);
+                    }
                     info!("{:?}", u);
                     Ok(())
                 }
@@ -223,8 +233,7 @@ impl CategoryRepository for CategoryRepositoryImpl {
                     Err(CategoryError::DeleteCategoryFailed(e.to_string()))
                 }
             }
-        });
-        result
+        })
     }
 }
 
