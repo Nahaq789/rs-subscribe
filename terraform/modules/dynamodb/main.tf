@@ -31,4 +31,18 @@ resource "aws_dynamodb_table" "tables" {
   tags = {
     Environment = var.environment
   }
+
+  lifecycle {
+    prevent_destroy = false
+    ignore_changes = [
+      read_capacity,
+      write_capacity,
+      hash_key,
+      range_key,
+      attribute,
+      stream_enabled,
+      stream_view_type,
+      ttl
+    ]
+  }
 }
