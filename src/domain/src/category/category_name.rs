@@ -9,10 +9,10 @@ pub struct CategoryName(String);
 #[derive(Error, Debug, Clone)]
 pub enum CategoryNameError {
     /// 名前が空の場合のエラー
-    #[error("the subscribe name is empty")]
+    #[error("the category name is empty")]
     Empty,
     /// 名前が長すぎる場合のエラー
-    #[error("the subscribe name is too long")]
+    #[error("the category name is too long")]
     TooLong,
 }
 
