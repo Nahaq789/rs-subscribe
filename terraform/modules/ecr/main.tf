@@ -8,4 +8,9 @@ resource "aws_ecr_repository" "repo" {
   tags = {
     Environment = var.environment
   }
+
+  lifecycle {
+    prevent_destroy = false
+    ignore_changes = all
+  }
 }

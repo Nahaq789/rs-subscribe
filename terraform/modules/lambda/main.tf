@@ -11,4 +11,9 @@ resource "aws_lambda_function" "function" {
   tags = {
     Environment = var.environment
   }
+
+  lifecycle {
+    prevent_destroy = false
+    ignore_changes = all
+  }
 }
